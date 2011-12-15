@@ -1,5 +1,4 @@
 *.class
-/stats
 /bin
 .classpath
 .project
