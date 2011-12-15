@@ -1,0 +1,329 @@
+package fm.flickr.stat.perform;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.log4j.Logger;
+
+import fm.flickr.api.wrapper.service.FlickrService;
+import fm.flickr.api.wrapper.service.param.GroupItem;
+import fm.flickr.api.wrapper.service.param.GroupItemsSet;
+import fm.flickr.api.wrapper.service.param.PhotoItem;
+import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
+import fm.flickr.api.wrapper.util.ServiceException;
+import fm.flickr.stat.IStat;
+import fm.flickr.stat.param.GroupItemStat;
+import fm.flickr.stat.param.GroupsPerPhoto;
+import fm.util.Config;
+import fm.util.Util;
+
+public class GroupStat implements IStat
+{
+	private static Logger logger = Logger.getLogger(GroupStat.class.getName());
+
+	private static Configuration config = Config.getConfiguration();
+
+	private static FlickrService service = new FlickrService();
+
+	/** Groups collected or loaded. The key is the group id */
+	private static HashMap<String, GroupItemStat> statistics = new HashMap<String, GroupItemStat>();
+
+	/** Stats of number of groups a photo belongs to */
+	private static List<GroupsPerPhoto> statisticsGpP = new ArrayList<GroupsPerPhoto>();
+
+	/**
+	 * <p>Retrieve the list of groups that photos from Interestingness belong to, and counts the number
+	 * of times the same group is entcountered.</p>
+	 * <p>A maximum  of 'fm.flickr.stat.group.maxgroups' groups will be stored. The results are saved to a file.</p>
+	 * 
+	 * @param date date of photos from Interestingness, given in format "YYY-MM-DD"
+	 * @param photos set of photos retrieved from Interestingness
+	 * @throws IOException in case the file can't be saved
+	 */
+	@Override
+	public void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+
+		HashMap<String, GroupItemStat> stats = new HashMap<String, GroupItemStat>();
+
+		int nbPhotosProcessed = 0; // Number of photos explored during the whole process
+		int sumGroups = 0; // Sum of the number of groups each photo belongs to
+		int maxGroups = 0; // max number of groups a photo belongs to
+		Vector<Integer> listNumGroups = new Vector<Integer>(); // list of number of groups that photos belong to
+
+		// Loop on all photos retrieved at once from Interstingness
+		for (PhotoItem photo : photos.getPhotosList()) {
+			nbPhotosProcessed++;
+
+			// Get all groups that the photo belongs to
+			GroupItemsSet groupSet = service.getPhotoPools(photo.getPhotoId());
+			if (groupSet != null) {
+				if (groupSet.size() > maxGroups)
+					maxGroups = groupSet.size();
+				listNumGroups.add(groupSet.size());
+
+				// For each group check if it is already in the list, add it if it is not
+				for (GroupItem group : groupSet.getGroupsList()) {
+					sumGroups++;
+					String groupId = group.getGroupId();
+
+					GroupItemStat groupStat = stats.get(groupId);
+					if (groupStat != null) {
+						// Either increment the number of occurences by one if the group already exists
+						groupStat.incNbOccurences();
+						logger.trace("Updating group " + groupId + ": " + groupStat.getNbOccurences());
+					} else {
+						// Or create a new group element with 1 occurence, but limit the maximum number of groups
+						if (stats.size() < config.getInt("fm.flickr.stat.group.maxgroups")) {
+							stats.put(groupId, new GroupItemStat(group, 1));
+							logger.trace("Adding group " + groupId);
+						}
+					}
+				}
+
+				// Trace activity every 10 photos
+				if (nbPhotosProcessed % 10 == 0)
+					logger.info("Processed " + nbPhotosProcessed + " photos, registered " + stats.size() + " groups.");
+			}
+
+			// Sleep between each photo... just not to be overloading
+			try {
+				Thread.sleep(config.getInt("fm.flickr.stat.sleepms"));
+			} catch (InterruptedException e) {
+				logger.warn("Unepected interruption: " + e.toString());
+				e.printStackTrace();
+			}
+		}
+
+		logger.info("### Processed " + stats.size() + " groups from " + nbPhotosProcessed + " photos");
+		logger.info("### Average number of groups a photo belongs to: " + sumGroups / nbPhotosProcessed);
+		logger.info("### Maximum number of groups a photo belongs to: " + maxGroups);
+
+		// Calculate the standard deviation
+		int avg = sumGroups / nbPhotosProcessed;
+		int sumDeviations = 0;
+		for (Integer nbgrp : listNumGroups)
+			if (nbgrp - avg > 0)
+				sumDeviations += nbgrp - avg;
+
+		int stdDev = 0;
+		if (!listNumGroups.isEmpty()) {
+			logger.info("### Standard deviation of number of groups a photo belongs to: " + sumDeviations / listNumGroups.size());
+			stdDev = sumDeviations / listNumGroups.size();
+		}
+		saveGroupsFromInterestingPhotos(date, stats, nbPhotosProcessed, sumGroups, maxGroups, stdDev);
+	}
+
+	/**
+	 * Save the list of groups into a file, including group id, name and count of explored photos that belong to each group.
+	 * 
+	 * @param date
+	 * @param stats list of groups retrieved
+	 * @param nbPhotosProcessed Number of photos explored during the whole process
+	 * @param sumGroups Sum of the number of groups each photo belongs to (to be able to compute the average number of groups per photo)
+	 * @param maxGroups Max number of groups each photo belongs to
+	 * @param stdDeviation Standard deviation of number of groups a photo belongs to
+	 * @throws IOException
+	 */
+	private void saveGroupsFromInterestingPhotos(String date, HashMap<String, GroupItemStat> stats, int nbPhotosProcessed, int sumGroups, int maxGroups, int stdDeviation) throws IOException {
+
+		File file = new File(Util.getDir(config.getString("fm.flickr.stat.group.dir")), date + ".log");
+		FileOutputStream fos = new FileOutputStream(file);
+		PrintWriter writer = new PrintWriter(fos);
+
+		logger.info("Saving " + stats.size() + " groups into file " + file.getCanonicalPath());
+
+		writer.println("# Processed " + stats.size() + " groups from " + nbPhotosProcessed + " photos");
+		writer.println("# Number of photos explored: " + nbPhotosProcessed);
+		writer.println("# Total number of groups: " + sumGroups);
+		writer.println("#");
+		writer.println("# Average number of groups a photo belongs to: " + sumGroups / nbPhotosProcessed);
+		writer.println("# Maximum number of groups a photo belongs to: " + maxGroups);
+		writer.println("# Standard deviation of the number of groups a photo belongs to: " + stdDeviation);
+		writer.println("#");
+		writer.println("# groupId SEPARATOR group name SEPARATOR number of occurences of that group");
+		writer.println("#");
+
+		Collection<GroupItemStat> grpset = stats.values();
+		Iterator<GroupItemStat> iter = grpset.iterator();
+		while (iter.hasNext()) {
+			GroupItemStat entry = iter.next();
+			writer.println(entry.toFile());
+		}
+		writer.close();
+		fos.close();
+	}
+
+	/**
+	 * Load the content of the file for the given date, into the map of statistics
+	 * 
+	 * @param date date of data collected from Interestingness, given in format "YYY-MM-DD"
+	 */
+	@Override
+	public void loadFileByDay(String date) throws ServiceException {
+
+		String fileName = config.getString("fm.flickr.stat.group.dir") + date + ".log";
+		loadFile(new File(fileName));
+		logger.info("### " + statistics.size() + " total groups loaded.");
+	}
+
+	/**
+	 * Load the content of the all files for the given month, into the map of statistics
+	 * 
+	 * @param yearMonth year and month formatted as yyyy-mm
+	 * @param stats the map where to store groups read from the file
+	 */
+	@Override
+	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+		// Empty the current data if any
+		statistics.clear();
+		statisticsGpP.clear();
+
+		File dir = new File(config.getString("fm.flickr.stat.group.dir"));
+		if (!dir.exists() || !dir.isDirectory()) {
+			String errMsg = "Error: data directory " + config.getString("fm.flickr.stat.group.dir") + " does not exists.";
+			logger.warn(errMsg);
+			throw new ServiceException(errMsg);
+		}
+
+		for (File file : dir.listFiles())
+			if (file.getName().startsWith(yearMonth))
+				loadFile(file);
+
+		logger.info("### " + statistics.size() + " total groups loaded for period " + yearMonth);
+	}
+
+	/** 
+	 * Parse the content of the given file and store its content into the static map statistics
+	 * @param file  
+	 */
+	private void loadFile(File file) throws ServiceException {
+		try {
+			if (!file.exists()) {
+				logger.warn("No file: " + file.getAbsolutePath());
+				return;
+			}
+
+			FileInputStream fis = new FileInputStream(file);
+			BufferedReader buffer = new BufferedReader(new InputStreamReader(fis));
+			logger.info("### Loading file " + file.getAbsolutePath());
+			String str = buffer.readLine();
+
+			while (str != null) {
+				if (str.trim().startsWith("#")) {
+					// Process comment lines like:
+					// # Average number of groups a photo belongs to: 5
+					// # Maximum number of groups a photo belongs to: 53
+					// # Standard deviation of the number of groups a photo belongs to: 2
+					GroupsPerPhoto gpp = new GroupsPerPhoto();
+
+					String strSeeked = "# Average number of groups a photo belongs to: ";
+					if (str.startsWith(strSeeked)) {
+						gpp.setAvgGroupsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+
+						str = buffer.readLine();
+						strSeeked = "# Maximum number of groups a photo belongs to: ";
+						if (str.startsWith(strSeeked))
+							gpp.setMaxGroupsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+
+						str = buffer.readLine();
+						strSeeked = "# Standard deviation of the number of groups a photo belongs to: ";
+						if (str.startsWith(strSeeked))
+							gpp.setStdDevGroupsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+
+						statisticsGpP.add(gpp);
+					}
+
+				} else {
+					String[] tokens = str.split(GroupItemStat.FIELD_SEPARATOR);
+					if (tokens.length != 3)
+						logger.warn("Wrong format on line: " + str);
+					else {
+						String groupId = tokens[0];
+
+						GroupItemStat groupStat = statistics.get(groupId);
+						if (groupStat != null) {
+							// Either increment the number of occurences if the group already exists
+							groupStat.incNbOccurences(Integer.valueOf(tokens[2]));
+							logger.trace("Updating group " + groupId + ": " + groupStat.getNbOccurences());
+
+						} else {
+							// Or create a new group element
+							GroupItemStat group = new GroupItemStat(tokens[0], tokens[1], Integer.valueOf(tokens[2]));
+							logger.trace("Adding group " + groupId);
+							statistics.put(groupId, group);
+						}
+					}
+				}
+				str = buffer.readLine();
+			}
+			fis.close();
+
+		} catch (IOException e) {
+			String errMsg = "Error when reading file " + file.getName() + ". Exception: " + e.toString();
+			logger.warn(errMsg);
+			throw new ServiceException(errMsg);
+		}
+	}
+
+	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+		ps.print("#month; ");
+		ps.println("avg groups/photo; std dev groups/user; max groups/user");
+	}
+
+	/**
+	 * Filter only groups with at least a minimum of occurences and sort by scores
+	 * @param ps where to print the output
+	 */
+	@Override
+	public void computeStatistics(PrintStream ps) {
+		Collection<GroupItemStat> grpset = statistics.values();
+		ArrayList<GroupItemStat> grpList = new ArrayList<GroupItemStat>(grpset);
+		Collections.sort(grpList);
+
+		for (int i = 0; i < grpList.size(); i++) {
+			GroupItemStat entry = grpList.get(i);
+
+			// Filter only groups with a minimum number of occurences 
+			if (entry.getNbOccurences() >= config.getInt("fm.flickr.stat.group.minoccurence")) {
+				ps.println((i + 1) + ": " + entry.toStringL());
+			}
+		}
+		ps.println();
+	}
+
+	/**
+	 * Display numbers of contacts and photos per user
+	 * @param ps where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public void computeMonthlyStatistics(PrintStream ps, String month) {
+		int sumAvg = 0;
+		int sumStdDev = 0;
+		int sumMax = 0;
+		for (GroupsPerPhoto gpp : statisticsGpP) {
+			sumAvg += gpp.getAvgGroupsPerPhoto();
+			sumStdDev += gpp.getStdDevGroupsPerPhoto();
+			sumMax += gpp.getMaxGroupsPerPhoto();
+		}
+
+		ps.print(month + "; ");
+		ps.print(Math.abs(sumAvg / statisticsGpP.size()) + "; ");
+		ps.print(Math.abs(sumStdDev / statisticsGpP.size()) + "; ");
+		ps.println(Math.abs(sumMax / statisticsGpP.size()));
+	}
+}

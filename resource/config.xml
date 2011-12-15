@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Properties files are from last to first. Relative or full path names are allowed -->
+<configuration>
+    <!-- The override file may redefine properties from other files. -->
+    <!-- Do not move this line: it must be in first position -->
+    <!--properties fileName="override.properties" optional="true" /-->
+
+	<!--  Properties can be overriden by system defined properties with -Dprop=value -->    
+    <system/>
+
+    <properties fileName="faw.properties" />
+    
+    <properties fileName="config.properties" />
+    
+    <!-- Add system properties to the configuration -->
+</configuration>

@@ -1,0 +1,7 @@
+*.class
+/stats
+/bin
+.classpath
+.project
+/.settings
+
