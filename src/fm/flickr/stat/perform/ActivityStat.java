@@ -104,13 +104,13 @@ public class ActivityStat implements IStat
 		logger.info("Saving activity info about " + stats.size() + " photos into file " + file.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + nbPhotosProcessed);
-		writer.println("rank ; views ; comments ; favs ; notes");
+		writer.println("photo id ; rank ; views ; comments ; favs ; notes");
 
 		Collection<PhotoItemInfo> photoItemInfo = stats.values();
 		Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
 		while (iter.hasNext()) {
 			PhotoItemInfo entry = iter.next();
-			writer.println(entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews() + FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
+			writer.println(entry.getPhotoId() + FIELD_SEPARATOR + entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews() + FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
 		}
 		writer.close();
 		fos.close();
