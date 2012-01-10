@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -39,9 +42,9 @@ public class ActivityStat implements IStat
 	private static FlickrService service = new FlickrService();
 
 	private static HashMap<Integer, PhotoItemInfo> statistics = new HashMap<Integer, PhotoItemInfo>();
-	
+
 	private static String FIELD_SEPARATOR = ";";
-	
+
 	/**
 	 * <p>Retrieve the number favs of photos from Interestingness. The results are saved to a file.</p>
 	 * 
@@ -67,6 +70,10 @@ public class ActivityStat implements IStat
 
 				// Read the number of favs
 				info.setNbFavs(service.getNbFavs(photo.getPhotoId()));
+				stats.put(info.getInterestingnessRank(), info);
+
+				// Read the number of groups
+				info.setNbGroups(String.valueOf(service.getPhotoPools(photo.getPhotoId()).size()));
 				stats.put(info.getInterestingnessRank(), info);
 			}
 
@@ -104,13 +111,28 @@ public class ActivityStat implements IStat
 		logger.info("Saving activity info about " + stats.size() + " photos into file " + file.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + nbPhotosProcessed);
-		writer.println("photo id ; rank ; views ; comments ; favs ; notes");
+		writer.println("photo id ; rank ; views ; comments ; favs ; notes; groups; tags; time_after_upload");
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
 
-		Collection<PhotoItemInfo> photoItemInfo = stats.values();
-		Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
-		while (iter.hasNext()) {
-			PhotoItemInfo entry = iter.next();
-			writer.println(entry.getPhotoId() + FIELD_SEPARATOR + entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews() + FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
+			Collection<PhotoItemInfo> photoItemInfo = stats.values();
+			Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
+			while (iter.hasNext()) {
+				PhotoItemInfo entry = iter.next();
+				writer.print(entry.getPhotoId() + FIELD_SEPARATOR + entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews());
+				writer.print(FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
+				writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
+
+				Date postDate = sdf.parse(entry.getDatePost());
+				long diff = endOfDay.getTime() - postDate.getTime();
+				long diffHour = diff / 1000 / 3600;
+				writer.print(FIELD_SEPARATOR + diffHour);
+
+				writer.println();
+			}
+		} catch (ParseException e) {
+			logger.warn("Invalid date format. Exception: " + e.toString());
 		}
 		writer.close();
 		fos.close();

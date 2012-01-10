@@ -42,6 +42,8 @@ public class PhotoItemInfo implements Serializable
 
 	private String nbFavs;
 
+	private String nbGroups;
+
 	private TagItemsSet tagsSet;
 
 	public PhotoItemInfo() {
@@ -58,6 +60,7 @@ public class PhotoItemInfo implements Serializable
 		this.nbNotes = "";
 		this.nbComments = "";
 		this.nbFavs = "";
+		this.nbGroups = "";
 		tagsSet = null;
 	}
 
@@ -181,9 +184,17 @@ public class PhotoItemInfo implements Serializable
 		this.nbViews = nbViews;
 	}
 
+	public String getNbGroups() {
+		return nbGroups;
+	}
+
+	public void setNbGroups(String nbGroups) {
+		this.nbGroups = nbGroups;
+	}
+
 	@Override
 	public String toString() {
-		return "PhotoItemInfo [photoId=" + photoId + ", ownerNsid=" + ownerNsid + ", ownerUserName=" + ownerUserName + ", ownerRealName=" + ownerRealName + ", title=" + title + ", description=" + description + ", datePost=" + datePost + ", dateTake=" + dateTake + ", pageUrl=" + pageUrl + ", nbViews=" + nbViews + ", nbNotes=" + nbNotes + ", nbComments=" + nbComments + ", nbFavs=" + nbFavs + "]";
+		return "PhotoItemInfo [photoId=" + photoId + ", interestingnessRank=" + interestingnessRank + ", ownerNsid=" + ownerNsid + ", ownerUserName=" + ownerUserName + ", ownerRealName=" + ownerRealName + ", title=" + title + ", description=" + description + ", datePost=" + datePost + ", dateTake=" + dateTake + ", pageUrl=" + pageUrl + ", nbViews=" + nbViews + ", nbNotes=" + nbNotes + ", nbComments=" + nbComments + ", nbFavs=" + nbFavs + ", nbGroups=" + nbGroups + ", tagsSet=" + tagsSet + "]";
 	}
 
 }
