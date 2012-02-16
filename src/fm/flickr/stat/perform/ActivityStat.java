@@ -114,7 +114,10 @@ public class ActivityStat implements IStat
 		writer.println("photo id ; rank ; views ; comments ; favs ; notes; groups; tags; time_after_upload");
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			// Uncomment the line below to set GMT (should be) but it will no longer be compatible with data acquired before
+			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
 			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
+			Long endOfDayPST = endOfDay.getTime() + 9*60*60*1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
 
 			Collection<PhotoItemInfo> photoItemInfo = stats.values();
 			Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
@@ -125,7 +128,7 @@ public class ActivityStat implements IStat
 				writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
 
 				Date postDate = sdf.parse(entry.getDatePost());
-				long diff = endOfDay.getTime() - postDate.getTime();
+				long diff = endOfDayPST - postDate.getTime();
 				long diffHour = diff / 1000 / 3600;
 				writer.print(FIELD_SEPARATOR + diffHour);
 

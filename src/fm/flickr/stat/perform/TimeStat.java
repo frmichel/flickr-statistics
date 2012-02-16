@@ -176,7 +176,11 @@ public class TimeStat implements IStat
 			BufferedReader buffer = new BufferedReader(new InputStreamReader(fis));
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			// With no change, the current locale is used: CET = GMT+1
+			// Uncomment the line below to change it but it will no longer be compatible with data acquired before
+			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
 			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
+			Long endOfDayPST = endOfDay.getTime() + 9*60*60*1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
 
 			logger.info("### Loading file " + file.getAbsolutePath());
 			String str = buffer.readLine();
@@ -191,12 +195,14 @@ public class TimeStat implements IStat
 						Date postDate = sdf.parse(tokens[1]);
 						statPostDate.add(postDate);
 
-						// Calculate the time needed (in hours) for the photo to get into the Explorer after it was posted
-						long diff = endOfDay.getTime() - postDate.getTime();
+						// Calculate the time (in hours) between the moment the photo was posted and the end of the explorer day
+						// which is 23h59 in California (Yahoo servers) that is GMT-8, i.e. 23h59 at GMT + 8 hours
+						long diff = endOfDayPST - postDate.getTime();
 						long diffHour = diff / 1000 / 3600;
-						// If the diff is < 0, it means that the photo can't be explored before it was posted!
-						// So better forget about this case, as the post date has been changed manually.
-						if (diffHour > 0)
+						
+						// If the diff is < 0, it means that the photo was be explored before it was posted!
+						// So better forget about this case, as the post date has probably been changed manually.
+						if (diffHour >= 0)
 							statTime2Explo.add(diffHour);
 					}
 				}

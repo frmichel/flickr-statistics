@@ -354,6 +354,9 @@ public class FlickrService
 			Element dates = (Element) xmlResp.getElementsByTagName("dates").item(0);
 			try {
 				DateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				// With no change, the current locale is used: CET = GMT+1
+				// Uncomment the line below to change it but it will no longer be compatible with data acquired before
+				// formater.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
 				String postedS = dates.getAttribute("posted");
 				long postedL;
 
