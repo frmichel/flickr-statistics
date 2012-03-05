@@ -117,7 +117,8 @@ public class ActivityStat implements IStat
 			// Uncomment the line below to set GMT (should be) but it will no longer be compatible with data acquired before
 			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
 			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
-			Long endOfDayPST = endOfDay.getTime() + 9*60*60*1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
+			int timeShift = config.getInt("fm.flickr.stat.time_shift_pst", 9);
+			Long endOfDayPST = endOfDay.getTime() + timeShift*60*60*1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
 
 			Collection<PhotoItemInfo> photoItemInfo = stats.values();
 			Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();

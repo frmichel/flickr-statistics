@@ -9,6 +9,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.util.ServiceException;
+import fm.flickr.stat.perform.DailyUploadsStat;
 import fm.flickr.stat.perform.GroupStat;
 import fm.flickr.stat.perform.TagStat;
 import fm.flickr.stat.perform.TimeStat;
@@ -84,7 +85,10 @@ public class ProcessDailyStats
 		
 		if (config.getString("fm.flickr.stat.action.user").equals("on"))
 			new UserStat().loadFileByDay(date);
-	}
+
+		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
+			new DailyUploadsStat().loadFileByDay(date);
+}
 
 	/**
 	 * Run the specific statistics processings 
@@ -102,5 +106,8 @@ public class ProcessDailyStats
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on"))
 			new UserStat().computeStatistics(ps);
+		
+		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
+			new DailyUploadsStat().computeStatistics(ps);
 	}
 }

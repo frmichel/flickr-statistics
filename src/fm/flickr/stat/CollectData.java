@@ -16,6 +16,7 @@ import fm.flickr.api.wrapper.service.FlickrService;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.stat.perform.ActivityStat;
+import fm.flickr.stat.perform.DailyUploadsStat;
 import fm.flickr.stat.perform.GroupStat;
 import fm.flickr.stat.perform.TagStat;
 import fm.flickr.stat.perform.TimeStat;
@@ -34,13 +35,14 @@ public class CollectData
 
 	private static Configuration config = Config.getConfiguration();
 
+	/** Wrapper for Flickr services */
 	private static FlickrService service = new FlickrService();
 
 	public static void main(String[] args) {
 
 		logger.debug("begin");
 		try {
-			// Turn start and stop dates into GregorianCalendars 
+			// Convert start and stop dates into GregorianCalendars
 			String startDate = config.getString("fm.flickr.stat.startdate");
 			String[] tokensStart = startDate.split("-");
 			GregorianCalendar calStart = new GregorianCalendar(Integer.valueOf(tokensStart[0]), Integer.valueOf(tokensStart[1]) - 1, Integer.valueOf(tokensStart[2]));
@@ -53,19 +55,25 @@ public class CollectData
 
 			//--- Collect data from Interstingness and store it into one file per day and per type of statistics
 			while (calStart.before(calEnd)) {
+
 				// Format date to process as yyyy-mm-dd
 				String date = sdf.format(calStart.getTime());
+				logger.info("Starting collecting data on " + date);
 
 				// Collect data on photos from Interstingness on that date (Flickr will report max 500 every day)
 				collectDataFromInterestingness(date);
+
+				// Collect number of daily uploads to Flickr
+				if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
+					new DailyUploadsStat().collecDailyUploads(date);
 
 				// Increase the date by n days, and proceed with that next date
 				calStart.add(GregorianCalendar.DAY_OF_MONTH, config.getInt("fm.flickr.stat.step_between_measure"));
 
 				// Sleep between each photo... just not to be overloading (may not be necessary...)
 				try {
-					logger.info("Sleep for 5s");
-					Thread.sleep(5000);
+					//logger.info("Sleep for 5s");
+					Thread.sleep(10);
 				} catch (InterruptedException e) {
 					logger.warn("Unepected interruption: " + e.toString());
 					e.printStackTrace();
@@ -90,31 +98,34 @@ public class CollectData
 	private static void collectDataFromInterestingness(String date) throws IOException {
 		PhotoItemsSet photos = null;
 
-		String photoList = System.getProperty("fm.flickr.stat.photoslist");
-		if (photoList != null) {
-			photos = getInterestingnessPhotosFromFile(photoList);
-		} else {
-			// Get photos from Interstingness on the given date (Flickr will report maximum 500 every day)
-			photos = service.getInterestingnessPhotos(date, config.getInt("fm.flickr.stat.maxphotos"), 1);
-		}
+		if (config.getString("fm.flickr.stat.action.group").equals("on") && config.getString("fm.flickr.stat.action.tag").equals("on") && config.getString("fm.flickr.stat.action.time").equals("on") && config.getString("fm.flickr.stat.action.user").equals("on") && config.getString("fm.flickr.stat.action.activity").equals("on")) {
 
-		if (photos != null) {
-			logger.info("######## " + date + ": " + photos.size() + " photos from Interestingness to be processed...");
+			String photoList = System.getProperty("fm.flickr.stat.photoslist");
+			if (photoList != null) {
+				photos = getInterestingnessPhotosFromFile(photoList);
+			} else {
+				// Get photos from Interstingness on the given date (Flickr will report maximum 500 every day)
+				photos = service.getInterestingnessPhotos(date, config.getInt("fm.flickr.stat.maxphotos"), 1);
+			}
 
-			if (config.getString("fm.flickr.stat.action.group").equals("on"))
-				new GroupStat().collecAdditionalData(date, photos);
-			
-			if (config.getString("fm.flickr.stat.action.tag").equals("on"))
-				new TagStat().collecAdditionalData(date, photos);
-			
-			if (config.getString("fm.flickr.stat.action.time").equals("on"))
-				new TimeStat().collecAdditionalData(date, photos);
-			
-			if (config.getString("fm.flickr.stat.action.user").equals("on"))
-				new UserStat().collecAdditionalData(date, photos);
-			
-			if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-				new ActivityStat().collecAdditionalData(date, photos);
+			if (photos != null) {
+				logger.info("######## " + date + ": " + photos.size() + " photos from Interestingness to be processed...");
+
+				if (config.getString("fm.flickr.stat.action.group").equals("on"))
+					new GroupStat().collecAdditionalData(date, photos);
+
+				if (config.getString("fm.flickr.stat.action.tag").equals("on"))
+					new TagStat().collecAdditionalData(date, photos);
+
+				if (config.getString("fm.flickr.stat.action.time").equals("on"))
+					new TimeStat().collecAdditionalData(date, photos);
+
+				if (config.getString("fm.flickr.stat.action.user").equals("on"))
+					new UserStat().collecAdditionalData(date, photos);
+
+				if (config.getString("fm.flickr.stat.action.activity").equals("on"))
+					new ActivityStat().collecAdditionalData(date, photos);
+			}
 		}
 	}
 

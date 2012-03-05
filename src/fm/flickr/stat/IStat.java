@@ -7,8 +7,9 @@ import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.util.ServiceException;
 
 /**
- * This interface must be implemented by any class whishing to colelct data from Interestingness besides that basic 
- * per-photo data already retrieved, and provide a way to perform statistic analysis over these data.
+ * This interface must be implemented by any class whishing to collect data from Interestingness, besides basic 
+ * per-photo data already retrieved by the interestingness.getList service, and provide a way to perform statistic 
+ * analysis over these data.
  * 
  * @author fmichel
  */
@@ -32,6 +33,7 @@ public interface IStat
 
 	/**
 	 * Load all data files for a given month into memory, to further compute statistics.
+	 * Any file name strating with "yyyy-mm" will be loaded, may there be 1 or 31 files for that month.
 	 * @param yearMonth year and month formatted as yyyy-mm
 	 */
 	public void loadFilesByMonth(String yearMonth) throws ServiceException;

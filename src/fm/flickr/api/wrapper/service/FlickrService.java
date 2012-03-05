@@ -225,7 +225,7 @@ public class FlickrService
 				if (e.getMessage().contains("Code: 1, Cause: No interesting photos are available for that date")) {
 					try {
 						logger.warn("Will retry in 5mn");
-						Thread.sleep(5*60*1000);
+						Thread.sleep(5 * 60 * 1000);
 					} catch (InterruptedException ie) {
 						logger.warn("Unepected interruption: " + ie.toString());
 						e.printStackTrace();
@@ -658,7 +658,7 @@ public class FlickrService
 	 * @param groupItem
 	 * @return null if ok, or cause message in case any error occured
 	 */
-	public String remotePhotoFromPool(String token, String photoId, GroupItem groupItem) {
+	public String removePhotoFromPool(String token, String photoId, GroupItem groupItem) {
 		logger.debug("begin removePhotoFromPool: photoId=" + photoId + ", group=" + groupItem.toString());
 		try {
 			TreeMap<String, String> listParams = new TreeMap<String, String>();
@@ -678,6 +678,44 @@ public class FlickrService
 		} catch (ServiceException e) {
 			logger.error("Error while requesting Flickr service", e);
 			return e.getMessage();
+		}
+	}
+
+	/**
+	 * Retrieve the number of photos uploaded to Flickr during a time interval
+	 * 
+	 * @param minDate count uploads after min date formatted as yyyy-mm-dd hh:mm:ss
+	 * @param maxDate count uploads before max date formatted as yyyy-mm-dd hh:mm:ss
+	 * @return number of uploads during the given period, or -1 in case an error occurs
+	 */
+	public long getTotalUploads(String minDate, String maxDate) {
+		logger.debug("begin getTotalUploads, minDate:" + minDate + ", maxDate: " + maxDate);
+		long maxPages = -1;
+		try {
+			TreeMap<String, String> listParams = new TreeMap<String, String>();
+			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+			listParams.put("method", "flickr.photos.search");
+			listParams.put("min_upload_date", minDate);
+			listParams.put("max_upload_date", maxDate);
+			listParams.put("privacy_filter", "1"); // only public material
+			listParams.put("content_type", "1"); // only photos
+			listParams.put("per_page", "1");
+			listParams.put("page", "1");
+
+			// Call the service and parse the XML response 
+			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
+			Document xmlResp = FlickrUtil.launchRequest(urlStr);
+
+			Element photos = (Element) xmlResp.getElementsByTagName("photos").item(0);
+			maxPages = Integer.valueOf(photos.getAttribute("pages"));
+			return maxPages;
+			
+		} catch (ServiceException e) {
+			logger.error("Error while requesting Flickr service", e);
+			return -1;
+		} catch (NumberFormatException e) {
+			logger.error("Can't convert to integer: " + maxPages, e);
+			return -1;
 		}
 	}
 

@@ -10,6 +10,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.util.ServiceException;
+import fm.flickr.stat.perform.DailyUploadsStat;
 import fm.flickr.stat.perform.GroupStat;
 import fm.flickr.stat.perform.TagStat;
 import fm.flickr.stat.perform.TimeStat;
@@ -47,6 +48,9 @@ public class ProcessMonthlyStats
 	/** File where to write the tags results */
 	private static PrintStream psTag;
 
+	/** File where to write the uploads results */
+	private static PrintStream psUploads;
+
 	public static void main(String[] args) {
 		try {
 			SimpleDateFormat ymDateFrmt = new SimpleDateFormat("yyyy-MM");
@@ -70,6 +74,7 @@ public class ProcessMonthlyStats
 
 				// Format month to process as yyyy-mm and load the files of that month
 				String month = ymDateFrmt.format(calStart.getTime());
+				logger.info("Processing data for month " + month);
 				try {
 					// Load all data files for the given month 
 					loadFileByMonth(month);
@@ -126,7 +131,12 @@ public class ProcessMonthlyStats
 			psTag = new PrintStream(config.getString("fm.flickr.stat.tag.dir") + "/monthly_results.csv");
 			new TagStat().initComputeMonthly(psTag);
 		}
-	}
+
+		if (config.getString("fm.flickr.stat.action.uploads").equals("on")) {
+			psUploads = new PrintStream(config.getString("fm.flickr.stat.uploads.dir") + "/monthly_results.csv");
+			new DailyUploadsStat().initComputeMonthly(psUploads);
+		}
+}
 
 	/**
 	 * Runs the loading of data files on the given moth by the dedicated statistics classes
@@ -147,7 +157,10 @@ public class ProcessMonthlyStats
 
 		if (config.getString("fm.flickr.stat.action.tag").equals("on"))
 			new TagStat().loadFilesByMonth(yearMonth);
-	}
+
+		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
+			new DailyUploadsStat().loadFilesByMonth(yearMonth);
+}
 
 	/**
 	 * Run the specific statistics processings 
@@ -171,5 +184,7 @@ public class ProcessMonthlyStats
 		if (config.getString("fm.flickr.stat.action.tag").equals("on"))
 			new TagStat().computeMonthlyStatistics(psTag, month);
 
+		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
+			new DailyUploadsStat().computeMonthlyStatistics(psUploads, month);
 	}
 }
