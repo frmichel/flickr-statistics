@@ -127,7 +127,6 @@ public class TimeStat implements IStat
 	 */
 	@Override
 	public void loadFileByDay(String date) throws ServiceException {
-
 		String fileName = config.getString("fm.flickr.stat.time.dir") + date + ".log";
 		loadFile(new File(fileName));
 		logger.info("### " + statPostDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded from " + fileName);
@@ -181,7 +180,7 @@ public class TimeStat implements IStat
 			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
 			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
 			int timeShift = config.getInt("fm.flickr.stat.time_shift_pst", 9);
-			Long endOfDayPST = endOfDay.getTime() + timeShift*60*60*1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
+			Long endOfDayPST = endOfDay.getTime() + timeShift * 60 * 60 * 1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
 
 			logger.info("### Loading file " + file.getAbsolutePath());
 			String str = buffer.readLine();
@@ -200,7 +199,7 @@ public class TimeStat implements IStat
 						// which is 23h59 in California (Yahoo servers) that is GMT-8, i.e. 23h59 at GMT + 8 hours
 						long diff = endOfDayPST - postDate.getTime();
 						long diffHour = diff / 1000 / 3600;
-						
+
 						// If the diff is < 0, it means that the photo was be explored before it was posted!
 						// So better forget about this case, as the post date has probably been changed manually.
 						if (diffHour >= 0)
@@ -260,6 +259,11 @@ public class TimeStat implements IStat
 		ps.println("monday; tuesday; wednersday; thurday; friday; saturday; sunday");
 	}
 
+	public static void reset() {
+		statPostDate.clear();
+		statTime2Explo.clear();
+	}
+
 	/**
 	 * Sort post date/times by daily hour and count number of hits per hour
 	 * @param ps where to print the output
@@ -287,6 +291,23 @@ public class TimeStat implements IStat
 				ps.print("; ");
 		}
 		ps.println();
+	}
+
+	/**
+	 * Sort post date/times by daily hour and count number of hits per hour and return the distribution
+	 */
+	public Vector<Integer> getPostTimeDistrib() {
+		// Calculate the distribution of post times on 24h
+		GregorianCalendar cal = new GregorianCalendar();
+		Vector<Integer> distribution = new Vector<Integer>();
+		for (int i = 0; i < 24; i++)
+			distribution.add(0);
+		for (Date date : statPostDate) {
+			cal.setTime(date);
+			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			distribution.set(hour, distribution.get(hour) + 1);
+		}
+		return distribution;
 	}
 
 	public void computePostTimeDistrib(PrintStream ps) {

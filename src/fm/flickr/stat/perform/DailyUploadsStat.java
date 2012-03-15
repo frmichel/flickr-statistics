@@ -158,7 +158,7 @@ public class DailyUploadsStat
 	 * @param date given in format "YYY-MM-DD"
 	 */
 	public void loadFileByDay(String date) throws ServiceException {
-		String fileName = config.getString("fm.flickr.stat.uploads.dir") + date + ".log";
+		String fileName = config.getString("fm.flickr.stat.uploads.dir") + date + ".csv";
 		loadFile(new File(fileName));
 	}
 
@@ -235,6 +235,16 @@ public class DailyUploadsStat
 	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
 		ps.println("### number of uploads by hour of day:");
 		ps.println("month; 0h; 1h; 2h; 3h; 4h; 5h; 6h; 7h; 8h; 9h; 10h; 11h; 12h; 13h; 14h; 15h; 16h; 17h; 18h; 19h; 20h; 21h; 22h; 23h; total");
+	}
+
+	public static void reset() {
+		distribution.clear();
+		for (int i = 0; i < ELTS_PER_LINE; i++)
+			distribution.add(i, (long) 0);
+	}
+
+	public Vector<Long> getUploadDistribution() {
+		return distribution;
 	}
 
 	/**
