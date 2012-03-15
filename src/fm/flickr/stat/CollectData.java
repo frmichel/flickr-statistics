@@ -98,7 +98,7 @@ public class CollectData
 	private static void collectDataFromInterestingness(String date) throws IOException {
 		PhotoItemsSet photos = null;
 
-		if (config.getString("fm.flickr.stat.action.group").equals("on") && config.getString("fm.flickr.stat.action.tag").equals("on") && config.getString("fm.flickr.stat.action.time").equals("on") && config.getString("fm.flickr.stat.action.user").equals("on") && config.getString("fm.flickr.stat.action.activity").equals("on")) {
+		if (config.getString("fm.flickr.stat.action.group").equals("on") || config.getString("fm.flickr.stat.action.tag").equals("on") || config.getString("fm.flickr.stat.action.time").equals("on") || config.getString("fm.flickr.stat.action.user").equals("on") || config.getString("fm.flickr.stat.action.activity").equals("on")) {
 
 			String photoList = System.getProperty("fm.flickr.stat.photoslist");
 			if (photoList != null) {
