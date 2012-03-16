@@ -41,19 +41,15 @@ public class DailyUploadsStat
 
 	private static final int MAX_ATTEMPTS = 12;
 
-	/**
-	 * Number of elements per line in the data file: 24 hours + the daily total = 25
-	 */
+	/** Number of elements per line in the data file: 24 hours + the daily total = 25 */
 	private static final int ELTS_PER_LINE = 25;
 
-	/**
-	 * Distribution of number of uploads (24 elements), 25th elements gives the daily total
-	 */
+	/** Distribution of number of uploads (24 elements), 25th elements gives the daily total */
 	private static Vector<Long> distribution = new Vector<Long>();
+
 	static {
 		// Init the distribution vector with 0
-		for (int i = 0; i < ELTS_PER_LINE; i++)
-			distribution.add(i, (long) 0);
+		reset();
 	}
 
 	/**
@@ -157,7 +153,7 @@ public class DailyUploadsStat
 	 * 
 	 * @param date given in format "YYY-MM-DD"
 	 */
-	public void loadFileByDay(String date) throws ServiceException {
+	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.uploads.dir") + date + ".csv";
 		loadFile(new File(fileName));
 	}
@@ -167,7 +163,7 @@ public class DailyUploadsStat
 	 * 
 	 * @param yearMonth year and month formatted as "YYY-MM"
 	 */
-	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 
 		// Reinit the distribution of uploads by hour (including last element = daily total)
 		for (int i = 0; i < ELTS_PER_LINE; i++)
@@ -190,7 +186,7 @@ public class DailyUploadsStat
 	 * 
 	 * @param file file instance denoting the daily file to load
 	 */
-	private void loadFile(File file) throws ServiceException {
+	private static void loadFile(File file) throws ServiceException {
 		try {
 			if (!file.exists()) {
 				logger.warn("No file: " + file.getAbsolutePath());
@@ -228,11 +224,11 @@ public class DailyUploadsStat
 	 * 
 	 * @param ps where to print the output
 	 */
-	public void computeStatistics(PrintStream ps) {
+	public static void computeStatistics(PrintStream ps) {
 		computeMonthlyStatistics(ps, null);
 	}
 
-	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
 		ps.println("### number of uploads by hour of day:");
 		ps.println("month; 0h; 1h; 2h; 3h; 4h; 5h; 6h; 7h; 8h; 9h; 10h; 11h; 12h; 13h; 14h; 15h; 16h; 17h; 18h; 19h; 20h; 21h; 22h; 23h; total");
 	}
@@ -243,7 +239,7 @@ public class DailyUploadsStat
 			distribution.add(i, (long) 0);
 	}
 
-	public Vector<Long> getUploadDistribution() {
+	public static Vector<Long> getUploadDistribution() {
 		return distribution;
 	}
 
@@ -252,7 +248,8 @@ public class DailyUploadsStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public void computeMonthlyStatistics(PrintStream ps, String month) {
+	public static void computeMonthlyStatistics(PrintStream ps, String month) {
+		logger.info("Computing statistincs of number of uploads");
 
 		if (month == null) {
 			ps.println("### number of uploads by hour of day:");

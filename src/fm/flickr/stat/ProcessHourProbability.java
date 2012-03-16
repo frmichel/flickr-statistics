@@ -15,12 +15,15 @@ import fm.flickr.stat.perform.TimeStat;
 import fm.util.Config;
 
 /** 
+ * This specific class crosses data of two sources: post time of explored photos, and total number of uploads,
+ * in order to compute the probability of being explored given the post time
+ *  
  * @author fmichel
 */
 
-public class ProcessDailyTimeAndUpload
+public class ProcessHourProbability
 {
-	private static Logger logger = Logger.getLogger(ProcessDailyTimeAndUpload.class.getName());
+	private static Logger logger = Logger.getLogger(ProcessHourProbability.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
 
@@ -41,6 +44,7 @@ public class ProcessDailyTimeAndUpload
 
 			//--- Load all daily data files created between start date and end date
 			calStart = new GregorianCalendar(Integer.valueOf(tokensStart[0]), Integer.valueOf(tokensStart[1]) - 1, Integer.valueOf(tokensStart[2]));
+			System.out.println("# YYY-MM-DD HH:MM; nb of explored photos; nb of uploads; % of explored/posted");
 			while (calStart.before(calEnd)) {
 				// Format date to process as yyyy-mm-dd
 				String date = dateFrmt.format(calStart.getTime());
@@ -64,7 +68,7 @@ public class ProcessDailyTimeAndUpload
 	}
 
 	/**
-	 * Runs the loading of data files on the given date
+	 * Reset the static maps, and load data files (post time and uploads) on the given date
 	 * 
 	 * @param date 
 	 * @throws IOException
@@ -73,8 +77,8 @@ public class ProcessDailyTimeAndUpload
 		TimeStat.reset();
 		DailyUploadsStat.reset();
 
-		new TimeStat().loadFileByDay(date);
-		new DailyUploadsStat().loadFileByDay(date);
+		TimeStat.loadFileByDay(date);
+		DailyUploadsStat.loadFileByDay(date);
 	}
 
 	/**
@@ -83,16 +87,19 @@ public class ProcessDailyTimeAndUpload
 	 */
 	private static void computeStatistics(String date, PrintStream ps) {
 
-		Vector<Integer> postTimeDistrib = new TimeStat().getPostTimeDistrib();
-		Vector<Long> uploadDistrib = new DailyUploadsStat().getUploadDistribution();
+		Vector<Integer> postTimeDistrib = TimeStat.getPostTimeDistrib();
+		Vector<Long> uploadDistrib = DailyUploadsStat.getUploadDistribution();
 
 		// Print the results cut down by hour of day, from 0h to 23h
+		// Output format is: YYY-MM-DD HH:MM; nb of explored photos; nb of uploads; % of explored/posted  
 		for (int i = 0; i < 24; i++) {
 			ps.print(date + " " + i + ":00:00; ");
 			ps.print(postTimeDistrib.get(i) + "; ");
-			ps.print(uploadDistrib.get(i));
+			ps.print(uploadDistrib.get(i) + "; ");
+			float f = postTimeDistrib.get(i) * 100;
+			f = f / uploadDistrib.get(i);
+			ps.printf("%2.4f", f);
 			ps.println();
 		}
-
 	}
 }

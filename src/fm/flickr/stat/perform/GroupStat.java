@@ -26,13 +26,12 @@ import fm.flickr.api.wrapper.service.param.GroupItemsSet;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.util.ServiceException;
-import fm.flickr.stat.IStat;
 import fm.flickr.stat.param.GroupItemStat;
 import fm.flickr.stat.param.GroupsPerPhoto;
 import fm.util.Config;
 import fm.util.Util;
 
-public class GroupStat implements IStat
+public class GroupStat
 {
 	private static Logger logger = Logger.getLogger(GroupStat.class.getName());
 
@@ -47,16 +46,17 @@ public class GroupStat implements IStat
 	private static List<GroupsPerPhoto> statisticsGpP = new ArrayList<GroupsPerPhoto>();
 
 	/**
-	 * <p>Retrieve the list of groups that photos from Interestingness belong to, and counts the number
-	 * of times the same group is entcountered.</p>
-	 * <p>A maximum  of 'fm.flickr.stat.group.maxgroups' groups will be stored. The results are saved to a file.</p>
+	 * Retrieve the list of groups that photos from Interestingness belong to, and counts the number
+	 * of times the same group is entcountered.
+	 * 
+	 * A maximum of 'fm.flickr.stat.group.maxgroups' groups will be stored. 
+	 * The results are saved to a file.
 	 * 
 	 * @param date date of photos from Interestingness, given in format "YYY-MM-DD"
 	 * @param photos set of photos retrieved from Interestingness
 	 * @throws IOException in case the file can't be saved
 	 */
-	@Override
-	public void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+	public static void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
 
 		HashMap<String, GroupItemStat> stats = new HashMap<String, GroupItemStat>();
 
@@ -129,7 +129,8 @@ public class GroupStat implements IStat
 	}
 
 	/**
-	 * Save the list of groups into a file, including group id, name and count of explored photos that belong to each group.
+	 * Save the list of groups into a file, including group id, name and count of explored photos
+	 * that belong to each group.
 	 * 
 	 * @param date
 	 * @param stats list of groups retrieved
@@ -139,7 +140,7 @@ public class GroupStat implements IStat
 	 * @param stdDeviation Standard deviation of number of groups a photo belongs to
 	 * @throws IOException
 	 */
-	private void saveGroupsFromInterestingPhotos(String date, HashMap<String, GroupItemStat> stats, int nbPhotosProcessed, int sumGroups, int maxGroups, int stdDeviation) throws IOException {
+	private static void saveGroupsFromInterestingPhotos(String date, HashMap<String, GroupItemStat> stats, int nbPhotosProcessed, int sumGroups, int maxGroups, int stdDeviation) throws IOException {
 
 		File file = new File(Util.getDir(config.getString("fm.flickr.stat.group.dir")), date + ".log");
 		FileOutputStream fos = new FileOutputStream(file);
@@ -169,12 +170,12 @@ public class GroupStat implements IStat
 	}
 
 	/**
-	 * Load the content of the file for the given date, into the map of statistics
+	 * Load the content of the file for the given date, into the map of statistics.
+	 * The file name should be <date>.log.
 	 * 
 	 * @param date date of data collected from Interestingness, given in format "YYY-MM-DD"
 	 */
-	@Override
-	public void loadFileByDay(String date) throws ServiceException {
+	public static void loadFileByDay(String date) throws ServiceException {
 
 		String fileName = config.getString("fm.flickr.stat.group.dir") + date + ".log";
 		loadFile(new File(fileName));
@@ -182,13 +183,12 @@ public class GroupStat implements IStat
 	}
 
 	/**
-	 * Load the content of the all files for the given month, into the map of statistics
+	 * Load the content of the all files within the given month, into the map of statistics.
+	 * Any file name starting with "yyyy-mm" will be loaded, may there be 1 or 31 files for that month.
 	 * 
 	 * @param yearMonth year and month formatted as yyyy-mm
-	 * @param stats the map where to store groups read from the file
 	 */
-	@Override
-	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
 		statistics.clear();
 		statisticsGpP.clear();
@@ -207,11 +207,13 @@ public class GroupStat implements IStat
 		logger.info("### " + statistics.size() + " total groups loaded for period " + yearMonth);
 	}
 
-	/** 
-	 * Parse the content of the given file and store its content into the static map statistics
-	 * @param file  
+	/**
+	 * Parse the content of the given data file and store its content into static maps
+	 * statistics and statisticsGpP
+	 * 
+	 * @param file
 	 */
-	private void loadFile(File file) throws ServiceException {
+	private static void loadFile(File file) throws ServiceException {
 		try {
 			if (!file.exists()) {
 				logger.warn("No file: " + file.getAbsolutePath());
@@ -280,17 +282,23 @@ public class GroupStat implements IStat
 		}
 	}
 
-	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	/**
+	 * Print the header line following the csv format
+	 * @param ps
+	 * @throws FileNotFoundException
+	 */
+	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
 		ps.print("#month; ");
 		ps.println("avg groups/photo; std dev groups/user; max groups/user");
 	}
 
 	/**
 	 * Filter only groups with at least a minimum of occurences and sort by scores
+	 * 
 	 * @param ps where to print the output
 	 */
-	@Override
-	public void computeStatistics(PrintStream ps) {
+	public static void computeStatistics(PrintStream ps) {
+		logger.info("Computing statistincs of groups");
 		Collection<GroupItemStat> grpset = statistics.values();
 		ArrayList<GroupItemStat> grpList = new ArrayList<GroupItemStat>(grpset);
 		Collections.sort(grpList);
@@ -298,7 +306,7 @@ public class GroupStat implements IStat
 		for (int i = 0; i < grpList.size(); i++) {
 			GroupItemStat entry = grpList.get(i);
 
-			// Filter only groups with a minimum number of occurences 
+			// Filter only groups with a minimum number of occurences
 			if (entry.getNbOccurences() >= config.getInt("fm.flickr.stat.group.minoccurence")) {
 				ps.println((i + 1) + ": " + entry.toStringL());
 			}
@@ -308,10 +316,11 @@ public class GroupStat implements IStat
 
 	/**
 	 * Display numbers of contacts and photos per user
+	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public void computeMonthlyStatistics(PrintStream ps, String month) {
+	public static void computeMonthlyStatistics(PrintStream ps, String month) {
 		int sumAvg = 0;
 		int sumStdDev = 0;
 		int sumMax = 0;

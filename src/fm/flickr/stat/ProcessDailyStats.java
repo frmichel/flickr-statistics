@@ -18,6 +18,8 @@ import fm.util.Config;
 
 /** 
  * This main class runs the specific treatments to provide statistics results over a period of time.
+ * All results are displyed to the std output.
+ * 
  * @author fmichel
 */
 
@@ -28,10 +30,10 @@ public class ProcessDailyStats
 	private static Configuration config = Config.getConfiguration();
 
 	public static void main(String[] args) {
-		
+
 		SimpleDateFormat dateFrmt = new SimpleDateFormat("yyyy-MM-dd");
 		logger.debug("begin");
-		
+
 		try {
 			// Turn start and stop dates into GregorianCalendars 
 			String startDate = config.getString("fm.flickr.stat.startdate");
@@ -75,20 +77,20 @@ public class ProcessDailyStats
 	 */
 	private static void loadFileByDay(String date) throws ServiceException {
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
-			new GroupStat().loadFileByDay(date);
-		
+			GroupStat.loadFileByDay(date);
+
 		if (config.getString("fm.flickr.stat.action.tag").equals("on"))
-			new TagStat().loadFileByDay(date);
-		
+			TagStat.loadFileByDay(date);
+
 		if (config.getString("fm.flickr.stat.action.time").equals("on"))
-			new TimeStat().loadFileByDay(date);
-		
+			TimeStat.loadFileByDay(date);
+
 		if (config.getString("fm.flickr.stat.action.user").equals("on"))
-			new UserStat().loadFileByDay(date);
+			UserStat.loadFileByDay(date);
 
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
-			new DailyUploadsStat().loadFileByDay(date);
-}
+			DailyUploadsStat.loadFileByDay(date);
+	}
 
 	/**
 	 * Run the specific statistics processings 
@@ -96,18 +98,18 @@ public class ProcessDailyStats
 	 */
 	private static void computeDailyStatistics(PrintStream ps) {
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
-			new GroupStat().computeStatistics(ps);
-		
+			GroupStat.computeStatistics(ps);
+
 		if (config.getString("fm.flickr.stat.action.tag").equals("on"))
-			new TagStat().computeStatistics(ps);
-		
+			TagStat.computeStatistics(ps);
+
 		if (config.getString("fm.flickr.stat.action.time").equals("on"))
-			new TimeStat().computeStatistics(ps);
+			TimeStat.computeStatistics(ps);
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on"))
-			new UserStat().computeStatistics(ps);
-		
+			UserStat.computeStatistics(ps);
+
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
-			new DailyUploadsStat().computeStatistics(ps);
+			DailyUploadsStat.computeStatistics(ps);
 	}
 }

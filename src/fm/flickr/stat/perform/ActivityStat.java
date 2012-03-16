@@ -3,11 +3,9 @@ package fm.flickr.stat.perform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,16 +22,19 @@ import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemInfo;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.util.ServiceException;
-import fm.flickr.stat.IStat;
 import fm.util.Config;
 import fm.util.Util;
 
 /**
- * Manage the information about the actibity on photos: number of comments, of notes, of favorites
- * @author fmichrl
+ * Manage the information about the actibity on photos: number of views, comments, notes, favorites, groups, tags.
+ * This class provides methods to collect data from Interestingness and save it to csv files, 
+ * methods to reload the csv files, but so far no method to process the data
+ * (data analysis is performed directly in Excel files)
+ *
+ * @author fmichel
  *
  */
-public class ActivityStat implements IStat
+public class ActivityStat
 {
 	private static Logger logger = Logger.getLogger(ActivityStat.class.getName());
 
@@ -52,8 +53,7 @@ public class ActivityStat implements IStat
 	 * @param photos photos retrieved from Interestingness
 	 * @throws IOException in case the file can't be saved
 	 */
-	@Override
-	public void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+	public static void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
 
 		HashMap<Integer, PhotoItemInfo> stats = new HashMap<Integer, PhotoItemInfo>();
 
@@ -96,7 +96,7 @@ public class ActivityStat implements IStat
 	}
 
 	/**
-	 * Save the information into a file
+	 * Save the information collected for a given date into a file named \<date\>.csv
 	 * 
 	 * @param date
 	 * @param stats list of photos information
@@ -118,7 +118,7 @@ public class ActivityStat implements IStat
 			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
 			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
 			int timeShift = config.getInt("fm.flickr.stat.time_shift_pst", 9);
-			Long endOfDayPST = endOfDay.getTime() + timeShift*60*60*1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
+			Long endOfDayPST = endOfDay.getTime() + timeShift * 60 * 60 * 1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
 
 			Collection<PhotoItemInfo> photoItemInfo = stats.values();
 			Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
@@ -147,8 +147,7 @@ public class ActivityStat implements IStat
 	 * 
 	 * @param date date of data collected from Interestingness, given in format "YYY-MM-DD"
 	 */
-	@Override
-	public void loadFileByDay(String date) throws ServiceException {
+	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.activity.dir") + date + ".log";
 		loadFile(new File(fileName));
 		logger.info("### " + statistics.size() + " photos activity loaded.");
@@ -159,8 +158,7 @@ public class ActivityStat implements IStat
 	 * 
 	 * @param yearMonth year and month formatted as yyyy-mm
 	 */
-	@Override
-	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
 		statistics.clear();
 
@@ -182,7 +180,7 @@ public class ActivityStat implements IStat
 	* Parse the content of the given file and store its content into the static map statistics
 	* @param file  
 	*/
-	private void loadFile(File file) throws ServiceException {
+	private static void loadFile(File file) throws ServiceException {
 		try {
 			if (!file.exists()) {
 				logger.warn("No file: " + file.getAbsolutePath());
@@ -222,24 +220,5 @@ public class ActivityStat implements IStat
 			logger.warn(errMsg);
 			throw new ServiceException(errMsg);
 		}
-	}
-
-	/**
-	 * 
-	 * @param ps where to print the output
-	 */
-	@Override
-	public void computeStatistics(PrintStream ps) {
-	}
-
-	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
-	}
-
-	/**
-	 * 
-	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
-	 */
-	public void computeMonthlyStatistics(PrintStream ps, String month) {
 	}
 }

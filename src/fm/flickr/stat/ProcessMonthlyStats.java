@@ -21,6 +21,9 @@ import fm.util.Config;
  * This main class runs the specific treatments to provide statistics results over a period
  * of time, consolidated per month. A month uses all data files between the 1rst and the last
  * day of that month, whatever the number of files.
+ * 
+ * All results are saved into csv files.
+ * 
  * @author fmichel
 */
 
@@ -108,35 +111,35 @@ public class ProcessMonthlyStats
 
 		if (config.getString("fm.flickr.stat.action.time").equals("on")) {
 			psTimeDistrib = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_distrib.csv");
-			new TimeStat().initComputeMonthlyPostTimeDistrib(psTimeDistrib);
+			TimeStat.initComputeMonthlyPostTimeDistrib(psTimeDistrib);
 
 			psTimeDayOfWeek = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_dayweek.csv");
-			new TimeStat().initComputeMonthlyPostDayOfWeek(psTimeDayOfWeek);
+			TimeStat.initComputeMonthlyPostDayOfWeek(psTimeDayOfWeek);
 
 			psTimeT2E = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_t2e.csv");
-			new TimeStat().initComputeMonthlyT2E(psTimeT2E);
+			TimeStat.initComputeMonthlyT2E(psTimeT2E);
 		}
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
 			psUser = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_results.csv");
-			new UserStat().initComputeMonthly(psUser);
+			UserStat.initComputeMonthly(psUser);
 		}
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on")) {
 			psGroup = new PrintStream(config.getString("fm.flickr.stat.group.dir") + "/monthly_results.csv");
-			new GroupStat().initComputeMonthly(psGroup);
+			GroupStat.initComputeMonthly(psGroup);
 		}
 
 		if (config.getString("fm.flickr.stat.action.tag").equals("on")) {
 			psTag = new PrintStream(config.getString("fm.flickr.stat.tag.dir") + "/monthly_results.csv");
-			new TagStat().initComputeMonthly(psTag);
+			TagStat.initComputeMonthly(psTag);
 		}
 
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on")) {
 			psUploads = new PrintStream(config.getString("fm.flickr.stat.uploads.dir") + "/monthly_results.csv");
-			new DailyUploadsStat().initComputeMonthly(psUploads);
+			DailyUploadsStat.initComputeMonthly(psUploads);
 		}
-}
+	}
 
 	/**
 	 * Runs the loading of data files on the given moth by the dedicated statistics classes
@@ -147,20 +150,20 @@ public class ProcessMonthlyStats
 	private static void loadFileByMonth(String yearMonth) throws ServiceException {
 
 		if (config.getString("fm.flickr.stat.action.time").equals("on"))
-			new TimeStat().loadFilesByMonth(yearMonth);
+			TimeStat.loadFilesByMonth(yearMonth);
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on"))
-			new UserStat().loadFilesByMonth(yearMonth);
+			UserStat.loadFilesByMonth(yearMonth);
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
-			new GroupStat().loadFilesByMonth(yearMonth);
+			GroupStat.loadFilesByMonth(yearMonth);
 
 		if (config.getString("fm.flickr.stat.action.tag").equals("on"))
-			new TagStat().loadFilesByMonth(yearMonth);
+			TagStat.loadFilesByMonth(yearMonth);
 
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
-			new DailyUploadsStat().loadFilesByMonth(yearMonth);
-}
+			DailyUploadsStat.loadFilesByMonth(yearMonth);
+	}
 
 	/**
 	 * Run the specific statistics processings 
@@ -170,21 +173,21 @@ public class ProcessMonthlyStats
 	private static void computeStatistics(String month) {
 
 		if (config.getString("fm.flickr.stat.action.time").equals("on")) {
-			new TimeStat().computeMonthlyPostTimeDistrib(psTimeDistrib, month);
-			new TimeStat().computeMonthlyPostDayOfWeek(psTimeDayOfWeek, month);
-			new TimeStat().computeMonthlyT2E(psTimeT2E, month);
+			TimeStat.computeMonthlyPostTimeDistrib(psTimeDistrib, month);
+			TimeStat.computeMonthlyPostDayOfWeek(psTimeDayOfWeek, month);
+			TimeStat.computeMonthlyT2E(psTimeT2E, month);
 		}
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on"))
-			new UserStat().computeMonthlyStatistics(psUser, month);
+			UserStat.computeMonthlyStatistics(psUser, month);
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
-			new GroupStat().computeMonthlyStatistics(psGroup, month);
+			GroupStat.computeMonthlyStatistics(psGroup, month);
 
 		if (config.getString("fm.flickr.stat.action.tag").equals("on"))
-			new TagStat().computeMonthlyStatistics(psTag, month);
+			TagStat.computeMonthlyStatistics(psTag, month);
 
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
-			new DailyUploadsStat().computeMonthlyStatistics(psUploads, month);
+			DailyUploadsStat.computeMonthlyStatistics(psUploads, month);
 	}
 }

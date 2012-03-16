@@ -29,11 +29,10 @@ import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemInfo;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.util.ServiceException;
-import fm.flickr.stat.IStat;
 import fm.util.Config;
 import fm.util.Util;
 
-public class TimeStat implements IStat
+public class TimeStat
 {
 	private static Logger logger = Logger.getLogger(TimeStat.class.getName());
 
@@ -54,8 +53,7 @@ public class TimeStat implements IStat
 	 * @param photos photos retrieved from Interestingness
 	 * @throws IOException in case the file can't be saved
 	 */
-	@Override
-	public void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+	public static void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
 
 		HashMap<String, PhotoItemInfo> stats = new HashMap<String, PhotoItemInfo>();
 
@@ -125,8 +123,7 @@ public class TimeStat implements IStat
 	 * 
 	 * @param stats the list where to store infos read from the file
 	 */
-	@Override
-	public void loadFileByDay(String date) throws ServiceException {
+	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.time.dir") + date + ".log";
 		loadFile(new File(fileName));
 		logger.info("### " + statPostDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded from " + fileName);
@@ -137,8 +134,7 @@ public class TimeStat implements IStat
 	 * 
 	 * @param yearMonth year and month formatted as yyyy-mm
 	 */
-	@Override
-	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
 		statPostDate.clear();
 		statTime2Explo.clear();
@@ -161,7 +157,7 @@ public class TimeStat implements IStat
 	 * Parse the content of the given file and store its content into the static map statistics
 	 * @param file  
 	 */
-	private void loadFile(File file) throws ServiceException {
+	private static void loadFile(File file) throws ServiceException {
 		if (!file.exists()) {
 			logger.warn("No file: " + file.getAbsolutePath());
 			return;
@@ -223,37 +219,54 @@ public class TimeStat implements IStat
 	 * @param ps where to print the output
 	 * Otherwise it is left empty.
 	 */
-	@Override
-	public void computeStatistics(PrintStream ps) {
+	public static void computeStatistics(PrintStream ps) {
+		logger.info("Computing statistincs of post time distribution by hour of day");
 		ps.println("### Post time distribution by hour of day:");
 		ps.println("00; 01; 02; 03; 04; 05; 06; 07; 08; 09; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23");
 		computePostTimeDistrib(ps);
 		ps.println();
 
-		ps.println("### Post date distribution by day of week:");
+		logger.info("Computing statistincs of post time distribution by week day");
+		ps.println("### Post date distribution by week day:");
 		ps.println("monday; tuesday; wednersday; thurday; friday; saturday; sunday");
 		computeMonthlyPostDayOfWeek(ps);
 		ps.println();
 
+		logger.info("Computing statistincs of time to explore");
 		ps.println("### Time to explore:");
 		ps.println("avg time to explore (h); std deviation of time to explore (h); max time to explore (h)");
 		computeT2E(ps);
 		ps.println();
 	}
 
-	public void initComputeMonthlyPostTimeDistrib(PrintStream ps) throws FileNotFoundException {
+	/**
+	 * Print the header line following the csv format
+	 * @param ps
+	 * @throws FileNotFoundException
+	 */
+	public static void initComputeMonthlyPostTimeDistrib(PrintStream ps) throws FileNotFoundException {
 		ps.println("### Per month distribution of photos post times, broken by hour of day from 0h to 23h");
 		ps.print("#month; ");
 		ps.println("00; 01; 02; 03; 04; 05; 06; 07; 08; 09; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23");
 	}
 
-	public void initComputeMonthlyT2E(PrintStream ps) throws FileNotFoundException {
+	/**
+	 * Print the header line following the csv format
+	 * @param ps
+	 * @throws FileNotFoundException
+	 */
+	public static void initComputeMonthlyT2E(PrintStream ps) throws FileNotFoundException {
 		ps.println("### Time to explore per month: time needed (in hours) for the photo to get into the explorer after it was posted");
 		ps.print("#month; ");
 		ps.println("avg time to explore (h); std deviation of time to explore (h); max time to explore (h)");
 	}
 
-	public void initComputeMonthlyPostDayOfWeek(PrintStream ps) throws FileNotFoundException {
+	/**
+	 * Print the header line following the csv format
+	 * @param ps
+	 * @throws FileNotFoundException
+	 */
+	public static void initComputeMonthlyPostDayOfWeek(PrintStream ps) throws FileNotFoundException {
 		ps.println("### Per day of week distribution of photos post dates");
 		ps.print("#month; ");
 		ps.println("monday; tuesday; wednersday; thurday; friday; saturday; sunday");
@@ -270,7 +283,7 @@ public class TimeStat implements IStat
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. 
 	 * Otherwise it is left empty.
 	 */
-	public void computeMonthlyPostTimeDistrib(PrintStream ps, String month) {
+	public static void computeMonthlyPostTimeDistrib(PrintStream ps, String month) {
 		// Calculate the distribution of post times on 24h
 		GregorianCalendar cal = new GregorianCalendar();
 		Vector<Integer> distribution = new Vector<Integer>();
@@ -296,7 +309,7 @@ public class TimeStat implements IStat
 	/**
 	 * Sort post date/times by daily hour and count number of hits per hour and return the distribution
 	 */
-	public Vector<Integer> getPostTimeDistrib() {
+	public static Vector<Integer> getPostTimeDistrib() {
 		// Calculate the distribution of post times on 24h
 		GregorianCalendar cal = new GregorianCalendar();
 		Vector<Integer> distribution = new Vector<Integer>();
@@ -310,7 +323,7 @@ public class TimeStat implements IStat
 		return distribution;
 	}
 
-	public void computePostTimeDistrib(PrintStream ps) {
+	public static void computePostTimeDistrib(PrintStream ps) {
 		computeMonthlyPostTimeDistrib(ps, null);
 	}
 
@@ -320,7 +333,7 @@ public class TimeStat implements IStat
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. 
 	 * Otherwise it is left empty.
 	 */
-	public void computeMonthlyPostDayOfWeek(PrintStream ps, String month) {
+	public static void computeMonthlyPostDayOfWeek(PrintStream ps, String month) {
 		// Calculate the distribution of post dates on 7 days
 		GregorianCalendar cal = new GregorianCalendar();
 		Vector<Integer> distribution = new Vector<Integer>();
@@ -346,7 +359,7 @@ public class TimeStat implements IStat
 		ps.println(distribution.get(Calendar.SUNDAY));
 	}
 
-	public void computeMonthlyPostDayOfWeek(PrintStream ps) {
+	public static void computeMonthlyPostDayOfWeek(PrintStream ps) {
 		computeMonthlyPostDayOfWeek(ps, null);
 	}
 
@@ -356,7 +369,7 @@ public class TimeStat implements IStat
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. 
 	 * Otherwise it is left empty.
 	 */
-	public void computeMonthlyT2E(PrintStream ps, String month) {
+	public static void computeMonthlyT2E(PrintStream ps, String month) {
 		long sumT2E = 0; // sum of all "time to explore" durations
 		long sumDeviations = 0; // standard deviation of the "time to explore" 
 		long maxT2E = 0; // maximum time to explore
@@ -387,7 +400,7 @@ public class TimeStat implements IStat
 		ps.println(avg + "; " + stdDev + "; " + maxT2E);
 	}
 
-	public void computeT2E(PrintStream ps) {
+	public static void computeT2E(PrintStream ps) {
 		computeMonthlyT2E(ps, null);
 	}
 

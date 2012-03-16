@@ -22,11 +22,10 @@ import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.service.param.UserInfo;
 import fm.flickr.api.wrapper.util.ServiceException;
-import fm.flickr.stat.IStat;
 import fm.util.Config;
 import fm.util.Util;
 
-public class UserStat implements IStat
+public class UserStat
 {
 	private static Logger logger = Logger.getLogger(UserStat.class.getName());
 
@@ -43,8 +42,7 @@ public class UserStat implements IStat
 	 * @param photos photos retrieved from Interestingness
 	 * @throws IOException in case the file can't be saved
 	 */
-	@Override
-	public void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+	public static void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
 
 		HashMap<String, UserInfo> stats = new HashMap<String, UserInfo>();
 
@@ -115,8 +113,7 @@ public class UserStat implements IStat
 	 * 
 	 * @param date date of data collected from Interestingness, given in format "YYY-MM-DD"
 	 */
-	@Override
-	public void loadFileByDay(String date) throws ServiceException {
+	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.user.dir") + date + ".log";
 		loadFile(new File(fileName));
 		logger.info("### " + statistics.size() + " users loaded.");
@@ -127,8 +124,7 @@ public class UserStat implements IStat
 	 * 
 	 * @param yearMonth year and month formatted as yyyy-mm
 	 */
-	@Override
-	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
 		statistics.clear();
 
@@ -150,7 +146,7 @@ public class UserStat implements IStat
 	* Parse the content of the given file and store its content into the static map statistics
 	* @param file  
 	*/
-	private void loadFile(File file) throws ServiceException {
+	private static void loadFile(File file) throws ServiceException {
 		try {
 			if (!file.exists()) {
 				logger.warn("No file: " + file.getAbsolutePath());
@@ -192,12 +188,16 @@ public class UserStat implements IStat
 	 * Display numbers of contacts and photos per user
 	 * @param ps where to print the output
 	 */
-	@Override
-	public void computeStatistics(PrintStream ps) {
+	public static void computeStatistics(PrintStream ps) {
 		computeMonthlyStatistics(ps, null);
 	}
 
-	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	/**
+	 * Display numbers of tags per photos
+	 * @param ps where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
 		ps.print("#month; ");
 		ps.println("avg contacts/user; std dev contacts/user; max contacts/user; avg photos/user; std dev photos/user; max photos/user");
 	}
@@ -207,7 +207,8 @@ public class UserStat implements IStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public void computeMonthlyStatistics(PrintStream ps, String month) {
+	public static void computeMonthlyStatistics(PrintStream ps, String month) {
+		logger.info("Computing statistincs of users");
 		int nbUsers = statistics.size();
 		if (nbUsers > 0) {
 			int sumPhotos = 0; // Sum of the number of photos of users

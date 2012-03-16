@@ -112,19 +112,19 @@ public class CollectData
 				logger.info("######## " + date + ": " + photos.size() + " photos from Interestingness to be processed...");
 
 				if (config.getString("fm.flickr.stat.action.group").equals("on"))
-					new GroupStat().collecAdditionalData(date, photos);
+					GroupStat.collecAdditionalData(date, photos);
 
 				if (config.getString("fm.flickr.stat.action.tag").equals("on"))
-					new TagStat().collecAdditionalData(date, photos);
+					TagStat.collecAdditionalData(date, photos);
 
 				if (config.getString("fm.flickr.stat.action.time").equals("on"))
-					new TimeStat().collecAdditionalData(date, photos);
+					TimeStat.collecAdditionalData(date, photos);
 
 				if (config.getString("fm.flickr.stat.action.user").equals("on"))
-					new UserStat().collecAdditionalData(date, photos);
+					UserStat.collecAdditionalData(date, photos);
 
 				if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-					new ActivityStat().collecAdditionalData(date, photos);
+					ActivityStat.collecAdditionalData(date, photos);
 			}
 		}
 	}

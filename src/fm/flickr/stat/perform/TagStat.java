@@ -26,13 +26,12 @@ import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.service.param.TagItem;
 import fm.flickr.api.wrapper.service.param.TagItemsSet;
 import fm.flickr.api.wrapper.util.ServiceException;
-import fm.flickr.stat.IStat;
 import fm.flickr.stat.param.TagItemStat;
 import fm.flickr.stat.param.TagsPerPhoto;
 import fm.util.Config;
 import fm.util.Util;
 
-public class TagStat implements IStat
+public class TagStat
 {
 	private static Logger logger = Logger.getLogger(TagStat.class.getName());
 
@@ -41,7 +40,7 @@ public class TagStat implements IStat
 	private static FlickrService service = new FlickrService();
 
 	private static HashMap<String, TagItemStat> statistics = new HashMap<String, TagItemStat>();
-	
+
 	/** Stats of number of tags a photo has */
 	private static List<TagsPerPhoto> statisticsTpP = new ArrayList<TagsPerPhoto>();
 
@@ -55,8 +54,7 @@ public class TagStat implements IStat
 	 * @param photos photos retrieved from Interestingness
 	 * @throws IOException in case the file can't be saved
 	 */
-	@Override
-	public void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+	public static void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
 
 		HashMap<String, TagItemStat> stats = new HashMap<String, TagItemStat>();
 
@@ -176,8 +174,7 @@ public class TagStat implements IStat
 	 * 
 	 * @param date date of data collected from Interestingness, given in format "YYY-MM-DD"
 	 */
-	@Override
-	public void loadFileByDay(String date) throws ServiceException {
+	public static void loadFileByDay(String date) throws ServiceException {
 
 		String fileName = config.getString("fm.flickr.stat.tag.dir") + date + ".log";
 		loadFile(new File(fileName));
@@ -189,8 +186,7 @@ public class TagStat implements IStat
 	 * 
 	 * @param yearMonth year and month formatted as yyyy-mm
 	 */
-	@Override
-	public void loadFilesByMonth(String yearMonth) throws ServiceException {
+	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
 		statistics.clear();
 		statisticsTpP.clear();
@@ -213,7 +209,7 @@ public class TagStat implements IStat
 	 * Parse the content of the given file and store its content into the static map statistics
 	 * @param file  
 	 */
-	private void loadFile(File file) throws ServiceException {
+	private static void loadFile(File file) throws ServiceException {
 		try {
 			if (!file.exists()) {
 				logger.warn("No file: " + file.getAbsolutePath());
@@ -282,7 +278,12 @@ public class TagStat implements IStat
 		}
 	}
 
-	public void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	/**
+	 * Print the header line following the csv format
+	 * @param ps
+	 * @throws FileNotFoundException
+	 */
+	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
 		ps.print("#month; ");
 		ps.println("avg tags/photo; std dev tags/user; max tags/user");
 	}
@@ -291,8 +292,8 @@ public class TagStat implements IStat
 	 * Filter only tags with at least a minimum of occurences and sort by score
 	 * @param ps where to print the output
 	 */
-	@Override
-	public void computeStatistics(PrintStream ps) {
+	public static void computeStatistics(PrintStream ps) {
+		logger.info("Computing statistincs of tags");
 		Collection<TagItemStat> tagset = statistics.values();
 		ArrayList<TagItemStat> tagList = new ArrayList<TagItemStat>(tagset);
 		Collections.sort(tagList);
@@ -313,7 +314,7 @@ public class TagStat implements IStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public void computeMonthlyStatistics(PrintStream ps, String month) {
+	public static void computeMonthlyStatistics(PrintStream ps, String month) {
 		int sumAvg = 0;
 		int sumStdDev = 0;
 		int sumMax = 0;
@@ -327,5 +328,5 @@ public class TagStat implements IStat
 		ps.print(Math.abs(sumAvg / statisticsTpP.size()) + "; ");
 		ps.print(Math.abs(sumStdDev / statisticsTpP.size()) + "; ");
 		ps.println(Math.abs(sumMax / statisticsTpP.size()));
-	}	
+	}
 }
