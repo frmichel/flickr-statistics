@@ -16,23 +16,43 @@ import fm.util.Config;
 
 /** 
  * This specific class crosses data of two sources: post time of explored photos, and total number of uploads,
- * in order to compute the probability of being explored given the post time (0h to 23h), whatever the day.
+ * in order to compute the probability of being explored as a function of the the post time (0 to 23h) AND the week day.
  * 
  * Results are simply displyaed on the std output (no file).
  *  
  * @author fmichel
 */
 
-public class ProcessHourProbability
+public class ProcessWeekHourProbability
 {
-	private static Logger logger = Logger.getLogger(ProcessHourProbability.class.getName());
+	private static Logger logger = Logger.getLogger(ProcessWeekHourProbability.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
+
+	private static Vector<Vector<Integer>> exploredTable = new Vector<Vector<Integer>>();
+
+	private static Vector<Vector<Long>> uploadTable = new Vector<Vector<Long>>();
+
+	/**
+	 * Initialize the table of "probability per day of way and per hour"
+	 */
+	private static void initStats() {
+		for (int day = 0; day < 7; day++) {
+			exploredTable.add(new Vector<Integer>());
+			uploadTable.add(new Vector<Long>());
+			for (int hour = 0; hour < 24; hour++) {
+				exploredTable.get(day).add(0);
+				uploadTable.get(day).add((long) 0);
+			}
+		}
+	}
 
 	public static void main(String[] args) {
 
 		SimpleDateFormat dateFrmt = new SimpleDateFormat("yyyy-MM-dd");
 		logger.debug("begin");
+
+		initStats();
 
 		try {
 			// Turn start and stop dates into GregorianCalendars 
@@ -50,10 +70,11 @@ public class ProcessHourProbability
 			while (calStart.before(calEnd)) {
 				// Format date to process as yyyy-mm-dd
 				String date = dateFrmt.format(calStart.getTime());
+				int dayOfWeek = convertUsDoWToFr(calStart.get(GregorianCalendar.DAY_OF_WEEK));
+
 				try {
 					loadFileByDay(date);
-					computeStatistics(date, System.out);
-
+					computeStatistics(dayOfWeek, System.out);
 				} catch (ServiceException e) {
 					logger.warn(e.toString());
 				}
@@ -61,6 +82,8 @@ public class ProcessHourProbability
 				calStart.add(GregorianCalendar.DAY_OF_MONTH, 1);
 			}
 
+			// Display final table of probabilities
+			computeProba(System.out);
 			logger.debug("end");
 
 		} catch (Exception e) {
@@ -84,24 +107,75 @@ public class ProcessHourProbability
 	}
 
 	/**
-	 * Run the specific statistics processings 
 	 * @param ps the output where to print results
+	 * @param dayOfWeek 1=Sunday to 7=Saturday 
 	 */
-	private static void computeStatistics(String date, PrintStream ps) {
+	private static void computeStatistics(int dayOfWeek, PrintStream ps) {
 
 		Vector<Integer> postTimeDistrib = TimeStat.getPostTimeDistrib();
 		Vector<Long> uploadDistrib = DailyUploadsStat.getUploadDistribution();
 
 		// Print the results cut down by hour of day, from 0h to 23h
 		// Output format is: YYY-MM-DD HH:MM; nb of explored photos; nb of uploads; % of explored/posted  
-		for (int i = 0; i < 24; i++) {
-			ps.print(date + " " + i + ":00:00; ");
-			ps.print(postTimeDistrib.get(i) + "; ");
-			ps.print(uploadDistrib.get(i) + "; ");
-			float f = postTimeDistrib.get(i) * 100;
-			f = f / uploadDistrib.get(i);
-			ps.printf("%2.4f", f);
+		for (int hour = 0; hour < 24; hour++) {
+
+			int curVal = exploredTable.get(dayOfWeek).get(hour);
+			exploredTable.get(dayOfWeek).set(hour, curVal + postTimeDistrib.get(hour));
+
+			long curValL = uploadTable.get(dayOfWeek).get(hour);
+			uploadTable.get(dayOfWeek).set(hour, curValL + uploadDistrib.get(hour));
+		}
+	}
+
+	/**
+	 * @param ps the output where to print results
+	 */
+	private static void computeProba(PrintStream ps) {
+		ps.println("; 00h; 01h; 02h; 03h; 04h; 05h; 06h; 07h; 08h; 09h; 10h; 11h; 12h; 13h; 14h; 15h; 16h; 17h; 18h; 19h; 20h; 21h; 22h; 23h");
+		for (int day = 0; day < 7; day++) {
+			ps.print(getDayName(day) + "; ");
+			for (int hour = 0; hour < 24; hour++) {
+				if (uploadTable.get(day).get(hour) != 0) { // avoid division by 0
+					float f = exploredTable.get(day).get(hour) * 100;
+					f = f / uploadTable.get(day).get(hour);
+					ps.printf("%2.4f", f);
+				} else
+					ps.printf("%2.4f", (float) 0);
+				if (hour < 23)
+					ps.print("; ");
+			}
 			ps.println();
+		}
+	}
+
+	/** 
+	* Convert a US day of week (1=Sunday to 7=Saturday) to a French day of week starting at 0
+	* (0=Mondy to 6=Sunday)
+	* @param usDoW US day of Week from 1 to 7
+	* @return converted day of week (0 to 6)
+	*/
+	private static int convertUsDoWToFr(int usDoW) {
+		return (usDoW + 5) % 7;
+	}
+
+	private static String getDayName(int doW) {
+		switch (doW) {
+		case 0:
+			return "monday";
+		case 1:
+			return "tuesday";
+		case 2:
+			return "wednesday";
+		case 3:
+			return "thurday";
+		case 4:
+			return "friday";
+		case 5:
+			return "saturday";
+		case 6:
+			return "sunday";
+		default:
+			return "unknown";
 		}
 	}
 }
