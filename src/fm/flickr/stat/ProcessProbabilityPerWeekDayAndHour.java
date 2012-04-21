@@ -18,14 +18,14 @@ import fm.util.Config;
  * This specific class crosses data of two sources: post time of explored photos, and total number of uploads,
  * in order to compute the probability of being explored as a function of the the post time (0 to 23h) AND the week day.
  * 
- * Results are simply displyaed on the std output (no file).
+ * Results are simply displayed on the std output (no file).
  *  
  * @author fmichel
 */
 
-public class ProcessWeekHourProbability
+public class ProcessProbabilityPerWeekDayAndHour
 {
-	private static Logger logger = Logger.getLogger(ProcessWeekHourProbability.class.getName());
+	private static Logger logger = Logger.getLogger(ProcessProbabilityPerWeekDayAndHour.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
 
