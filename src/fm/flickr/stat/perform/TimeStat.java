@@ -32,6 +32,16 @@ import fm.flickr.api.wrapper.util.ServiceException;
 import fm.util.Config;
 import fm.util.Util;
 
+/**
+ * Collect the post date and time of explored photos
+ * 
+ * Daily and monthly stats load result files over a period of a full month, and copute:  
+ *  - post time distribution by hour of day,
+ *  - post time distribution by week day
+ *  - average and maximum time to explore
+ * 
+ * @author Atreyu
+ */
 public class TimeStat
 {
 	private static Logger logger = Logger.getLogger(TimeStat.class.getName());
@@ -229,7 +239,7 @@ public class TimeStat
 		logger.info("Computing statistincs of post time distribution by week day");
 		ps.println("### Post date distribution by week day:");
 		ps.println("monday; tuesday; wednersday; thurday; friday; saturday; sunday");
-		computeMonthlyPostDayOfWeek(ps);
+		computePostDayOfWeek(ps);
 		ps.println();
 
 		logger.info("Computing statistincs of time to explore");
@@ -359,7 +369,7 @@ public class TimeStat
 		ps.println(distribution.get(Calendar.SUNDAY));
 	}
 
-	public static void computeMonthlyPostDayOfWeek(PrintStream ps) {
+	public static void computePostDayOfWeek(PrintStream ps) {
 		computeMonthlyPostDayOfWeek(ps, null);
 	}
 

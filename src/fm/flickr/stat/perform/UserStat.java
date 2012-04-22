@@ -25,6 +25,13 @@ import fm.flickr.api.wrapper.util.ServiceException;
 import fm.util.Config;
 import fm.util.Util;
 
+/**
+ * Collect data about users whose photos are explored: number of photos and contacts they have.
+ * 
+ * Daily and monthly stats will compute the same figures: average and max number of photos and contacts of the users
+ * 
+ * @author Atreyu
+ */
 public class UserStat
 {
 	private static Logger logger = Logger.getLogger(UserStat.class.getName());

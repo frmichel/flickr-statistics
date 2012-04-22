@@ -31,6 +31,16 @@ import fm.flickr.stat.param.TagsPerPhoto;
 import fm.util.Config;
 import fm.util.Util;
 
+/**
+ * Collect the number of tag of explored photos.
+ * 
+ * Daily stats load result files over a period and sorts tags by number of occurences, ie. the number of 
+ * explored photos that have each tag.
+ * 
+ * Monthly stats will compute the average and max number of tag of a photo.
+ * 
+ * @author Atreyu
+ */
 public class TagStat
 {
 	private static Logger logger = Logger.getLogger(TagStat.class.getName());
@@ -289,7 +299,7 @@ public class TagStat
 	}
 
 	/**
-	 * Filter only tags with at least a minimum of occurences and sort by score
+	 * Filter only tags with at least a minimum number of occurences (score) and sort by score
 	 * @param ps where to print the output
 	 */
 	public static void computeStatistics(PrintStream ps) {
@@ -310,7 +320,8 @@ public class TagStat
 	}
 
 	/**
-	 * Display numbers of tags per photos
+	 * Display the average/std deviation and maximum number of groups and photos
+	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */

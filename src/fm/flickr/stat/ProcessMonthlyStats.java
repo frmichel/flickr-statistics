@@ -18,11 +18,11 @@ import fm.flickr.stat.perform.UserStat;
 import fm.util.Config;
 
 /** 
- * This main class runs the specific treatments to provide statistics results over a period
- * of time, consolidated per month. A month uses all data files between the 1rst and the last
- * day of that month, whatever the number of files.
+ * This main class runs the specific treatments to provide statistics results consolidated per month. 
+ * All data files between the 1rst and the last day of each month are treated, whatever the number of files.
  * 
- * All results are saved into csv files.
+ * Monthly stats are generally stored into csv files, conversely to daily stats that are displayed
+ * on the std output. 
  * 
  * @author fmichel
 */

@@ -31,6 +31,16 @@ import fm.flickr.stat.param.GroupsPerPhoto;
 import fm.util.Config;
 import fm.util.Util;
 
+/**
+ * Collect the number of groups an explored photo belongs to.
+ * 
+ * Daily stats load result files over a period of time and sorts groups by number of occurences, ie. the number of 
+ * explored photos that belonged to each group.
+ * 
+ * Monthly stats will compute the average and max number of groups a photo belongs to.
+ * 
+ * @author Atreyu
+ */
 public class GroupStat
 {
 	private static Logger logger = Logger.getLogger(GroupStat.class.getName());
@@ -50,7 +60,7 @@ public class GroupStat
 	 * of times the same group is entcountered.
 	 * 
 	 * A maximum of 'fm.flickr.stat.group.maxgroups' groups will be stored. 
-	 * The results are saved to a file.
+	 * The results are saved into a file.
 	 * 
 	 * @param date date of photos from Interestingness, given in format "YYY-MM-DD"
 	 * @param photos set of photos retrieved from Interestingness
@@ -293,7 +303,7 @@ public class GroupStat
 	}
 
 	/**
-	 * Filter only groups with at least a minimum of occurences and sort by scores
+	 * Filter only groups with at least a minimum number of occurences (score) and sort by score
 	 * 
 	 * @param ps where to print the output
 	 */
@@ -315,7 +325,7 @@ public class GroupStat
 	}
 
 	/**
-	 * Display numbers of contacts and photos per user
+	 * Display the average/std deviation and maximum number of groups and photos
 	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
