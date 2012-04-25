@@ -15,10 +15,15 @@ public class GroupItem implements Serializable
 
 	protected String groupName;
 
+	protected String nbPhotos;
+
+	protected String nbMembers;
+
 	public GroupItem() {
 		groupId = "";
 		groupName = "";
-
+		nbPhotos = "";
+		nbMembers = "";
 	}
 
 	public GroupItem(String groupId, String groupName) {
@@ -41,9 +46,25 @@ public class GroupItem implements Serializable
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
 	}
-	
+
 	public String toString() {
 		return groupId + " (" + groupName + ")";
+	}
+
+	public String getNbPhotos() {
+		return nbPhotos;
+	}
+
+	public void setNbPhotos(String nbPhotos) {
+		this.nbPhotos = nbPhotos;
+	}
+
+	public String getNbMembers() {
+		return nbMembers;
+	}
+
+	public void setNbMembers(String nbMembers) {
+		this.nbMembers = nbMembers;
 	}
 
 }

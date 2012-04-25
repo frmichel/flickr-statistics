@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.configuration.Configuration;
@@ -34,8 +35,8 @@ import fm.util.Util;
 /**
  * Collect the number of groups an explored photo belongs to.
  * 
- * Daily stats load result files over a period of time and sorts groups by number of occurences, ie. the number of 
- * explored photos that belonged to each group.
+ * Daily stats load result files over a period of time and sort groups by number of occurences, ie. the number of
+ * explored photos that belong to each group.
  * 
  * Monthly stats will compute the average and max number of groups a photo belongs to.
  * 
@@ -311,17 +312,25 @@ public class GroupStat
 		logger.info("Computing statistincs of groups");
 		Collection<GroupItemStat> grpset = statistics.values();
 		ArrayList<GroupItemStat> grpList = new ArrayList<GroupItemStat>(grpset);
+
+		// Sort the groups by number of occurences (hx to method GroupItemStat.compareTo() 
 		Collections.sort(grpList);
 
-		for (int i = 0; i < grpList.size(); i++) {
+		// Display the n first result groups sorted by decreasing number of explored photos they contain 
+		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
-
-			// Filter only groups with a minimum number of occurences
-			if (entry.getNbOccurences() >= config.getInt("fm.flickr.stat.group.minoccurence")) {
-				ps.println((i + 1) + ": " + entry.toStringL());
-			}
+			ps.println((i + 1) + ": " + entry.toStringL());
 		}
 		ps.println();
+
+		// Calculate the "probability of being explored thanks to that group"
+		String fn = config.getString("fm.flickr.stat.group.dir") + "/explore_proba_" + config.getString("fm.flickr.stat.startdate") + "_" + config.getString("fm.flickr.stat.enddate") + ".csv";
+		try {
+			PrintStream psGrpProba = new PrintStream(fn);
+			postProcessStat(psGrpProba, grpList);
+		} catch (FileNotFoundException e) {
+			logger.error("Can't write file " + fn);
+		}
 	}
 
 	/**
@@ -344,5 +353,43 @@ public class GroupStat
 		ps.print(Math.abs(sumAvg / statisticsGpP.size()) + "; ");
 		ps.print(Math.abs(sumStdDev / statisticsGpP.size()) + "; ");
 		ps.println(Math.abs(sumMax / statisticsGpP.size()));
+	}
+
+	/**
+	 * For each group sorted by computeStatistics(), this method will calculate the 
+	 * "probability" of a photo to be explored just by being posted on that group:
+	 * <code>proba = number of explored photos during a time slot / total number of photos posted in that 
+	 * group during the same time slot * 100</code>
+	 * That processing require additional queries to Flickr.
+	 * @param ps
+	 * @param grpList
+	 */
+	private static void postProcessStat(PrintStream ps, ArrayList<GroupItemStat> grpList) {
+
+		ps.println("group ID; group name; total nb photos; nb members; nb photos posted; nb explored photos; explore proba");
+
+		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
+			GroupItemStat entry = grpList.get(i);
+			logger.debug("Processing group " + entry.toStringShort());
+
+			// Get the general information about the group (in fact only number of members)
+			GroupItem grpItem = service.getGroupInfo(entry.getGroupId());
+			if (grpItem != null) {
+				entry.setNbMembers(grpItem.getNbMembers());
+
+				Map<String, Long> result = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
+				if (result != null) {
+					entry.setNbPhotos(String.valueOf(result.get("totalNbPhotos")));
+					long nbPosted = result.get("nbPosted");
+					float proba = entry.getNbOccurences() * 100;
+					proba = proba / nbPosted;
+
+					ps.print(entry.getGroupId() + "; " + entry.getGroupName() + "; " + entry.getNbPhotos() + "; " + entry.getNbMembers() + "; ");
+					ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
+					ps.printf("%2.4f\n", proba);
+				} else
+					logger.info("Skipping group " + entry.toStringShort());
+			}
+		}
 	}
 }

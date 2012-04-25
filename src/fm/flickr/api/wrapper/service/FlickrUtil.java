@@ -57,7 +57,7 @@ public class FlickrUtil
 		while (attempts < config.getInt("fm.flickr.api.wrapper.nb_tries")) {
 			try {
 				URL url = new URL(urlStr);
-				logger.debug("Will get url: " + url.toString());
+				logger.trace("Will get url: " + url.toString());
 				HttpURLConnection con = (HttpURLConnection) url.openConnection();
 				con.setRequestMethod("GET");
 				con.setConnectTimeout(config.getInt("fm.flickr.api.wrapper.connection_timeout"));

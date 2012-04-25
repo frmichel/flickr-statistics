@@ -3,7 +3,8 @@ package fm.flickr.stat.param;
 import fm.flickr.api.wrapper.service.param.GroupItem;
 
 /**
- * Store infos of a group (pool of photos), in addition to a counter of occurences of photos in that group,
+ * Store infos of a group (pool of photos), in addition to a counter of occurences of that group,
+ * or said differently, the number of explored photos in that group over a given time slot
  * which is used when computing statistics on groups 
  * 
  * @author fmichel
@@ -55,12 +56,20 @@ public class GroupItemStat extends GroupItem implements Comparable<GroupItemStat
 		this.nbOccurences += inc;
 	}
 
+	public String toStringShort() {
+		return groupId + " (" + groupName + ")";
+	}
+
 	public String toString() {
 		return groupId + ": " + nbOccurences + " occurences (" + groupName + "): ";
 	}
 
 	public String toStringL() {
 		return groupName + " (" + nbOccurences + " occurences)";
+	}
+
+	public String toStringLL() {
+		return groupName + " (" + nbOccurences + " occurences, " + nbPhotos + " photos, " + nbMembers + " members)";
 	}
 
 	public String toFile() {

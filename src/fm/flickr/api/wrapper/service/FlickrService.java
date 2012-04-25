@@ -1,9 +1,12 @@
 package fm.flickr.api.wrapper.service;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.configuration.Configuration;
@@ -567,24 +570,207 @@ public class FlickrService
 			listParams.put("method", "flickr.groups.getInfo");
 			listParams.put("group_id", groupId);
 
-			// Sign the query and build the url
-			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
-
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
+			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			GroupItem result = new GroupItem();
 			result.setGroupId(groupId);
 
 			// Set group name
-			Node title = xmlResp.getElementsByTagName("name").item(0);
-			result.setGroupName(title.getTextContent());
+			Node node = xmlResp.getElementsByTagName("name").item(0);
+			result.setGroupName(node.getTextContent());
 
+			// Set number of members
+			node = xmlResp.getElementsByTagName("members").item(0);
+			result.setNbMembers(node.getTextContent());
+
+			// Set number of photos
+			// ????? 2012-04-24: it seems that this node has disappeared from the API without any warning...
+			node = xmlResp.getElementsByTagName("photos").item(0);
+			if (node != null)
+				result.setNbPhotos(node.getTextContent());
+			else
+				result.setNbPhotos("0");
 			return result;
 
 		} catch (ServiceException e) {
 			logger.error("Error while requesting Flickr service", e);
 			return null;
+		}
+	}
+
+	/**
+	 * Retrieve the number of photos that were added to a the specified group
+	 * between startDate and endDate by using a dicotomy method
+	 * 
+	 * @param groupId
+	 * @param startDateStr start date of the period, formated as yyy-mm-dd
+	 * @param endDateStr end date of the period, formated as yyy-mm-dd
+	 * @return a map with the number of photos posted to a the group over the given period, and 
+	 * the total number of photos of the group. Null if any error occurs.
+	 */
+	public Map<String, Long> getNbOfPhotosAddedToGroup(String groupId, String startDateStr, String endDateStr) {
+		logger.debug("begin getNbOfPhotosAddedToGroup, groupId:" + groupId);
+
+		// Prepare the requests
+		TreeMap<String, String> listParams = new TreeMap<String, String>();
+		listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+		listParams.put("method", "flickr.groups.pools.getPhotos");
+		listParams.put("group_id", groupId);
+		listParams.put("per_page", "500");
+
+		// Convert start and end dates to unix timestamps
+		long startDate, endDate;
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			startDate = sdf.parse(startDateStr).getTime() / 1000;
+			endDate = sdf.parse(endDateStr).getTime() / 1000;
+			logger.debug("startDate:" + startDateStr + " (" + startDate + ")" + ", endDate:" + endDateStr + " (" + endDate + ")");
+		} catch (ParseException e) {
+			logger.error("Cannot convert start or end dates", e);
+			return null;
+		}
+
+		try {
+			Map<String, Long> result = null;
+
+			// Search the position of the first photo added to the group just before the start date
+			logger.debug("Looking for start date in the group...");
+			result = findDateInGroupByDicotomy(groupId, startDate);
+			if (result == null) {
+				logger.warn("Could not find the page of the group for the start date");
+				return null;
+			}
+			long startPage = result.get("page");
+			long indexInStartPage = result.get("indexInPage");
+
+			// Search the position of the first photo added to the group just before the end date
+			logger.debug("Looking for end date in the group...");
+			result = findDateInGroupByDicotomy(groupId, endDate);
+			if (result == null) {
+				logger.warn("Could not find the page of the group for the end date");
+				return null;
+			}
+			long endPage = result.get("page");
+			long indexInEndPage = result.get("indexInPage");
+			long totalNbPhotos = result.get("totalNbPhotos");
+
+			// Final count to calculate the number of photos posted during the 2 dates:
+			// number of full pages * 500, + number of remaining photos on the start page + number of remaining photos on the end page
+			long nbPosted = (startPage - endPage - 1) * 500 + indexInStartPage + (500 - indexInEndPage);
+			logger.debug("Number of photos added to group between " + startDate + " end " + endDate + ": " + nbPosted);
+
+			result.clear();
+			result.put("nbPosted", nbPosted);
+			result.put("totalNbPhotos", totalNbPhotos);
+			return result;
+
+		} catch (ServiceException e) {
+			logger.error("Error while requesting Flickr service", e);
+			return null;
+		}
+	}
+
+	/**
+	 * This method implements a dicotomy method to locate a date in a group: it looks for photos in the group,
+	 * using a paging mechanism, until it finds the page where the date fits between the post dates of 2 photos
+	 * 
+	 * @param groupId the group in which we want to locate the date
+	 * @param searchedDate the date searched
+	 * @return <p>A map with the page number and the index in this page of the first photo added just
+	 * before the searched date.</p><p>The total number of photos of the group is also returned, although
+	 * it sounds stupid to read it again and again at each itearion. Put it seems that it has disappeared
+	 * from the flickr.groups.getInfo API, so we don't have an other choice...</p>
+	 * Return null if no page was found for that date or if any error occurs.
+	 * @throws ServiceException
+	 */
+	private Map<String, Long> findDateInGroupByDicotomy(String groupId, Long searchedDate) throws ServiceException {
+		logger.debug("begin findDateInGroupByDicotomy, groupId:" + groupId + ", searchedDate: " + searchedDate);
+
+		long page = 1;
+		long indexInPage = 0;
+		long totalNbPhotos = 0;
+		boolean foundPage = false;
+
+		// Prepare the requests tosearch photos in the group
+		TreeMap<String, String> listParams = new TreeMap<String, String>();
+		listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+		listParams.put("method", "flickr.groups.pools.getPhotos");
+		listParams.put("group_id", groupId);
+		listParams.put("per_page", "500");
+
+		int dico = 2; // at each step of the dicotomy, this factor is pultiplied by 2
+		long increment = 1;
+
+		// Loop until we find the page or the increment is 0, in this last case we have finished 
+		// the dicotomy without finding the page 
+		while (!foundPage && increment > 0) {
+			if (listParams.containsKey("page"))
+				listParams.remove("page");
+			listParams.put("page", Long.toString(page));
+			Document xmlResp = FlickrUtil.launchRequest(FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams));
+
+			// Get the max page attribute from the response
+			Element photos = (Element) xmlResp.getElementsByTagName("photos").item(0);
+			long maxPages = Long.valueOf(photos.getAttribute("pages"));
+			totalNbPhotos = Long.valueOf(photos.getAttribute("total"));
+
+			// Calculate the increment of the dicotomy algorithm
+			increment = Math.round(new Float(maxPages) / dico);
+			logger.trace("page=" + page + ", maxPage=" + maxPages + ", increment=" + increment);
+
+			// Get the first (morst recent) and last (oldest) photos of the page
+			NodeList photosList = xmlResp.getElementsByTagName("photo");
+			int nbPhotos = photosList.getLength();
+			Element firstphoto = (Element) photosList.item(0);
+			Element lastphoto = (Element) photosList.item(nbPhotos - 1);
+
+			// If the searched date is before the last (oldest) photo, ie.
+			// if date < date(last photo), then we must look further in the past
+			if (searchedDate < Long.valueOf(lastphoto.getAttribute("dateadded"))) {
+				if (page + increment < maxPages)
+					page += increment;
+				logger.trace("searchedDate < " + lastphoto.getAttribute("dateadded") + ": going further in the past");
+			}
+
+			// If the searched date is between the first (most recent) and the last (oldest) photos of the page, ie.
+			// older than the first photo and more recent than the last photo, ie.
+			// if date(last photo) <= searchedDate <= date(first photo), then we have found the right page!
+			else if (Long.valueOf(lastphoto.getAttribute("dateadded")) <= searchedDate && searchedDate <= Long.valueOf(firstphoto.getAttribute("dateadded"))) {
+				indexInPage = 0;
+				while (indexInPage < photosList.getLength()) {
+					Element photo = (Element) photosList.item((int) indexInPage);
+					if (searchedDate > Long.valueOf(photo.getAttribute("dateadded")))
+						break;
+					indexInPage++;
+					// When the loop is over, we have found the first photo that is more recent than startDate
+				}
+				foundPage = true;
+				logger.debug("Page of the group for the start date: " + page + ", index in page: " + indexInPage);
+				break;
+			}
+
+			// If the searched date is more recent than (after) the first (most recent) photo, ie.
+			// if searchedDate > date(first photo), then we have to get back a bit to more recent photos
+			else if (searchedDate > Long.valueOf(firstphoto.getAttribute("dateadded"))) {
+				if (page - increment > 0)
+					page -= increment;
+				logger.debug("searchedDate > " + firstphoto.getAttribute("dateadded") + ": going futur");
+			}
+
+			// Next turn in the dicotomy
+			dico *= 2;
+		}
+
+		if (!foundPage) {
+			return null;
+		} else {
+			HashMap<String, Long> result = new HashMap<String, Long>();
+			result.put("page", page);
+			result.put("indexInPage", indexInPage);
+			result.put("totalNbPhotos", totalNbPhotos);
+			return result;
 		}
 	}
 
@@ -709,7 +895,7 @@ public class FlickrService
 			Element photos = (Element) xmlResp.getElementsByTagName("photos").item(0);
 			maxPages = Integer.valueOf(photos.getAttribute("pages"));
 			return maxPages;
-			
+
 		} catch (ServiceException e) {
 			logger.error("Error while requesting Flickr service", e);
 			return -1;
@@ -736,15 +922,15 @@ public class FlickrService
 
 		String url = "http://farm" + farmId + ".static.flickr.com/" + serverId + "/" + id + "_" + secret;
 		switch (type) {
-			case SQUARE:
-				return url + "_s.jpg";
-			case THUMBNAIL:
-				return url + "_t.jpg";
-			case BIG:
-				return url + "_b.jpg";
-			case MEDIUM:
-			default:
-				return url + ".jpg";
+		case SQUARE:
+			return url + "_s.jpg";
+		case THUMBNAIL:
+			return url + "_t.jpg";
+		case BIG:
+			return url + "_b.jpg";
+		case MEDIUM:
+		default:
+			return url + ".jpg";
 		}
 	}
 
