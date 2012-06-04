@@ -18,12 +18,15 @@ public class GroupItem implements Serializable
 	protected String nbPhotos;
 
 	protected String nbMembers;
+	
+	protected Boolean isModerated;
 
 	public GroupItem() {
 		groupId = "";
 		groupName = "";
 		nbPhotos = "";
 		nbMembers = "";
+		isModerated = false;
 	}
 
 	public GroupItem(String groupId, String groupName) {
@@ -47,10 +50,6 @@ public class GroupItem implements Serializable
 		this.groupName = groupName;
 	}
 
-	public String toString() {
-		return groupId + " (" + groupName + ")";
-	}
-
 	public String getNbPhotos() {
 		return nbPhotos;
 	}
@@ -67,4 +66,19 @@ public class GroupItem implements Serializable
 		this.nbMembers = nbMembers;
 	}
 
+	public Boolean getIsModerated() {
+		return isModerated;
+	}
+
+	public void setIsModerated(Boolean isModerated) {
+		this.isModerated = isModerated;
+	}
+	
+	@Override
+	public String toString() {
+		return "GroupItem [groupId=" + groupId + ", groupName=" + groupName + ", nbPhotos=" + nbPhotos + ", nbMembers=" + nbMembers + ", isModerated=" + isModerated + "]";
+	}
+
+
+	
 }

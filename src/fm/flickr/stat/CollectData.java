@@ -108,7 +108,9 @@ public class CollectData
 				photos = service.getInterestingnessPhotos(date, config.getInt("fm.flickr.stat.maxphotos"), 1);
 			}
 
-			if (photos != null) {
+			if (photos == null || photos.size() == 0) {
+				logger.warn("######## " + date + ": 0 photo from Interestingness to be processed.");
+			} else {
 				logger.info("######## " + date + ": " + photos.size() + " photos from Interestingness to be processed...");
 
 				if (config.getString("fm.flickr.stat.action.group").equals("on"))

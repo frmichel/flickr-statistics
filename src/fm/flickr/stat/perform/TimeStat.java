@@ -236,12 +236,6 @@ public class TimeStat
 		computePostTimeDistrib(ps);
 		ps.println();
 
-		logger.info("Computing statistincs of post time distribution by week day");
-		ps.println("### Post date distribution by week day:");
-		ps.println("monday; tuesday; wednersday; thurday; friday; saturday; sunday");
-		computePostDayOfWeek(ps);
-		ps.println();
-
 		logger.info("Computing statistincs of time to explore");
 		ps.println("### Time to explore:");
 		ps.println("avg time to explore (h); std deviation of time to explore (h); max time to explore (h)");
@@ -335,42 +329,6 @@ public class TimeStat
 
 	public static void computePostTimeDistrib(PrintStream ps) {
 		computeMonthlyPostTimeDistrib(ps, null);
-	}
-
-	/**
-	 * Sort post date by dail of week (monday, tuesday...) and count number of hits per day
-	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. 
-	 * Otherwise it is left empty.
-	 */
-	public static void computeMonthlyPostDayOfWeek(PrintStream ps, String month) {
-		// Calculate the distribution of post dates on 7 days
-		GregorianCalendar cal = new GregorianCalendar();
-		Vector<Integer> distribution = new Vector<Integer>();
-		for (int i = 0; i < 8; i++)
-			// Calendar.<days> are between one based: 1=SUNDAY to 7=SATURDAY
-			distribution.add(0);
-
-		for (Date date : statPostDate) {
-			cal.setTime(date);
-			int day = cal.get(Calendar.DAY_OF_WEEK);
-			distribution.set(day, distribution.get(day) + 1);
-		}
-
-		// Print the results cut down by day of week, from Monday to Sunday
-		if (month != null)
-			ps.print(month + "; ");
-		ps.print(distribution.get(Calendar.MONDAY) + "; ");
-		ps.print(distribution.get(Calendar.TUESDAY) + "; ");
-		ps.print(distribution.get(Calendar.WEDNESDAY) + "; ");
-		ps.print(distribution.get(Calendar.THURSDAY) + "; ");
-		ps.print(distribution.get(Calendar.FRIDAY) + "; ");
-		ps.print(distribution.get(Calendar.SATURDAY) + "; ");
-		ps.println(distribution.get(Calendar.SUNDAY));
-	}
-
-	public static void computePostDayOfWeek(PrintStream ps) {
-		computeMonthlyPostDayOfWeek(ps, null);
 	}
 
 	/**

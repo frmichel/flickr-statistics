@@ -19,7 +19,10 @@
 
 
     <logger name="fm.flickr.api.wrapper" additivity="true">
-        <level value="WARN"/>
+        <level value="INFO"/>
+    </logger>
+    <logger name="fm.flickr.api.wrapper.service.FlickrUtil" additivity="true">
+        <level value="INFO"/>
     </logger>
     
     <logger name="fm.flickr.stat" additivity="true">

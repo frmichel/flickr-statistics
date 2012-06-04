@@ -16,7 +16,8 @@ import fm.util.Config;
 
 /** 
  * This specific class crosses data of two sources: post time of explored photos, and total number of uploads,
- * in order to compute the probability of being explored as a function of the the post time (0 to 23h) AND the week day.
+ * in order to compute the ratio of the number of explored photos / number of photos posted, as function of the 
+ * post time (0 to 23h) AND the week day.
  * 
  * Results are simply displayed on the std output (no file).
  *  

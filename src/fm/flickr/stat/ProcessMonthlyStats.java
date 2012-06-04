@@ -174,7 +174,6 @@ public class ProcessMonthlyStats
 
 		if (config.getString("fm.flickr.stat.action.time").equals("on")) {
 			TimeStat.computeMonthlyPostTimeDistrib(psTimeDistrib, month);
-			TimeStat.computeMonthlyPostDayOfWeek(psTimeDayOfWeek, month);
 			TimeStat.computeMonthlyT2E(psTimeT2E, month);
 		}
 

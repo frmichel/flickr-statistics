@@ -37,6 +37,8 @@ import fm.util.Util;
  * 
  * Daily stats load result files over a period of time and sort groups by number of occurences, ie. the number of
  * explored photos that belong to each group.
+ * A feature of daily stats also calculate the ratio number of explored photos / number of uploads to the group 
+ * over the period considered, to figure out some kind of "probability of being explored of a group".
  * 
  * Monthly stats will compute the average and max number of groups a photo belongs to.
  * 
@@ -102,6 +104,8 @@ public class GroupStat
 						if (stats.size() < config.getInt("fm.flickr.stat.group.maxgroups")) {
 							stats.put(groupId, new GroupItemStat(group, 1));
 							logger.trace("Adding group " + groupId);
+						} else {
+							logger.warn("Ignoring group " + group.getGroupName() + ", already reached " + config.getInt("fm.flickr.stat.group.maxgroups") + " groups");
 						}
 					}
 				}
@@ -304,9 +308,11 @@ public class GroupStat
 	}
 
 	/**
-	 * Filter only groups with at least a minimum number of occurences (score) and sort by score
+	 * Display groups sorted by score (number of exploreed photos in that group during the considered pediod.
+	 * Then, calculate the ratio of explored photos / uploaded photos.
 	 * 
-	 * @param ps where to print the output
+	 * @param ps where to print the output. The ratio of explored photos / uploaded photos does not take this param into account, 
+	 * and always outputs data to a file /group_explore_proba_<start date>_<end date>.csv
 	 */
 	public static void computeStatistics(PrintStream ps) {
 		logger.info("Computing statistincs of groups");
@@ -324,12 +330,14 @@ public class GroupStat
 		ps.println();
 
 		// Calculate the "probability of being explored thanks to that group"
-		String fn = config.getString("fm.flickr.stat.group.dir") + "/explore_proba_" + config.getString("fm.flickr.stat.startdate") + "_" + config.getString("fm.flickr.stat.enddate") + ".csv";
-		try {
-			PrintStream psGrpProba = new PrintStream(fn);
-			postProcessStat(psGrpProba, grpList);
-		} catch (FileNotFoundException e) {
-			logger.error("Can't write file " + fn);
+		if (config.getString("fm.flickr.stat.group.proba").equalsIgnoreCase("on")) {
+			String fn = config.getString("fm.flickr.stat.group.dir") + "/group_explore_proba_" + config.getString("fm.flickr.stat.startdate") + "_" + config.getString("fm.flickr.stat.enddate") + ".csv";
+			try {
+				PrintStream psGrpProba = new PrintStream(fn);
+				postProcessStat(psGrpProba, grpList);
+			} catch (FileNotFoundException e) {
+				logger.error("Can't write file " + fn);
+			}
 		}
 	}
 
@@ -366,27 +374,24 @@ public class GroupStat
 	 */
 	private static void postProcessStat(PrintStream ps, ArrayList<GroupItemStat> grpList) {
 
-		ps.println("group ID; group name; total nb photos; nb members; nb photos posted; nb explored photos; explore proba");
+		ps.println("group ID; group name; total nb photos; nb members; nb photos posted; nb explored photos; explore proba; is moderated");
 
 		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
-			logger.debug("Processing group " + entry.toStringShort());
+			logger.info("Processing group " + entry.toStringShort());
 
-			// Get the general information about the group (in fact only number of members)
+			// Get the general information about the group (number of members, of photos, is moderated)
 			GroupItem grpItem = service.getGroupInfo(entry.getGroupId());
 			if (grpItem != null) {
-				entry.setNbMembers(grpItem.getNbMembers());
+				Long nbPosted = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
 
-				Map<String, Long> result = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
-				if (result != null) {
-					entry.setNbPhotos(String.valueOf(result.get("totalNbPhotos")));
-					long nbPosted = result.get("nbPosted");
+				if (nbPosted != null) {
 					float proba = entry.getNbOccurences() * 100;
 					proba = proba / nbPosted;
-
-					ps.print(entry.getGroupId() + "; " + entry.getGroupName() + "; " + entry.getNbPhotos() + "; " + entry.getNbMembers() + "; ");
+					ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName() + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
 					ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
-					ps.printf("%2.4f\n", proba);
+					ps.printf("%2.4f;", proba);
+					ps.println(grpItem.getIsModerated()? "moderated": "");
 				} else
 					logger.info("Skipping group " + entry.toStringShort());
 			}
