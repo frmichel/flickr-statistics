@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.configuration.Configuration;
@@ -388,7 +387,7 @@ public class GroupStat
 				if (nbPosted != null) {
 					float proba = entry.getNbOccurences() * 100;
 					proba = proba / nbPosted;
-					ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName() + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
+					ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName().replace(";", ",") + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
 					ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
 					ps.printf("%2.4f;", proba);
 					ps.println(grpItem.getIsModerated()? "moderated": "");

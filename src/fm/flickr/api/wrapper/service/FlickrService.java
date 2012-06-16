@@ -603,7 +603,8 @@ public class FlickrService
 
 	/**
 	 * Retrieve the number of photos that were added to a the specified group
-	 * between startDate and endDate by using a dicotomy method
+	 * between startDate and endDate, by using a dicotomy method to find both
+	 * dates in the group
 	 * 
 	 * @param groupId
 	 * @param startDateStr start date of the period, formated as yyy-mm-dd
@@ -613,6 +614,7 @@ public class FlickrService
 	 */
 	public Long getNbOfPhotosAddedToGroup(String groupId, String startDateStr, String endDateStr) {
 		logger.debug("begin getNbOfPhotosAddedToGroup, groupId:" + groupId);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 		// Prepare the requests
 		TreeMap<String, String> listParams = new TreeMap<String, String>();
@@ -624,7 +626,6 @@ public class FlickrService
 		// Convert start and end dates to unix timestamps
 		long startDate, endDate;
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			startDate = sdf.parse(startDateStr).getTime() / 1000;
 			endDate = sdf.parse(endDateStr).getTime() / 1000;
 			logger.debug("startDate:" + startDateStr + " (" + startDate + ")" + ", endDate:" + endDateStr + " (" + endDate + ")");
@@ -636,7 +637,7 @@ public class FlickrService
 		try {
 			Map<String, Long> result = null;
 
-			// Search the position of the first photo added to the group just before the start date
+			//--- Search the position of the first photo added to the group just before the start date
 			logger.debug("Looking for start date in the group...");
 			result = findDateInGroupByDicotomy(groupId, startDate);
 			if (result == null) {
@@ -646,7 +647,8 @@ public class FlickrService
 			long startPage = result.get("page");
 			long indexInStartPage = result.get("indexInPage");
 
-			// Search the position of the first photo added to the group just before the end date
+			//--- Search the position of the first photo added to the group just before the end date
+
 			logger.debug("Looking for end date in the group...");
 			result = findDateInGroupByDicotomy(groupId, endDate);
 			if (result == null) {
@@ -742,13 +744,19 @@ public class FlickrService
 					// When this inner loop is over, we have found the first photo, in the page, that is more recent than startDate
 				}
 				foundPage = true;
-				logger.debug("Page of the group for the start date: " + page + ", index in page: " + indexInPage);
 				break;
 			}
 
 			// If the searched date is more recent than (after) the first (most recent) photo, ie.
 			// if searchedDate > date(first photo), then we have to get back a bit to more recent photos
 			else if (searchedDate > Long.valueOf(firstphoto.getAttribute("dateadded"))) {
+				if (page == 1) {
+					// If page == 1, then the searched date is later than last post on the group, so we actually found the date
+					logger.debug("There was no post later than the searched date");
+					foundPage = true;
+					indexInPage = 0;
+					break;
+				}
 				if (page - increment > 0)
 					page -= increment;
 				logger.debug("searchedDate > " + firstphoto.getAttribute("dateadded") + ": going futur");
@@ -761,6 +769,7 @@ public class FlickrService
 		if (!foundPage) {
 			return null;
 		} else {
+			logger.debug("Page of the group for the searched date: " + page + ", index in page: " + indexInPage);
 			HashMap<String, Long> result = new HashMap<String, Long>();
 			result.put("page", page);
 			result.put("indexInPage", indexInPage);
