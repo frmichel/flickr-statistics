@@ -26,7 +26,12 @@ import fm.util.Util;
 
 /**
  * This class retrives the total number of photos uploaded every day, hour by hour to Flickr. 
- * It consolidates reports over a period or by month.
+ * It consolidates reports over a period or by month:
+ * - the computeStatistics() report shows the number of photos uploaded hour by hour during the given period.
+ * - the computeMonthlyStatistics() does the same but for monthly perdios only: it selects any data file available 
+ * from the 1rst of the month of the start date, until the last day of the month of the end date.
+ * 
+ * To have a report of uploads day by day, see class ProcessUploadsPerDay.
  * 
  * @author fmichel
  * 

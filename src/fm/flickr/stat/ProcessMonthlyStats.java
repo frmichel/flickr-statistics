@@ -36,9 +36,6 @@ public class ProcessMonthlyStats
 	/** File where to write the results of time distribution over 24 hours of post times */
 	private static PrintStream psTimeDistrib;
 
-	/** File where to write the results of the day of week distribution of post dates */
-	private static PrintStream psTimeDayOfWeek;
-
 	/** File where to write the "time to explore" results */
 	private static PrintStream psTimeT2E;
 
@@ -112,9 +109,6 @@ public class ProcessMonthlyStats
 		if (config.getString("fm.flickr.stat.action.time").equals("on")) {
 			psTimeDistrib = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_distrib.csv");
 			TimeStat.initComputeMonthlyPostTimeDistrib(psTimeDistrib);
-
-			psTimeDayOfWeek = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_dayweek.csv");
-			TimeStat.initComputeMonthlyPostDayOfWeek(psTimeDayOfWeek);
 
 			psTimeT2E = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_t2e.csv");
 			TimeStat.initComputeMonthlyT2E(psTimeT2E);
