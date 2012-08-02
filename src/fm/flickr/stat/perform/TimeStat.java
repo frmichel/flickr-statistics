@@ -51,7 +51,7 @@ public class TimeStat
 	private static FlickrService service = new FlickrService();
 
 	/** Date and time of post dates, to calculate the distribution of post times */
-	private static List<Date> statPostDate = new ArrayList<Date>();
+	private static List<Date> statPostTimeDate = new ArrayList<Date>();
 
 	/** Difference (in hours) between the post date/time, and the end of the day when the photo was explored */
 	private static List<Long> statTime2Explo = new ArrayList<Long>();
@@ -136,7 +136,7 @@ public class TimeStat
 	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.time.dir") + date + ".log";
 		loadFile(new File(fileName));
-		logger.info("### " + statPostDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded from " + fileName);
+		logger.info("### " + statPostTimeDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded from " + fileName);
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class TimeStat
 	 */
 	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
-		statPostDate.clear();
+		statPostTimeDate.clear();
 		statTime2Explo.clear();
 
 		File dir = new File(config.getString("fm.flickr.stat.time.dir"));
@@ -160,7 +160,7 @@ public class TimeStat
 			if (file.getName().startsWith(yearMonth))
 				loadFile(file);
 
-		logger.info("### " + statPostDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded for period " + yearMonth);
+		logger.info("### " + statPostTimeDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded for period " + yearMonth);
 	}
 
 	/** 
@@ -199,10 +199,10 @@ public class TimeStat
 						logger.warn("Wrong format on line: " + str);
 					else {
 						Date postDate = sdf.parse(tokens[1]);
-						statPostDate.add(postDate);
+						statPostTimeDate.add(postDate);
 
 						// Calculate the time (in hours) between the moment the photo was posted and the end of the explorer day
-						// which is 23h59 in California (Yahoo servers) that is GMT-8, i.e. 23h59 at GMT + 8 hours
+						// which is 23h59 in California (Yahoo servers) that is GMT-8, i.e. 7h59 at GMT
 						long diff = endOfDayPST - postDate.getTime();
 						long diffHour = diff / 1000 / 3600;
 
@@ -265,19 +265,8 @@ public class TimeStat
 		ps.println("avg time to explore (h); std deviation of time to explore (h); max time to explore (h)");
 	}
 
-	/**
-	 * Print the header line following the csv format
-	 * @param ps
-	 * @throws FileNotFoundException
-	 */
-	public static void initComputeMonthlyPostDayOfWeek(PrintStream ps) throws FileNotFoundException {
-		ps.println("### Per day of week distribution of photos post dates");
-		ps.print("#month; ");
-		ps.println("monday; tuesday; wednersday; thurday; friday; saturday; sunday");
-	}
-
 	public static void reset() {
-		statPostDate.clear();
+		statPostTimeDate.clear();
 		statTime2Explo.clear();
 	}
 
@@ -293,7 +282,7 @@ public class TimeStat
 		Vector<Integer> distribution = new Vector<Integer>();
 		for (int i = 0; i < 24; i++)
 			distribution.add(0);
-		for (Date date : statPostDate) {
+		for (Date date : statPostTimeDate) {
 			cal.setTime(date);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
 			distribution.set(hour, distribution.get(hour) + 1);
@@ -319,7 +308,7 @@ public class TimeStat
 		Vector<Integer> distribution = new Vector<Integer>();
 		for (int i = 0; i < 24; i++)
 			distribution.add(0);
-		for (Date date : statPostDate) {
+		for (Date date : statPostTimeDate) {
 			cal.setTime(date);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
 			distribution.set(hour, distribution.get(hour) + 1);
