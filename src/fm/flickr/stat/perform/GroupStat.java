@@ -377,23 +377,30 @@ public class GroupStat
 
 		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
-			logger.info("Processing group " + entry.toStringShort());
 
-			// Get the general information about the group (number of members, of photos, is moderated)
-			GroupItem grpItem = service.getGroupInfo(entry.getGroupId());
-			if (grpItem != null) {
-				Long nbPosted = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
+			// Filter out some groups based on their name
+			if (entry.getGroupName().matches(".*(Analog|Film|FILM|film|Landscape|Wildlife|Country|Animal|Nature|NATURE|Birds|Nikon NIKON|Sunset|Sunset|Medium|Leica).*")) {
+				logger.info("Skipping group " + entry.getGroupName());
+			} else {
+				logger.info("Processing group " + entry.toStringShort());
 
-				if (nbPosted != null) {
-					float proba = entry.getNbOccurences() * 100;
-					proba = proba / nbPosted;
-					ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName().replace(";", ",") + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
-					ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
-					ps.printf("%2.4f;", proba);
-					ps.println(grpItem.getIsModerated()? "moderated": "");
-				} else
-					logger.info("Skipping group " + entry.toStringShort());
+				// Get the general information about the group (number of members, of photos, is moderated)
+				GroupItem grpItem = service.getGroupInfo(entry.getGroupId());
+				if (grpItem != null) {
+					Long nbPosted = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
+
+					if (nbPosted != null) {
+						float proba = entry.getNbOccurences() * 100;
+						proba = proba / nbPosted;
+						ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName().replace(";", ",") + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
+						ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
+						ps.printf("%2.4f;", proba);
+						ps.println(grpItem.getIsModerated() ? "moderated" : "");
+					} else
+						logger.info("Skipping group " + entry.toStringShort());
+				}
 			}
+
 		}
 	}
 }
