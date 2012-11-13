@@ -39,8 +39,14 @@ public class ProcessMonthlyStats
 	/** File where to write the "time to explore" results */
 	private static PrintStream psTimeT2E;
 
-	/** File where to write the users results */
-	private static PrintStream psUser;
+	/** File where to write the users average of number of photos and contacts */
+	private static PrintStream psUserAvg;
+
+	/** File where to write the users distribution by number of photos */
+	private static PrintStream psUserDistribPhoto;
+
+	/** File where to write the users distribution by number of contacts */
+	private static PrintStream psUserDistribContact;
 
 	/** File where to write the groups results */
 	private static PrintStream psGroup;
@@ -115,8 +121,14 @@ public class ProcessMonthlyStats
 		}
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
-			psUser = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_results.csv");
-			UserStat.initComputeMonthly(psUser);
+			psUserAvg = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_average.csv");
+			UserStat.initComputeMonthlyAvg(psUserAvg);
+
+			psUserDistribPhoto = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_photo.csv");
+			UserStat.initComputeMonthlyDistribPhoto(psUserDistribPhoto);
+
+			psUserDistribContact = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_contact.csv");
+			UserStat.initComputeMonthlyDistribContact(psUserDistribContact);
 		}
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on")) {
@@ -171,8 +183,11 @@ public class ProcessMonthlyStats
 			TimeStat.computeMonthlyT2E(psTimeT2E, month);
 		}
 
-		if (config.getString("fm.flickr.stat.action.user").equals("on"))
-			UserStat.computeMonthlyStatistics(psUser, month);
+		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
+			UserStat.computeMonthlyAvg(psUserAvg, month);
+			UserStat.computeMonthlyDistribPhoto(psUserDistribPhoto, month);
+			UserStat.computeMonthlyDistribContact(psUserDistribContact, month);
+		}
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
 			GroupStat.computeMonthlyStatistics(psGroup, month);

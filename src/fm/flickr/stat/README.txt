@@ -12,7 +12,7 @@ upload. The results are displyaed on the standard output:
 - group: 
     - list the groups that explored photos are in, sorted by number of hits
     - Optionally (fm.flickr.stat.group.proba), file groups/group_explore_proba_<startdate<_<enddate>.csv: compute the ratio of 
-      explored photos / photos uploaded to a group during the same time slot.
+      "nb of explored photos in a group / total nb of photos uploaded to that group" during the same time slot.
       This takes a long time (lots of requests), to be activated cautiously...
 - upload: distribution of number of photos posted to Flickr in function of the hour of day
 
@@ -22,8 +22,10 @@ ProcessMonthlyStats:
 Read all available data from the month of fm.flickr.stat.startdate to the month of fm.flickr.stat.enddate, and computes results consilated by month, 
 for categories group, tag, user, time, user, activity and upload:
 - tag: file tags/montly_results.csv: average and max number of tags per explored photo for each month
-- user: file users/montly_results.csv: for all users which have explored photos during each month, compute the average and max number 
-  of contacts and photos that they have
+- user: for all users which have explored photos during each month,
+	- file users/monthly_user_average.csv shows the average and max number of contacts and photos that they have
+	- file users/monthly_user_distrib_photo.csv shows the distribution of those users per number of photos that they have
+	- file users/monthly_user_distrib_contact.csv shows the distribution of those users per number of contacts that they have
 - time: 
     - file times/monthly_times_t2e.csv: average and max time elapsed between the moment the photo was posted and the moment it appears in the Explorer
     - file times/monthly_times_distrib.csv: distribution of explored photos in function of the hour of day when they were uploaded

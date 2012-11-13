@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Vector;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
@@ -192,30 +193,64 @@ public class UserStat
 	}
 
 	/**
-	 * Display numbers of contacts and photos per user
+	 * Display numbers of contacts and photos per user with explored photos 
 	 * @param ps where to print the output
 	 */
 	public static void computeStatistics(PrintStream ps) {
-		computeMonthlyStatistics(ps, null);
+		computeMonthlyAvg(ps, null);
+		computeMonthlyDistribPhoto(ps, null);
+		computeMonthlyDistribContact(ps, null);
+
 	}
 
 	/**
-	 * Display numbers of tags per photos
+	 * Display numbers of photos and contacts per user with explored photos  
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	public static void initComputeMonthlyAvg(PrintStream ps) throws FileNotFoundException {
 		ps.print("#month; ");
 		ps.println("avg contacts/user; std dev contacts/user; max contacts/user; avg photos/user; std dev photos/user; max photos/user");
 	}
 
 	/**
+	 * Display the distribution of users per number of photos they have
+	 * @param ps where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public static void initComputeMonthlyDistribPhoto(PrintStream ps) throws FileNotFoundException {
+		ps.print("#month; ");
+		int slice = config.getInt("fm.flickr.stat.user.distrib.photo.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+
+		for (int i = 0; i < nbSlices - 1; i++)
+			ps.print(slice * i + "-" + (slice * (i + 1) - 1) + "; ");
+		ps.print("> " + slice * (nbSlices - 1) + "; ");
+		ps.println();
+	}
+
+	/**
+	 * Display the distribution of users per number of contacts they have
+	 * @param ps where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public static void initComputeMonthlyDistribContact(PrintStream ps) throws FileNotFoundException {
+		ps.print("#month; ");
+		int slice = config.getInt("fm.flickr.stat.user.distrib.contact.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		for (int i = 0; i < nbSlices - 1; i++)
+			ps.print(slice * i + "-" + (slice * (i + 1) - 1) + "; ");
+		ps.print("> " + slice * (nbSlices - 1) + "; ");
+		ps.println();
+	}
+
+	/**
 	 * Display numbers of contacts and photos per user
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void computeMonthlyStatistics(PrintStream ps, String month) {
-		logger.info("Computing statistincs of users");
+	public static void computeMonthlyAvg(PrintStream ps, String month) {
+		logger.info("Computing statistincs of users average number of photos and contacts");
 		int nbUsers = statistics.size();
 		if (nbUsers > 0) {
 			int sumPhotos = 0; // Sum of the number of photos of users
@@ -239,7 +274,7 @@ public class UserStat
 			}
 
 			if (month == null) {
-				ps.println("### Number of contacts and photos per user");		
+				ps.println("### Number of contacts and photos per user");
 				ps.println("avg contacts/user; std dev contacts/user; max contacts/user; avg photos/user; std dev photos/user; max photos/user");
 			}
 			if (month != null)
@@ -262,6 +297,100 @@ public class UserStat
 			ps.print(sumPhotos / nbUsers + "; "); // Average number of photos per user
 			ps.print(sumDeviations / nbUsers + "; "); // Standard deviation of number of photos
 			ps.println(maxPhotos); // Max number of photos per user
+		}
+	}
+
+	/**
+	 * Display the distribution of users per number of photos
+	 * @param ps where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public static void computeMonthlyDistribPhoto(PrintStream ps, String month) {
+		logger.info("Computing distribution of users per total number of photos");
+
+		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.photo.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		int nbUsers = statistics.size();
+		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbUsers: " + nbUsers);
+
+		if (nbUsers > 0) {
+			// Create the initial distribution array with values 0
+			Vector<Integer> distribution = new Vector<Integer>();
+
+			for (int i = 0; i < nbSlices; i++)
+				distribution.add(0);
+
+			Collection<UserInfo> usrCollection = statistics.values();
+			ArrayList<UserInfo> usrList = new ArrayList<UserInfo>(usrCollection);
+			for (UserInfo inf : usrList) {
+				// Calculate the slice which this user should be counted in
+				int sliceIndex = new Double(Math.floor(Float.valueOf(inf.getPhotosCount()) / sliceSize)).intValue();
+
+				// Limit the max number of slices: any user with more than nbSlices*slice photos will be in the last slice
+				if (sliceIndex > (nbSlices - 1))
+					sliceIndex = nbSlices - 1;
+				distribution.set(sliceIndex, distribution.get(sliceIndex) + 1);
+			}
+
+			if (month == null) {
+				ps.println("### Distribution of users per number of photos");
+				for (int i = 0; i < nbSlices; i++)
+					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
+				ps.println();
+			} else
+				ps.print(month + "; ");
+
+			Iterator<Integer> iter = distribution.iterator();
+			while (iter.hasNext())
+				ps.print(String.valueOf(new Float(iter.next()) / nbUsers).replace('.', ',') + "; ");
+			ps.println();
+		}
+	}
+
+	/**
+	 * Display the distribution of users per number of contacts
+	 * @param ps where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public static void computeMonthlyDistribContact(PrintStream ps, String month) {
+		logger.info("Computing distribution of users per total number of contacts");
+
+		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.contact.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		int nbUsers = statistics.size();
+		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbUsers: " + nbUsers);
+
+		if (nbUsers > 0) {
+			// Create the initial distribution array with values 0
+			Vector<Integer> distribution = new Vector<Integer>();
+
+			for (int i = 0; i < nbSlices; i++)
+				distribution.add(0);
+
+			Collection<UserInfo> usrCollection = statistics.values();
+			ArrayList<UserInfo> usrList = new ArrayList<UserInfo>(usrCollection);
+			for (UserInfo inf : usrList) {
+				// Calculate the slice which this user should be counted in
+				int sliceIndex = new Double(Math.floor(Float.valueOf(inf.getNumberOfContacts()) / sliceSize)).intValue();
+
+				// Limit the max number of slices: any user with more than nbSlices*slice photos will be in the last slice
+				if (sliceIndex > (nbSlices - 1))
+					sliceIndex = nbSlices - 1;
+				distribution.set(sliceIndex, distribution.get(sliceIndex) + 1);
+			}
+
+			if (month == null) {
+				ps.println("### Distribution of users per number of contacts");
+				for (int i = 0; i < nbSlices; i++)
+					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
+				ps.println();
+			} else
+				ps.print(month + "; ");
+
+			Iterator<Integer> iter = distribution.iterator();
+			while (iter.hasNext())
+				ps.print(String.valueOf(new Float(iter.next()) / nbUsers).replace('.', ',') + "; ");
+			ps.println();
 		}
 	}
 }
