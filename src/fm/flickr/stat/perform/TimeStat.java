@@ -328,7 +328,7 @@ public class TimeStat
 	 */
 	public static void computeMonthlyT2E(PrintStream ps, String month) {
 		long sumT2E = 0; // sum of all "time to explore" durations
-		long sumDeviations = 0; // standard deviation of the "time to explore" 
+		float sumDeviations = 0; // standard deviation of the "time to explore" 
 		long maxT2E = 0; // maximum time to explore
 
 		for (Long t2e : statTime2Explo) {
@@ -338,16 +338,16 @@ public class TimeStat
 		}
 
 		// Calculate the average time needed (in hours) for the photo to get into the explorer after it was posted
-		long avg = 0;
+		float avg = 0;
 		if (!statTime2Explo.isEmpty())
-			avg = sumT2E / statTime2Explo.size();
+			avg = (new Float(sumT2E)) / statTime2Explo.size();
 
 		// Calculate the max time needed (in hours) for the photo to get into the explorer after it was posted
 		for (Long t2e : statTime2Explo)
-			sumDeviations += Math.abs(t2e - avg);
+			sumDeviations += Math.abs((new Float(t2e)) - avg);
 
 		// Calculate the standard deviation of the time needed (in hours) for the photo to get into the explorer after it was posted
-		long stdDev = 0;
+		float stdDev = 0;
 		if (!statTime2Explo.isEmpty())
 			stdDev = sumDeviations / statTime2Explo.size();
 

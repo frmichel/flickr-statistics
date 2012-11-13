@@ -121,17 +121,16 @@ public class TagStat
 		}
 
 		logger.info("### Processed " + stats.size() + " tags from " + nbPhotosProcessed + " photos");
-		logger.info("### Average number of tags per photo: " + sumTags / nbPhotosProcessed);
+		logger.info("### Average number of tags per photo: " + (new Float(sumTags)) / nbPhotosProcessed);
 		logger.info("### Maximum number of tags per photo: " + maxTags);
 
 		// Calculate the standard deviation
-		int avg = sumTags / nbPhotosProcessed;
-		int sumDeviations = 0;
+		float avg = sumTags / nbPhotosProcessed;
+		float sumDeviations = 0;
 		for (Integer nbtag : listNumTags)
-			if (nbtag - avg > 0)
-				sumDeviations += nbtag - avg;
+			sumDeviations += Math.abs((new Float(nbtag)) - avg);
 
-		int stdDev = 0;
+		float stdDev = 0;
 		if (!listNumTags.isEmpty()) {
 			stdDev = sumDeviations / listNumTags.size();
 			logger.info("### Standard deviation of number of tags per photo: " + sumDeviations / listNumTags.size());
@@ -150,7 +149,7 @@ public class TagStat
 	 * @param stdDeviation Standard deviation of number of groups a photo belongs to
 	 * @throws IOException
 	 */
-	private static void saveTagsFromInterestingPhotos(String date, HashMap<String, TagItemStat> stats, int nbPhotosProcessed, int sumTags, int maxTags, int stdDeviation) throws IOException {
+	private static void saveTagsFromInterestingPhotos(String date, HashMap<String, TagItemStat> stats, int nbPhotosProcessed, int sumTags, int maxTags, float stdDeviation) throws IOException {
 
 		File file = new File(Util.getDir(config.getString("fm.flickr.stat.tag.dir")), date + ".log");
 		FileOutputStream fos = new FileOutputStream(file);
@@ -162,7 +161,7 @@ public class TagStat
 		writer.println("# Number of photos explored: " + nbPhotosProcessed);
 		writer.println("# Total number of tags: " + sumTags);
 		writer.println("#");
-		writer.println("# Average number of tags per photo: " + sumTags / nbPhotosProcessed);
+		writer.println("# Average number of tags per photo: " + (new Float(sumTags)) / nbPhotosProcessed);
 		writer.println("# Maximum number of tags per photo: " + maxTags);
 		writer.println("# Standard deviation of the number of tags per photo: " + stdDeviation);
 		writer.println("#");
@@ -241,7 +240,7 @@ public class TagStat
 
 					String strSeeked = "# Average number of tags per photo: ";
 					if (str.startsWith(strSeeked)) {
-						gpp.setAvgTagsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+						gpp.setAvgTagsPerPhoto(Float.valueOf(str.substring(strSeeked.length())));
 
 						str = buffer.readLine();
 						strSeeked = "# Maximum number of tags per photo: ";
@@ -251,7 +250,7 @@ public class TagStat
 						str = buffer.readLine();
 						strSeeked = "# Standard deviation of the number of tags per photo: ";
 						if (str.startsWith(strSeeked))
-							gpp.setStdDevTagsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+							gpp.setStdDevTagsPerPhoto(Float.valueOf(str.substring(strSeeked.length())));
 
 						statisticsTpP.add(gpp);
 					}
@@ -321,13 +320,16 @@ public class TagStat
 
 	/**
 	 * Display the average/std deviation and maximum number of groups and photos
+	 * The average is calculated as the average of daily average values, which is incorrect mathematically.
+	 * But in this specific case it works as the average is done on the same number of data every day, 
+	 * that is 500 explorted photos. 
 	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
 	public static void computeMonthlyStatistics(PrintStream ps, String month) {
-		int sumAvg = 0;
-		int sumStdDev = 0;
+		float sumAvg = 0;
+		float sumStdDev = 0;
 		int sumMax = 0;
 		for (TagsPerPhoto gpp : statisticsTpP) {
 			sumAvg += gpp.getAvgTagsPerPhoto();
@@ -336,8 +338,8 @@ public class TagStat
 		}
 
 		ps.print(month + "; ");
-		ps.print(Math.abs(sumAvg / statisticsTpP.size()) + "; ");
-		ps.print(Math.abs(sumStdDev / statisticsTpP.size()) + "; ");
-		ps.println(Math.abs(sumMax / statisticsTpP.size()));
+		ps.print(sumAvg / statisticsTpP.size() + "; ");
+		ps.print(sumStdDev / statisticsTpP.size() + "; ");
+		ps.println(sumMax / statisticsTpP.size());
 	}
 }

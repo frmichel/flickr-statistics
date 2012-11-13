@@ -3,19 +3,19 @@ package fm.flickr.stat.param;
 public class TagsPerPhoto
 {
 	/** Average number of tags of a photo */
-	private int avgTagsPerPhoto;
+	private float avgTagsPerPhoto;
 
 	/** Maximum number of tags of a photo */
 	private int maxTagsPerPhoto;
 
 	/** Standard deviation of the number of tags a photo has */
-	private int stdDevTagsPerPhoto;
+	private float stdDevTagsPerPhoto;
 
-	public int getAvgTagsPerPhoto() {
+	public float getAvgTagsPerPhoto() {
 		return avgTagsPerPhoto;
 	}
 
-	public void setAvgTagsPerPhoto(int avgTagsPerPhoto) {
+	public void setAvgTagsPerPhoto(float avgTagsPerPhoto) {
 		this.avgTagsPerPhoto = avgTagsPerPhoto;
 	}
 
@@ -27,11 +27,11 @@ public class TagsPerPhoto
 		this.maxTagsPerPhoto = maxTagsPerPhoto;
 	}
 
-	public int getStdDevTagsPerPhoto() {
+	public float getStdDevTagsPerPhoto() {
 		return stdDevTagsPerPhoto;
 	}
 
-	public void setStdDevTagsPerPhoto(int stdDevTagsPerPhoto) {
+	public void setStdDevTagsPerPhoto(float stdDevTagsPerPhoto) {
 		this.stdDevTagsPerPhoto = stdDevTagsPerPhoto;
 	}
 

@@ -124,17 +124,16 @@ public class GroupStat
 		}
 
 		logger.info("### Processed " + stats.size() + " groups from " + nbPhotosProcessed + " photos");
-		logger.info("### Average number of groups a photo belongs to: " + sumGroups / nbPhotosProcessed);
+		logger.info("### Average number of groups a photo belongs to: " + (new Float(sumGroups)) / nbPhotosProcessed);
 		logger.info("### Maximum number of groups a photo belongs to: " + maxGroups);
 
 		// Calculate the standard deviation
-		int avg = sumGroups / nbPhotosProcessed;
-		int sumDeviations = 0;
+		float avg = (new Float(sumGroups)) / nbPhotosProcessed;
+		float sumDeviations = 0;
 		for (Integer nbgrp : listNumGroups)
-			if (nbgrp - avg > 0)
-				sumDeviations += nbgrp - avg;
-
-		int stdDev = 0;
+			sumDeviations += Math.abs((new Float(nbgrp)) - avg);
+		
+		float stdDev = 0;
 		if (!listNumGroups.isEmpty()) {
 			logger.info("### Standard deviation of number of groups a photo belongs to: " + sumDeviations / listNumGroups.size());
 			stdDev = sumDeviations / listNumGroups.size();
@@ -154,7 +153,7 @@ public class GroupStat
 	 * @param stdDeviation Standard deviation of number of groups a photo belongs to
 	 * @throws IOException
 	 */
-	private static void saveGroupsFromInterestingPhotos(String date, HashMap<String, GroupItemStat> stats, int nbPhotosProcessed, int sumGroups, int maxGroups, int stdDeviation) throws IOException {
+	private static void saveGroupsFromInterestingPhotos(String date, HashMap<String, GroupItemStat> stats, int nbPhotosProcessed, int sumGroups, int maxGroups, float stdDeviation) throws IOException {
 
 		File file = new File(Util.getDir(config.getString("fm.flickr.stat.group.dir")), date + ".log");
 		FileOutputStream fos = new FileOutputStream(file);
@@ -166,7 +165,7 @@ public class GroupStat
 		writer.println("# Number of photos explored: " + nbPhotosProcessed);
 		writer.println("# Total number of groups: " + sumGroups);
 		writer.println("#");
-		writer.println("# Average number of groups a photo belongs to: " + sumGroups / nbPhotosProcessed);
+		writer.println("# Average number of groups a photo belongs to: " + (new Float(sumGroups)) / nbPhotosProcessed);
 		writer.println("# Maximum number of groups a photo belongs to: " + maxGroups);
 		writer.println("# Standard deviation of the number of groups a photo belongs to: " + stdDeviation);
 		writer.println("#");
@@ -249,7 +248,7 @@ public class GroupStat
 
 					String strSeeked = "# Average number of groups a photo belongs to: ";
 					if (str.startsWith(strSeeked)) {
-						gpp.setAvgGroupsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+						gpp.setAvgGroupsPerPhoto(Float.valueOf(str.substring(strSeeked.length())));
 
 						str = buffer.readLine();
 						strSeeked = "# Maximum number of groups a photo belongs to: ";
@@ -259,7 +258,7 @@ public class GroupStat
 						str = buffer.readLine();
 						strSeeked = "# Standard deviation of the number of groups a photo belongs to: ";
 						if (str.startsWith(strSeeked))
-							gpp.setStdDevGroupsPerPhoto(Integer.valueOf(str.substring(strSeeked.length())));
+							gpp.setStdDevGroupsPerPhoto(Float.valueOf(str.substring(strSeeked.length())));
 
 						statisticsGpP.add(gpp);
 					}
@@ -341,14 +340,17 @@ public class GroupStat
 	}
 
 	/**
-	 * Display the average/std deviation and maximum number of groups and photos
+	 * Display the average/std deviation and maximum number of groups and photos.
+	 * The average is calculated as the average of daily average values which is incorrect mathematically.
+	 * But in this specific case it works as the average is done on the same number of data every day, 
+	 * that is 500 explorted photos. 
 	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
 	public static void computeMonthlyStatistics(PrintStream ps, String month) {
-		int sumAvg = 0;
-		int sumStdDev = 0;
+		float sumAvg = 0;
+		float sumStdDev = 0;
 		int sumMax = 0;
 		for (GroupsPerPhoto gpp : statisticsGpP) {
 			sumAvg += gpp.getAvgGroupsPerPhoto();
@@ -357,9 +359,9 @@ public class GroupStat
 		}
 
 		ps.print(month + "; ");
-		ps.print(Math.abs(sumAvg / statisticsGpP.size()) + "; ");
-		ps.print(Math.abs(sumStdDev / statisticsGpP.size()) + "; ");
-		ps.println(Math.abs(sumMax / statisticsGpP.size()));
+		ps.print(sumAvg / statisticsGpP.size() + "; ");
+		ps.print(sumStdDev / statisticsGpP.size() + "; ");
+		ps.println(sumMax / statisticsGpP.size());
 	}
 
 	/**
@@ -378,8 +380,8 @@ public class GroupStat
 		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
 
-			// Filter out some groups based on their name
-			if (entry.getGroupName().matches(".*(Analog|Film|FILM|film|Landscape|Wildlife|Country|Animal|Nature|NATURE|Birds|Nikon NIKON|Sunset|Sunset|Medium|Leica).*")) {
+			// Filter out some groups based on their names
+			if (entry.getGroupName().matches(config.getString("fm.flickr.stat.group.proba.skip.regex"))) {
 				logger.info("Skipping group " + entry.getGroupName());
 			} else {
 				logger.info("Processing group " + entry.toStringShort());
@@ -400,7 +402,6 @@ public class GroupStat
 						logger.info("Skipping group " + entry.toStringShort());
 				}
 			}
-
 		}
 	}
 }

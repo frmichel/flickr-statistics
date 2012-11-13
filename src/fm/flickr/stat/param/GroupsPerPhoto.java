@@ -3,19 +3,19 @@ package fm.flickr.stat.param;
 public class GroupsPerPhoto
 {
 	/** Average number of groups a photo belongs to */
-	private int avgGroupsPerPhoto;
+	private float avgGroupsPerPhoto;
 
 	/** Maximum number of groups a photo belongs to */
 	private int maxGroupsPerPhoto;
 
 	/** Standard deviation of the number of groups a photo belongs to */
-	private int stdDevGroupsPerPhoto;
+	private float stdDevGroupsPerPhoto;
 
-	public int getAvgGroupsPerPhoto() {
+	public float getAvgGroupsPerPhoto() {
 		return avgGroupsPerPhoto;
 	}
 
-	public void setAvgGroupsPerPhoto(int avgGroupsPerPhoto) {
+	public void setAvgGroupsPerPhoto(float avgGroupsPerPhoto) {
 		this.avgGroupsPerPhoto = avgGroupsPerPhoto;
 	}
 
@@ -27,11 +27,11 @@ public class GroupsPerPhoto
 		this.maxGroupsPerPhoto = maxGroupsPerPhoto;
 	}
 
-	public int getStdDevGroupsPerPhoto() {
+	public float getStdDevGroupsPerPhoto() {
 		return stdDevGroupsPerPhoto;
 	}
 
-	public void setStdDevGroupsPerPhoto(int stdDevGroupsPerPhoto) {
+	public void setStdDevGroupsPerPhoto(float stdDevGroupsPerPhoto) {
 		this.stdDevGroupsPerPhoto = stdDevGroupsPerPhoto;
 	}
 
