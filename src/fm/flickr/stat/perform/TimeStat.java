@@ -340,11 +340,11 @@ public class TimeStat
 		// Calculate the average time needed (in hours) for the photo to get into the explorer after it was posted
 		float avg = 0;
 		if (!statTime2Explo.isEmpty())
-			avg = (new Float(sumT2E)) / statTime2Explo.size();
+			avg = (float)sumT2E / statTime2Explo.size();
 
 		// Calculate the max time needed (in hours) for the photo to get into the explorer after it was posted
 		for (Long t2e : statTime2Explo)
-			sumDeviations += Math.abs((new Float(t2e)) - avg);
+			sumDeviations += Math.abs((float)t2e - avg);
 
 		// Calculate the standard deviation of the time needed (in hours) for the photo to get into the explorer after it was posted
 		float stdDev = 0;
@@ -354,7 +354,7 @@ public class TimeStat
 		// Print the results in 3 columns: avg time to explore (h); std deviation of time to explore (h); max time to explore (h)
 		if (month != null)
 			ps.print(month + "; ");
-		ps.println(avg + "; " + stdDev + "; " + maxT2E);
+		ps.printf("%2.4f; %2.4f; %d\n", avg, stdDev, maxT2E);
 	}
 
 	public static void computeT2E(PrintStream ps) {

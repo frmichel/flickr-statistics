@@ -342,7 +342,7 @@ public class UserStat
 
 			Iterator<Integer> iter = distribution.iterator();
 			while (iter.hasNext())
-				ps.print(String.valueOf(new Float(iter.next()) / nbUsers).replace('.', ',') + "; ");
+				ps.printf("%2.4f; ", (float)(iter.next()) / nbUsers);
 			ps.println();
 		}
 	}
@@ -371,7 +371,7 @@ public class UserStat
 			ArrayList<UserInfo> usrList = new ArrayList<UserInfo>(usrCollection);
 			for (UserInfo inf : usrList) {
 				// Calculate the slice which this user should be counted in
-				int sliceIndex = new Double(Math.floor(Float.valueOf(inf.getNumberOfContacts()) / sliceSize)).intValue();
+				int sliceIndex = new Double(Math.floor((float)(inf.getNumberOfContacts()) / sliceSize)).intValue();
 
 				// Limit the max number of slices: any user with more than nbSlices*slice photos will be in the last slice
 				if (sliceIndex > (nbSlices - 1))
@@ -389,7 +389,7 @@ public class UserStat
 
 			Iterator<Integer> iter = distribution.iterator();
 			while (iter.hasNext())
-				ps.print(String.valueOf(new Float(iter.next()) / nbUsers).replace('.', ',') + "; ");
+				ps.printf("%2.4f; ", (float)(iter.next()) / nbUsers);
 			ps.println();
 		}
 	}

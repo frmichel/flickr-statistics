@@ -359,8 +359,8 @@ public class GroupStat
 		}
 
 		ps.print(month + "; ");
-		ps.print(sumAvg / statisticsGpP.size() + "; ");
-		ps.print(sumStdDev / statisticsGpP.size() + "; ");
+		ps.printf("%2.4f;", sumAvg / statisticsGpP.size());
+		ps.printf("%2.4f;", sumStdDev / statisticsGpP.size());
 		ps.println(sumMax / statisticsGpP.size());
 	}
 
@@ -392,11 +392,10 @@ public class GroupStat
 					Long nbPosted = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
 
 					if (nbPosted != null) {
-						float proba = entry.getNbOccurences() * 100;
-						proba = proba / nbPosted;
+						float proba = entry.getNbOccurences() * 100 / nbPosted;
 						ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName().replace(";", ",") + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
 						ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
-						ps.printf("%2.4f;", proba);
+						ps.printf("%2.4f; ", proba);
 						ps.println(grpItem.getIsModerated() ? "moderated" : "");
 					} else
 						logger.info("Skipping group " + entry.toStringShort());

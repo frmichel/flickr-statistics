@@ -338,8 +338,8 @@ public class TagStat
 		}
 
 		ps.print(month + "; ");
-		ps.print(sumAvg / statisticsTpP.size() + "; ");
-		ps.print(sumStdDev / statisticsTpP.size() + "; ");
+		ps.printf("%2.4f; ", sumAvg / statisticsTpP.size());
+		ps.printf("%2.4f; ", sumStdDev / statisticsTpP.size());
 		ps.println(sumMax / statisticsTpP.size());
 	}
 }
