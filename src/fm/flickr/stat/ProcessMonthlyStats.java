@@ -10,6 +10,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.util.ServiceException;
+import fm.flickr.stat.perform.ActivityStat;
 import fm.flickr.stat.perform.DailyUploadsStat;
 import fm.flickr.stat.perform.GroupStat;
 import fm.flickr.stat.perform.TagStat;
@@ -33,19 +34,19 @@ public class ProcessMonthlyStats
 
 	private static Configuration config = Config.getConfiguration();
 
-	/** File where to write the results of time distribution over 24 hours of post times */
+	/** File where to write the distribution of photos by post times over 24 hours */
 	private static PrintStream psTimeDistrib;
 
-	/** File where to write the "time to explore" results */
+	/** File where to write the "time to explore" average and max values */
 	private static PrintStream psTimeT2E;
 
-	/** File where to write the users average of number of photos and contacts */
+	/** File where to write the users average number of photos and contacts */
 	private static PrintStream psUserAvg;
 
-	/** File where to write the users distribution by number of photos */
+	/** File where to write the distribution of uses by number of photos */
 	private static PrintStream psUserDistribPhoto;
 
-	/** File where to write the users distribution by number of contacts */
+	/** File where to write the distribution of uses by number of contacts */
 	private static PrintStream psUserDistribContact;
 
 	/** File where to write the groups results */
@@ -56,6 +57,18 @@ public class ProcessMonthlyStats
 
 	/** File where to write the uploads results */
 	private static PrintStream psUploads;
+
+	/** File where to write the distribution of photos by nb of groups */
+	private static PrintStream psActivDistribGroup;
+
+	/** File where to write the distribution of photos by nb of views */
+	private static PrintStream psActivDistribViews;
+
+	/** File where to write the distribution of photos by nb of comments */
+	private static PrintStream psActivDistribComments;
+
+	/** File where to write the distribution of photos by nb of favs */
+	private static PrintStream psActivDistribFavs;
 
 	public static void main(String[] args) {
 		try {
@@ -125,10 +138,10 @@ public class ProcessMonthlyStats
 			UserStat.initComputeMonthlyAvg(psUserAvg);
 
 			psUserDistribPhoto = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_photo.csv");
-			UserStat.initComputeMonthlyDistribPhoto(psUserDistribPhoto);
+			UserStat.initComputeMonthlyDistrib(psUserDistribPhoto, config.getInt("fm.flickr.stat.user.distrib.group.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
 
 			psUserDistribContact = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_contact.csv");
-			UserStat.initComputeMonthlyDistribContact(psUserDistribContact);
+			UserStat.initComputeMonthlyDistrib(psUserDistribContact, config.getInt("fm.flickr.stat.user.distrib.contact.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
 		}
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on")) {
@@ -144,6 +157,20 @@ public class ProcessMonthlyStats
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on")) {
 			psUploads = new PrintStream(config.getString("fm.flickr.stat.uploads.dir") + "/monthly_results.csv");
 			DailyUploadsStat.initComputeMonthly(psUploads);
+		}
+
+		if (config.getString("fm.flickr.stat.action.activity").equals("on")) {
+			psActivDistribGroup = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_group.csv");
+			ActivityStat.initComputeMonthlyDistrib(psActivDistribGroup, config.getInt("fm.flickr.stat.activity.distrib.group.slice"), config.getInt("fm.flickr.stat.activity.distrib.group.nbslices"));
+
+			psActivDistribViews = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_view.csv");
+			ActivityStat.initComputeMonthlyDistrib(psActivDistribViews, config.getInt("fm.flickr.stat.activity.distrib.view.slice"), config.getInt("fm.flickr.stat.activity.distrib.view.nbslices"));
+
+			psActivDistribComments = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_comment.csv");
+			ActivityStat.initComputeMonthlyDistrib(psActivDistribComments, config.getInt("fm.flickr.stat.activity.distrib.comment.slice"), config.getInt("fm.flickr.stat.activity.distrib.comment.nbslices"));
+
+			psActivDistribFavs = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_fav.csv");
+			ActivityStat.initComputeMonthlyDistrib(psActivDistribFavs, config.getInt("fm.flickr.stat.activity.distrib.fav.slice"), config.getInt("fm.flickr.stat.activity.distrib.fav.nbslices"));
 		}
 	}
 
@@ -169,6 +196,9 @@ public class ProcessMonthlyStats
 
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
 			DailyUploadsStat.loadFilesByMonth(yearMonth);
+
+		if (config.getString("fm.flickr.stat.action.activity").equals("on"))
+			ActivityStat.loadFilesByMonth(yearMonth);
 	}
 
 	/**
@@ -197,5 +227,12 @@ public class ProcessMonthlyStats
 
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
 			DailyUploadsStat.computeMonthlyStatistics(psUploads, month);
+
+		if (config.getString("fm.flickr.stat.action.activity").equals("on")) {
+			ActivityStat.computeMonthlyDistribGroup(psActivDistribGroup, month);
+			ActivityStat.computeMonthlyDistribViews(psActivDistribViews, month);
+			ActivityStat.computeMonthlyDistribComments(psActivDistribComments, month);
+			ActivityStat.computeMonthlyDistribFavs(psActivDistribFavs, month);
+		}
 	}
 }

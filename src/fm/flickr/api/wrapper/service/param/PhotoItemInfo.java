@@ -46,6 +46,16 @@ public class PhotoItemInfo implements Serializable
 
 	private TagItemsSet tagsSet;
 
+	// Fields reserved for ActicityStat when reloadnig files acquired previously
+
+	private int nbTags;
+
+	private int timeToExplore;
+
+	private int ownersContacts;
+	
+	private int ownersPhotos;
+
 	public PhotoItemInfo() {
 		this.ownerNsid = "";
 		this.interestingnessRank = 0;
@@ -190,6 +200,38 @@ public class PhotoItemInfo implements Serializable
 
 	public void setNbGroups(String nbGroups) {
 		this.nbGroups = nbGroups;
+	}
+
+	public int getNbTags() {
+		return nbTags;
+	}
+
+	public void setNbTags(int nbTags) {
+		this.nbTags = nbTags;
+	}
+
+	public int getTimeToExplore() {
+		return timeToExplore;
+	}
+
+	public void setTimeToExplore(int timeToExplore) {
+		this.timeToExplore = timeToExplore;
+	}
+
+	public int getOwnersContacts() {
+		return ownersContacts;
+	}
+
+	public void setOwnersContacts(int ownersContacts) {
+		this.ownersContacts = ownersContacts;
+	}
+
+	public int getOwnersPhotos() {
+		return ownersPhotos;
+	}
+
+	public void setOwnersPhotos(int ownersPhotos) {
+		this.ownersPhotos = ownersPhotos;
 	}
 
 	@Override

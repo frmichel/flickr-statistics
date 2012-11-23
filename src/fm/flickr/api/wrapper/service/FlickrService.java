@@ -363,8 +363,7 @@ public class FlickrService
 				String postedS = dates.getAttribute("posted");
 				long postedL;
 
-				// VERY WEIRD: seems like the time stamp returned by Flickr is too short
-				// by 3 digits! So... adding 3 zeros at the end seems to work fine...
+				// Time stamps returned by Flickr are in seconds, not in milliseconds, so adding 3 zeros at the end
 				if (postedS.length() == 10)
 					postedL = Long.parseLong(postedS + "000");
 				else
