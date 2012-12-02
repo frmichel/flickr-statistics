@@ -22,6 +22,7 @@ import fm.flickr.stat.perform.TagStat;
 import fm.flickr.stat.perform.TimeStat;
 import fm.flickr.stat.perform.UserStat;
 import fm.util.Config;
+import fm.util.Util;
 
 /**
  * This is the main entry point for collecting data. It gets photos from Interestingness at the 
@@ -29,9 +30,9 @@ import fm.util.Config;
  * users, times etc., using classes from package fm.flickr.stat.perform.
  * @author fmichel
 */
-public class CollectData
+public class CollectInterestingnessData
 {
-	private static Logger logger = Logger.getLogger(CollectData.class.getName());
+	private static Logger logger = Logger.getLogger(CollectInterestingnessData.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
 
@@ -125,8 +126,10 @@ public class CollectData
 				if (config.getString("fm.flickr.stat.action.user").equals("on"))
 					UserStat.collecAdditionalData(date, photos);
 
-				if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-					ActivityStat.collecAdditionalData(date, photos);
+				if (config.getString("fm.flickr.stat.action.activity").equals("on")) {
+					File outputFile = new File(Util.getDir(config.getString("fm.flickr.stat.activity.dir")), date + ".csv");
+					ActivityStat.collecAdditionalData(outputFile, date, photos);
+				}
 			}
 		}
 	}

@@ -99,7 +99,7 @@ public class FlickrUtil
 			}
 		} // end while nb attempts
 
-		logger.error( "We should never executre this code!");
+		logger.error( "We should never execute this code!");
 		return null;
 	}
 

@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -44,6 +45,7 @@ public class FlickrService
 
 	private final static String FLICKR_AUTH_URL = "http://flickr.com/services/auth/?";
 	private final static String FLICKR_SERVICES_URL = "http://api.flickr.com/services/rest/?";
+	private final static int MAX_PHOTOS_PER_PAGE = 500;
 
 	public FlickrService() {
 		System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
@@ -196,7 +198,6 @@ public class FlickrService
 	 */
 	public PhotoItemsSet getInterestingnessPhotos(String date, int per_page, int page) {
 		logger.debug("begin getInterestingnessPhotos, per_page=" + per_page + ", page=" + page);
-
 		boolean loop = true;
 		while (loop) {
 			try {
@@ -208,7 +209,7 @@ public class FlickrService
 				listParams.put("page", Integer.toString(page));
 				listParams.put("method", "flickr.interestingness.getList");
 
-				// Sign the query and build the url
+				// Build the query url
 				String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 
 				// Call the service and parse the XML response 
@@ -243,6 +244,69 @@ public class FlickrService
 	}
 
 	/**
+	 * <p>Randomly search photos posted at the given date.</p>
+	 * <p>The Flickr search service returns pages of 500 photos. One photo is randomly picked up in each selected page,
+	 * pages are selected uniformaly as a subset of the total number of result pages.</p>
+	 * <u>Limitation</u>: only one photo is read from each selected page, which makes this function good if the number of pages is
+	 * greater than the number of photos required => typically one should not requite 40 M.photos for a given day, as this may
+	 * exceed the total number of photos uploaded to flickr that day. Anyway, there may be an out of memory exception before
+	 * getting the result!  
+	 * 
+	 * 
+	 * @param date the date formatted as YYY-MM-dd. Cannot be null.
+	 * @param nbPhotos number of photos to return
+	 * @return list of photos, null in case any error occurs
+	 */
+	public PhotoItemsSet getRandomPhotos(String date, int nbPhotos) {
+		logger.debug("begin getRandomPhotos");
+		int page = 1;
+		try {
+			// Min upload date and max upload date must have a difference of 1 at least, 
+			// so we need to compute the next day after 'date'
+			String[] tokens = date.split("-");
+			GregorianCalendar calNextDay = new GregorianCalendar(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]) - 1, Integer.valueOf(tokens[2]));
+			calNextDay.add(GregorianCalendar.DAY_OF_MONTH, 1);
+			String nextDay = new SimpleDateFormat("yyyy-MM-dd").format(calNextDay.getTime());
+
+			TreeMap<String, String> listParams = new TreeMap<String, String>();
+			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+			listParams.put("method", "flickr.photos.search");
+			listParams.put("per_page", Integer.toString(MAX_PHOTOS_PER_PAGE));
+			listParams.put("min_upload_date", date);
+			listParams.put("max_upload_date", nextDay);
+			listParams.put("sort", "date-posted-desc");
+			listParams.put("privacy_filter", "1");
+
+			int maxPages = 0;
+			ArrayList<PhotoItem> items = new ArrayList<PhotoItem>(); // the list of photos picked up randomly
+			do {
+				// Build the query url, call the service and parse the XML response
+				listParams.put("page", Integer.toString(page));
+				String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
+				Document xmlResp = FlickrUtil.launchRequest(urlStr);
+
+				// Get the total number of pages
+				Element photos = (Element) xmlResp.getElementsByTagName("photos").item(0);
+				maxPages = Integer.valueOf(photos.getAttribute("pages"));
+
+				// Get the list of photo nodes from the response, and pick up one of them randomly
+				NodeList photosList = xmlResp.getElementsByTagName("photo");
+				int photoIndex = new Double(Math.random() * photosList.getLength()).intValue();
+				logger.debug("Selecting photo #" + photoIndex + " from page #" + page + " out of " + maxPages + " pages");
+				items.add(makePhotoItemFromXmlPhotoElement((Element) (photosList.item(photoIndex)), -1));
+
+				page += Math.abs((float) maxPages / nbPhotos);
+			} while (page < maxPages && items.size() < nbPhotos);
+
+			return new PhotoItemsSet(items, -1, -1);
+
+		} catch (ServiceException e) {
+			logger.error("Error while requesting Flickr service", e);
+			return null;
+		}
+	}
+
+	/**
 	 * Get the user's favorites photos
 	 * 
 	 * @param per_page number of images per page
@@ -254,9 +318,9 @@ public class FlickrService
 		try {
 			TreeMap<String, String> listParams = new TreeMap<String, String>();
 			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+			listParams.put("method", "flickr.favorites.getList");
 			listParams.put("per_page", Integer.toString(per_page));
 			listParams.put("page", Integer.toString(page));
-			listParams.put("method", "flickr.favorites.getList");
 			listParams.put("auth_token", token);
 
 			// Sign the query and build the url
@@ -291,10 +355,10 @@ public class FlickrService
 		try {
 			TreeMap<String, String> listParams = new TreeMap<String, String>();
 			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+			listParams.put("method", "flickr.photos.search");
 			listParams.put("user_id", "me");
 			listParams.put("per_page", Integer.toString(per_page));
 			listParams.put("page", Integer.toString(page));
-			listParams.put("method", "flickr.photos.search");
 			listParams.put("auth_token", token);
 
 			// Sign the query and build the url
@@ -547,6 +611,7 @@ public class FlickrService
 			if (element != null)
 				user.setNumberOfContacts(Integer.valueOf(element.getAttribute("total")));
 
+			logger.info("Returning info: " + user.toString());
 			return user;
 
 		} catch (ServiceException e) {
@@ -620,7 +685,7 @@ public class FlickrService
 		listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
 		listParams.put("method", "flickr.groups.pools.getPhotos");
 		listParams.put("group_id", groupId);
-		listParams.put("per_page", "500");
+		listParams.put("per_page", Integer.toString(MAX_PHOTOS_PER_PAGE));
 
 		// Convert start and end dates to unix timestamps
 		long startDate, endDate;
@@ -694,7 +759,7 @@ public class FlickrService
 		listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
 		listParams.put("method", "flickr.groups.pools.getPhotos");
 		listParams.put("group_id", groupId);
-		listParams.put("per_page", "500");
+		listParams.put("per_page", Integer.toString(MAX_PHOTOS_PER_PAGE));
 
 		int dico = 2; // at each step of the dicotomy, this factor is pultiplied by 2
 		long increment = 1;
@@ -946,22 +1011,32 @@ public class FlickrService
 	private ArrayList<PhotoItem> makePhotoListFromNodesList(NodeList photosList) {
 		ArrayList<PhotoItem> items = new ArrayList<PhotoItem>();
 
-		// For each photo, build a result PhotoItem and poopulate the result list
+		// For each photo, build a result PhotoItem and populate the result list
 		for (int i = 0; i < photosList.getLength(); i++) {
 			Element photoElement = (Element) photosList.item(i);
-
-			PhotoItem photoItem = new PhotoItem();
-			photoItem.setPhotoId(photoElement.getAttribute("id"));
-			photoItem.setInterestingnessRank(i + 1);
-			photoItem.setSquareUrl(getPhotoUrl(photoElement, ImageType.SQUARE));
-			photoItem.setMediumUrl(getPhotoUrl(photoElement, ImageType.MEDIUM));
-			photoItem.setBigUrl(getPhotoUrl(photoElement, ImageType.BIG));
-			photoItem.setTitle(photoElement.getAttribute("title"));
-			photoItem.setUserId(photoElement.getAttribute("owner"));
-			items.add(photoItem);
+			items.add(makePhotoItemFromXmlPhotoElement(photoElement, i));
 		}
-
 		return items;
+	}
+
+	/**
+	 * Based on an xml element of type &lt;photo&gt;, build an equivalent PhotoItem instance.
+	 * 
+	 * @param photoElement the xml element to parse
+	 * @param rank the photo rank in interestingness. If this photo was not retrieved from Interestingness just put any integer value 
+	 * @return a photo item equivalent to the xml element
+	 */
+	private PhotoItem makePhotoItemFromXmlPhotoElement(Element photoElement, int rank) {
+		PhotoItem photoItem = new PhotoItem();
+		photoItem.setPhotoId(photoElement.getAttribute("id"));
+		photoItem.setInterestingnessRank(rank + 1);
+		photoItem.setSquareUrl(getPhotoUrl(photoElement, ImageType.SQUARE));
+		photoItem.setMediumUrl(getPhotoUrl(photoElement, ImageType.MEDIUM));
+		photoItem.setBigUrl(getPhotoUrl(photoElement, ImageType.BIG));
+		photoItem.setTitle(photoElement.getAttribute("title"));
+		photoItem.setUserId(photoElement.getAttribute("owner"));
+
+		return photoItem;
 	}
 
 	/**

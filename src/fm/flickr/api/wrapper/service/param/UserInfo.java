@@ -82,7 +82,7 @@ public class UserInfo implements Serializable
 	}
 
 	public String toString() {
-		return userId + " (" + userName + "), " + photosCount + " photos" + numberOfContacts + " contacts, ";
+		return userId + " (" + userName + "), " + photosCount + " photos, " + numberOfContacts + " contacts, ";
 	}
 
 	public String toFile() {

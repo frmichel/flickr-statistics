@@ -24,14 +24,14 @@ import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.api.wrapper.service.param.UserInfo;
 import fm.flickr.api.wrapper.util.ServiceException;
 import fm.util.Config;
-import fm.util.Util;
 
 /**
- * Manage the information about the actibity on photos: number of views, comments, notes, favorites,
- * groups, tags, ownver's number of photos and contacts.
- * This class provides methods to collect data from Interestingness and save it to csv files, 
- * methods to reload the csv files, but so far no method to process the data
- * (data analysis is performed directly in Excel files)
+ * Manage the information about the activity on photos: number of views, comments, notes, favorites,
+ * groups, tags, post date and time, ownver's number of photos and contacts.
+ * 
+ * This class provides methods to collect data from photos either random photos or photos from Interestingness, 
+ * and save data to csv files. Additional methods reload csv files and process the statistic data:
+ * compute the distribution of photos by nb of views, comments, tags etc.
  *
  * @author fmichel
  *
@@ -49,17 +49,18 @@ public class ActivityStat
 	private static String FIELD_SEPARATOR = ";";
 
 	/**
-	 * <p>Retrieve detailed information for each photo from passed in parameter photos, as well
-	 * as information about the photos'onwers. The results are saved to a file.</p>
+	 * <p>Retrieve detailed information for each photo passed in parameter photos, as well
+	 * as information about the photos'onwers. The results are saved to outputFile.</p>
 	 * 
-	 * @param date date of photos from Interestingness, given in format "YYY-MM-DD"
+	 * @param outputFile file where to write the data collected
+	 * @param date date of photos read, given in format "YYY-MM-DD"
 	 * @param photos photos retrieved from Interestingness
 	 * @throws IOException in case the file can't be saved
 	 */
-	public static void collecAdditionalData(String date, PhotoItemsSet photos) throws IOException {
+	public static void collecAdditionalData(File outputFile, String date, PhotoItemsSet photos) throws IOException {
 
-		HashMap<Integer, PhotoItemInfo> collectedPhotoInfo = new HashMap<Integer, PhotoItemInfo>();
-		HashMap<Integer, UserInfo> collectedUserInfo = new HashMap<Integer, UserInfo>();
+		HashMap<Long, PhotoItemInfo> collectedPhotoInfo = new HashMap<Long, PhotoItemInfo>();
+		HashMap<Long, UserInfo> collectedUserInfo = new HashMap<Long, UserInfo>();
 		int nbPhotosProcessed = 0; // Number of photos explored during the whole process
 
 		// Loop on all photos retrieved at once from Interstingness
@@ -74,22 +75,24 @@ public class ActivityStat
 
 				// Read the number of favs
 				photoInfo.setNbFavs(service.getNbFavs(photo.getPhotoId()));
-				collectedPhotoInfo.put(photoInfo.getInterestingnessRank(), photoInfo);
+				collectedPhotoInfo.put(Long.valueOf(photoInfo.getPhotoId()), photoInfo);
 
 				// Read the number of groups
 				photoInfo.setNbGroups(String.valueOf(service.getPhotoPools(photo.getPhotoId()).size()));
-				collectedPhotoInfo.put(photoInfo.getInterestingnessRank(), photoInfo);
+				collectedPhotoInfo.put(Long.valueOf(photoInfo.getPhotoId()), photoInfo);
 			}
 
 			// Read info about the owner of the photo
 			logger.debug("Getting info for user " + photoInfo.getOwnerNsid());
 			UserInfo userInfo = service.getUserInfo(photoInfo.getOwnerNsid());
 			if (userInfo != null)
-				collectedUserInfo.put(photoInfo.getInterestingnessRank(), userInfo);
+				collectedUserInfo.put(Long.valueOf(photoInfo.getPhotoId()), userInfo);
 
 			// Trace activity every 10 photos
-			//if (nbPhotosProcessed % 10 == 0)
-			logger.info("Processed " + nbPhotosProcessed + " photos.");
+			if (nbPhotosProcessed % 10 == 0)
+				logger.info("Processed " + nbPhotosProcessed + " photos.");
+			else
+				logger.debug("Processed " + nbPhotosProcessed + " photos.");
 
 			// Sleep between each photo... just not to be overloading
 			try {
@@ -101,23 +104,23 @@ public class ActivityStat
 		}
 
 		logger.info("### Processed " + collectedPhotoInfo.size() + " photos");
-		saveActivityFromInterestingPhotos(date, collectedPhotoInfo, collectedUserInfo, nbPhotosProcessed);
+		savePhotosActivity(outputFile, date, collectedPhotoInfo, collectedUserInfo, nbPhotosProcessed);
 	}
 
 	/**
-	 * Save the information collected for a given date into a file named \<date\>.csv
+	 * Save the information collected for a given date into the file denoted by outputFile
 	 * 
-	 * @param date
+	 * @param outputFile file where to write the data collected
+	 * @param date date of photos read, given in format "YYY-MM-DD"
 	 * @param photos list of photos information
 	 * @param nbPhotosProcessed Number of photos explored during the whole process
 	 * @throws IOException
 	 */
-	private static void saveActivityFromInterestingPhotos(String date, HashMap<Integer, PhotoItemInfo> photos, HashMap<Integer, UserInfo> users, int nbPhotosProcessed) throws IOException {
+	private static void savePhotosActivity(File outputFile, String date, HashMap<Long, PhotoItemInfo> photos, HashMap<Long, UserInfo> users, int nbPhotosProcessed) throws IOException {
 
-		File file = new File(Util.getDir(config.getString("fm.flickr.stat.activity.dir")), date + ".csv");
-		FileOutputStream fos = new FileOutputStream(file);
+		FileOutputStream fos = new FileOutputStream(outputFile);
 		PrintWriter writer = new PrintWriter(fos);
-		logger.info("Saving activity info about " + photos.size() + " photos into file " + file.getCanonicalPath());
+		logger.info("Saving activity info about " + photos.size() + " photos into file " + outputFile.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + nbPhotosProcessed);
 		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts");
@@ -130,8 +133,8 @@ public class ActivityStat
 			writer.print(FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
 			writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
 			writer.print(FIELD_SEPARATOR + entry.getDatePost());
-			writer.print(FIELD_SEPARATOR + users.get(entry.getInterestingnessRank()).getPhotosCount());
-			writer.print(FIELD_SEPARATOR + users.get(entry.getInterestingnessRank()).getNumberOfContacts());
+			writer.print(FIELD_SEPARATOR + users.get(Long.valueOf(entry.getPhotoId())).getPhotosCount());
+			writer.print(FIELD_SEPARATOR + users.get(Long.valueOf(entry.getPhotoId())).getNumberOfContacts());
 			writer.println();
 		}
 
@@ -243,7 +246,7 @@ public class ActivityStat
 	}
 
 	/**
-	 * Display numbers of contacts and photos per user with explored photos 
+	 * Compute the distributions of photos by views, favs, groups, number of contacts and photos of their owners
 	 * @param ps where to print the output
 	 */
 	public static void computeStatistics(PrintStream ps) {
@@ -254,7 +257,7 @@ public class ActivityStat
 	}
 
 	/**
-	 * Print the distribution of number of photos by number of groups they belongs to
+	 * Print the distribution of number of photos by number of groups they belong to
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */

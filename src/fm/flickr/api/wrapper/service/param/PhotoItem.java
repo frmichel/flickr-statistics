@@ -14,7 +14,7 @@ public class PhotoItem implements Serializable
 	/** Flickr identifier of the photo */
 	protected String photoId;
 
-	/** The 1-based rank of that photo in Interestingness if it was obtained from Interestingness, otherwise 0 */
+	/** The 1-based rank of that photo in Interestingness if it was obtained from Interestingness, otherwise 0=non significant */
 	protected int interestingnessRank;
 
 	/** URL to the square thumbnail */

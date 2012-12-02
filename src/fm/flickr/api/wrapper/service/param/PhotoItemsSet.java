@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Implement a set of photo items and stores the page number and max pages that this set corresponds
- * to
+ * Implement a set of photo items and stores the page number and max pages 
+ * that this set corresponds to
  * 
  * @author fmichel
  */
