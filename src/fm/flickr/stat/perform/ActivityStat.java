@@ -9,10 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -123,35 +120,21 @@ public class ActivityStat
 		logger.info("Saving activity info about " + photos.size() + " photos into file " + file.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + nbPhotosProcessed);
-		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; time_after_upload; owner's photos; onwer's contacts");
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			// Uncomment the line below to set GMT (should be) but it will no longer be compatible with data acquired before
-			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
-			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
-			int timeShift = config.getInt("fm.flickr.stat.time_shift_pst", 9);
-			Long endOfDayPST = endOfDay.getTime() + timeShift * 60 * 60 * 1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
+		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts");
 
-			Collection<PhotoItemInfo> photoItemInfo = photos.values();
-			Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
-			while (iter.hasNext()) {
-				PhotoItemInfo entry = iter.next();
-				writer.print(entry.getPhotoId() + FIELD_SEPARATOR + entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews());
-				writer.print(FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
-				writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
-
-				Date postDate = sdf.parse(entry.getDatePost());
-				long diff = endOfDayPST - postDate.getTime();
-				long diffHour = diff / 1000 / 3600;
-				writer.print(FIELD_SEPARATOR + diffHour);
-
-				writer.print(FIELD_SEPARATOR + users.get(entry.getInterestingnessRank()).getPhotosCount());
-				writer.print(FIELD_SEPARATOR + users.get(entry.getInterestingnessRank()).getNumberOfContacts());
-				writer.println();
-			}
-		} catch (ParseException e) {
-			logger.warn("Invalid date format. Exception: " + e.toString());
+		Collection<PhotoItemInfo> photoItemInfo = photos.values();
+		Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
+		while (iter.hasNext()) {
+			PhotoItemInfo entry = iter.next();
+			writer.print(entry.getPhotoId() + FIELD_SEPARATOR + entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews());
+			writer.print(FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
+			writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
+			writer.print(FIELD_SEPARATOR + entry.getDatePost());
+			writer.print(FIELD_SEPARATOR + users.get(entry.getInterestingnessRank()).getPhotosCount());
+			writer.print(FIELD_SEPARATOR + users.get(entry.getInterestingnessRank()).getNumberOfContacts());
+			writer.println();
 		}
+
 		writer.close();
 		fos.close();
 	}
@@ -384,7 +367,7 @@ public class ActivityStat
 				for (int i = 0; i < nbSlices - 1; i++)
 					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
 				ps.print(sliceSize * (nbSlices - 1) + "+ ; ");
-				ps.println();			
+				ps.println();
 			} else
 				ps.print(month + "; ");
 
