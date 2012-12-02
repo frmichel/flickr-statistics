@@ -53,9 +53,6 @@ public class TimeStat
 	/** Date and time of post dates, to calculate the distribution of post times */
 	private static List<Date> statPostTimeDate = new ArrayList<Date>();
 
-	/** Difference (in hours) between the post date/time, and the end of the day when the photo was explored */
-	private static List<Long> statTime2Explo = new ArrayList<Long>();
-
 	/**
 	 * <p>Retrieve the list of post dates & times of photos from Interestingness. The results are saved to a file.</p>
 	 * 
@@ -136,7 +133,7 @@ public class TimeStat
 	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.time.dir") + date + ".log";
 		loadFile(new File(fileName));
-		logger.info("### " + statPostTimeDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded from " + fileName);
+		logger.info("### " + statPostTimeDate.size() + " post date/times loaded from " + fileName);
 	}
 
 	/**
@@ -147,7 +144,6 @@ public class TimeStat
 	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
 		// Empty the current data if any
 		statPostTimeDate.clear();
-		statTime2Explo.clear();
 
 		File dir = new File(config.getString("fm.flickr.stat.time.dir"));
 		if (!dir.exists() || !dir.isDirectory()) {
@@ -160,7 +156,7 @@ public class TimeStat
 			if (file.getName().startsWith(yearMonth))
 				loadFile(file);
 
-		logger.info("### " + statPostTimeDate.size() + " post date/times and " + statTime2Explo.size() + " time-to-explore durations loaded for period " + yearMonth);
+		logger.info("### " + statPostTimeDate.size() + " post date/times loaded for period " + yearMonth);
 	}
 
 	/** 
@@ -173,20 +169,10 @@ public class TimeStat
 			return;
 		}
 
-		String fileName = file.getName();
-		String date = fileName.substring(0, fileName.length() - 4); // remove the ".log" at the end to keep only the date
-
 		try {
 			FileInputStream fis = new FileInputStream(file);
 			BufferedReader buffer = new BufferedReader(new InputStreamReader(fis));
-
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			// With no change, the current locale is used: CET = GMT+1
-			// Uncomment the line below to change it, but then it will no longer be compatible with data acquired before
-			// sdf.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
-			Date endOfDay = sdf.parse(date + " 23:59:59"); // end of the day being explored
-			int timeShift = config.getInt("fm.flickr.stat.time_shift_pst", 9);
-			Long endOfDayPST = endOfDay.getTime() + timeShift * 60 * 60 * 1000; // End of day is 23h59 at GMT-8 (PST), and 9 hours later at GMT+1 (CET)
 
 			logger.info("### Loading file " + file.getAbsolutePath());
 			String str = buffer.readLine();
@@ -200,16 +186,6 @@ public class TimeStat
 					else {
 						Date postDate = sdf.parse(tokens[1]);
 						statPostTimeDate.add(postDate);
-
-						// Calculate the time (in hours) between the moment the photo was posted and the end of the explorer day
-						// which is 23h59 in California (Yahoo servers) that is GMT-8, i.e. 7h59 at GMT
-						long diff = endOfDayPST - postDate.getTime();
-						long diffHour = diff / 1000 / 3600;
-
-						// If the diff is < 0, it means that the photo was be explored before it was posted!
-						// So better forget about this case, as the post date has probably been changed manually.
-						if (diffHour >= 0)
-							statTime2Explo.add(diffHour);
 					}
 				}
 				str = buffer.readLine();
@@ -235,12 +211,6 @@ public class TimeStat
 		ps.println("00; 01; 02; 03; 04; 05; 06; 07; 08; 09; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23");
 		computePostTimeDistrib(ps);
 		ps.println();
-
-		logger.info("Computing statistincs of time to explore");
-		ps.println("### Time to explore:");
-		ps.println("avg time to explore (h); std deviation of time to explore (h); max time to explore (h)");
-		computeT2E(ps);
-		ps.println();
 	}
 
 	/**
@@ -254,20 +224,8 @@ public class TimeStat
 		ps.println("00; 01; 02; 03; 04; 05; 06; 07; 08; 09; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23");
 	}
 
-	/**
-	 * Print the header line following the csv format
-	 * @param ps
-	 * @throws FileNotFoundException
-	 */
-	public static void initComputeMonthlyT2E(PrintStream ps) throws FileNotFoundException {
-		ps.println("### Time to explore per month: time needed (in hours) for the photo to get into the explorer after it was posted");
-		ps.print("#month; ");
-		ps.println("avg time to explore (h); std deviation of time to explore (h); max time to explore (h)");
-	}
-
 	public static void reset() {
 		statPostTimeDate.clear();
-		statTime2Explo.clear();
 	}
 
 	/**
@@ -319,46 +277,4 @@ public class TimeStat
 	public static void computePostTimeDistrib(PrintStream ps) {
 		computeMonthlyPostTimeDistrib(ps, null);
 	}
-
-	/**
-	 * Calculate the time to explore, i.e. the time needed (in hours) for the photo to get into the explorer after it was posted
-	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. 
-	 * Otherwise it is left empty.
-	 */
-	public static void computeMonthlyT2E(PrintStream ps, String month) {
-		long sumT2E = 0; // sum of all "time to explore" durations
-		float sumDeviations = 0; // standard deviation of the "time to explore" 
-		long maxT2E = 0; // maximum time to explore
-
-		for (Long t2e : statTime2Explo) {
-			if (t2e > maxT2E)
-				maxT2E = t2e;
-			sumT2E += t2e;
-		}
-
-		// Calculate the average time needed (in hours) for the photo to get into the explorer after it was posted
-		float avg = 0;
-		if (!statTime2Explo.isEmpty())
-			avg = (float)sumT2E / statTime2Explo.size();
-
-		// Calculate the max time needed (in hours) for the photo to get into the explorer after it was posted
-		for (Long t2e : statTime2Explo)
-			sumDeviations += Math.abs((float)t2e - avg);
-
-		// Calculate the standard deviation of the time needed (in hours) for the photo to get into the explorer after it was posted
-		float stdDev = 0;
-		if (!statTime2Explo.isEmpty())
-			stdDev = sumDeviations / statTime2Explo.size();
-
-		// Print the results in 3 columns: avg time to explore (h); std deviation of time to explore (h); max time to explore (h)
-		if (month != null)
-			ps.print(month + "; ");
-		ps.printf("%2.4f; %2.4f; %d\n", avg, stdDev, maxT2E);
-	}
-
-	public static void computeT2E(PrintStream ps) {
-		computeMonthlyT2E(ps, null);
-	}
-
 }

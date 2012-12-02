@@ -37,9 +37,6 @@ public class ProcessMonthlyStats
 	/** File where to write the distribution of photos by post times over 24 hours */
 	private static PrintStream psTimeDistrib;
 
-	/** File where to write the "time to explore" average and max values */
-	private static PrintStream psTimeT2E;
-
 	/** File where to write the users average number of photos and contacts */
 	private static PrintStream psUserAvg;
 
@@ -128,9 +125,6 @@ public class ProcessMonthlyStats
 		if (config.getString("fm.flickr.stat.action.time").equals("on")) {
 			psTimeDistrib = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_distrib.csv");
 			TimeStat.initComputeMonthlyPostTimeDistrib(psTimeDistrib);
-
-			psTimeT2E = new PrintStream(config.getString("fm.flickr.stat.time.dir") + "/monthly_times_t2e.csv");
-			TimeStat.initComputeMonthlyT2E(psTimeT2E);
 		}
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
@@ -208,10 +202,8 @@ public class ProcessMonthlyStats
 	 */
 	private static void computeStatistics(String month) {
 
-		if (config.getString("fm.flickr.stat.action.time").equals("on")) {
+		if (config.getString("fm.flickr.stat.action.time").equals("on"))
 			TimeStat.computeMonthlyPostTimeDistrib(psTimeDistrib, month);
-			TimeStat.computeMonthlyT2E(psTimeT2E, month);
-		}
 
 		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
 			UserStat.computeMonthlyAvg(psUserAvg, month);
