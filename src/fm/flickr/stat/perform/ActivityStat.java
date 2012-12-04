@@ -59,34 +59,34 @@ public class ActivityStat
 	 */
 	public static void collecAdditionalData(File outputFile, String date, PhotoItemsSet photos) throws IOException {
 
-		HashMap<Long, PhotoItemInfo> collectedPhotoInfo = new HashMap<Long, PhotoItemInfo>();
-		HashMap<Long, UserInfo> collectedUserInfo = new HashMap<Long, UserInfo>();
-		int nbPhotosProcessed = 0; // Number of photos explored during the whole process
+		HashMap<String, PhotoItemInfo> collectedPhoto = new HashMap<String, PhotoItemInfo>();
+		HashMap<String, UserInfo> collectedUser = new HashMap<String, UserInfo>();
+		int nbPhotosProcessed = 0; // Number of photos collected during the whole process
 
 		// Loop on all photos retrieved at once from Interstingness
 		for (PhotoItem photo : photos.getPhotosList()) {
-			nbPhotosProcessed++;
 
 			// Read photo infos inluding nb of comments and notes
-			logger.debug("Getting info for photo " + photo.getPhotoId());
+			logger.trace("Getting info for photo " + photo.getPhotoId());
 			PhotoItemInfo photoInfo = service.getPhotoInfo(photo.getPhotoId());
 			if (photoInfo != null) {
-				photoInfo.setInterestingnessRank(photo.getInterestingnessRank());
+				if (collectedPhoto.containsKey(photo.getPhotoId()))
+					logger.warn("######## Photo " + photo.getPhotoId() + " has already been treated. Skipping it.");
+				else {
+					nbPhotosProcessed++;
+					photoInfo.setInterestingnessRank(photo.getInterestingnessRank());
+					photoInfo.setNbFavs(service.getNbFavs(photo.getPhotoId())); // Read the number of favs
+					photoInfo.setNbGroups(String.valueOf(service.getPhotoPools(photo.getPhotoId()).size())); // Read the number of groups
 
-				// Read the number of favs
-				photoInfo.setNbFavs(service.getNbFavs(photo.getPhotoId()));
-				collectedPhotoInfo.put(Long.valueOf(photoInfo.getPhotoId()), photoInfo);
-
-				// Read the number of groups
-				photoInfo.setNbGroups(String.valueOf(service.getPhotoPools(photo.getPhotoId()).size()));
-				collectedPhotoInfo.put(Long.valueOf(photoInfo.getPhotoId()), photoInfo);
+					// Read info about the owner of the photo
+					logger.trace("Getting info for user " + photoInfo.getOwnerNsid());
+					UserInfo userInfo = service.getUserInfo(photoInfo.getOwnerNsid());
+					if (userInfo != null) {
+						collectedUser.put(photo.getPhotoId(), userInfo);
+						collectedPhoto.put(photo.getPhotoId(), photoInfo);
+					}
+				}
 			}
-
-			// Read info about the owner of the photo
-			logger.debug("Getting info for user " + photoInfo.getOwnerNsid());
-			UserInfo userInfo = service.getUserInfo(photoInfo.getOwnerNsid());
-			if (userInfo != null)
-				collectedUserInfo.put(Long.valueOf(photoInfo.getPhotoId()), userInfo);
 
 			// Trace activity every 10 photos
 			if (nbPhotosProcessed % 10 == 0)
@@ -103,8 +103,8 @@ public class ActivityStat
 			}
 		}
 
-		logger.info("### Processed " + collectedPhotoInfo.size() + " photos");
-		savePhotosActivity(outputFile, date, collectedPhotoInfo, collectedUserInfo, nbPhotosProcessed);
+		logger.info("### Processed " + collectedPhoto.size() + " photos");
+		savePhotosActivity(outputFile, date, collectedPhoto, collectedUser);
 	}
 
 	/**
@@ -112,17 +112,17 @@ public class ActivityStat
 	 * 
 	 * @param outputFile file where to write the data collected
 	 * @param date date of photos read, given in format "YYY-MM-DD"
-	 * @param photos list of photos information
-	 * @param nbPhotosProcessed Number of photos explored during the whole process
+	 * @param photos map of photos information. The key is the photo id.
+	 * @param users maps of information about photo owners. The key is the photo id.
 	 * @throws IOException
 	 */
-	private static void savePhotosActivity(File outputFile, String date, HashMap<Long, PhotoItemInfo> photos, HashMap<Long, UserInfo> users, int nbPhotosProcessed) throws IOException {
+	private static void savePhotosActivity(File outputFile, String date, HashMap<String, PhotoItemInfo> photos, HashMap<String, UserInfo> users) throws IOException {
 
 		FileOutputStream fos = new FileOutputStream(outputFile);
 		PrintWriter writer = new PrintWriter(fos);
 		logger.info("Saving activity info about " + photos.size() + " photos into file " + outputFile.getCanonicalPath());
 
-		writer.println("# Number of photos processed: " + nbPhotosProcessed);
+		writer.println("# Number of photos processed: " + photos.size());
 		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts");
 
 		Collection<PhotoItemInfo> photoItemInfo = photos.values();
@@ -133,8 +133,8 @@ public class ActivityStat
 			writer.print(FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
 			writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
 			writer.print(FIELD_SEPARATOR + entry.getDatePost());
-			writer.print(FIELD_SEPARATOR + users.get(Long.valueOf(entry.getPhotoId())).getPhotosCount());
-			writer.print(FIELD_SEPARATOR + users.get(Long.valueOf(entry.getPhotoId())).getNumberOfContacts());
+			writer.print(FIELD_SEPARATOR + users.get(entry.getPhotoId()).getPhotosCount());
+			writer.print(FIELD_SEPARATOR + users.get(entry.getPhotoId()).getNumberOfContacts());
 			writer.println();
 		}
 

@@ -92,13 +92,16 @@ public class CollectAnyPhotoData
 	private static void collectData(String date) throws IOException {
 
 		// Get random photos on the given date
+		logger.info(date + ": starting random search for photos...");
 		PhotoItemsSet photos = service.getRandomPhotos(date, config.getInt("fm.flickr.stat.anyphoto.nbphotos"));
 		if (photos == null || photos.size() == 0) {
-			logger.warn("######## " + date + ": 0 photo randomly retrieved on date " + date);
+			logger.warn("######## " + date + ": 0 photo randomly retrieved.");
 		} else {
-			logger.info("######## " + date + ": " + photos.size() + " photos randomly retrieved");
+			logger.info(photos.size() + " photos retrieved randomly.");
+			logger.info(date + ": retrieving additional data for those photos...");
 			File outputFile = new File(Util.getDir(config.getString("fm.flickr.stat.anyphoto.dir")), date + ".csv");
 			ActivityStat.collecAdditionalData(outputFile, date, photos);
+			logger.info("Additional data retrieved for " + photos.size() + " photos");
 		}
 	}
 }

@@ -118,7 +118,7 @@ public class FlickrService
 			creds.setUserName(userElt.getAttribute("username"));
 			creds.setFullName(userElt.getAttribute("fullname"));
 
-			logger.info("Returning credentials: " + creds.toString());
+			logger.debug("Returning credentials: " + creds.toString());
 			return creds;
 
 		} catch (ServiceException e) {
@@ -168,7 +168,7 @@ public class FlickrService
 			creds.setUserName(userElt.getAttribute("username"));
 			creds.setFullName(userElt.getAttribute("fullname"));
 
-			logger.info("Returning credentials: " + creds.toString());
+			logger.debug("Returning credentials: " + creds.toString());
 			return creds;
 
 		} catch (ServiceException e) {
@@ -258,8 +258,7 @@ public class FlickrService
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getRandomPhotos(String date, int nbPhotos) {
-		logger.debug("begin getRandomPhotos");
-		int page = 1;
+		logger.debug("begin getRandomPhotos, date:" + date + ", nbPhotos:" + nbPhotos);
 		try {
 			// Min upload date and max upload date must have a difference of 1 at least, 
 			// so we need to compute the next day after 'date'
@@ -274,14 +273,17 @@ public class FlickrService
 			listParams.put("per_page", Integer.toString(MAX_PHOTOS_PER_PAGE));
 			listParams.put("min_upload_date", date);
 			listParams.put("max_upload_date", nextDay);
-			listParams.put("sort", "date-posted-desc");
+			listParams.put("sort", "date-posted-asc");
 			listParams.put("privacy_filter", "1");
 
 			int maxPages = 0;
-			ArrayList<PhotoItem> items = new ArrayList<PhotoItem>(); // the list of photos picked up randomly
+			int iPage = 1; // page number is 1-based
+			float fPage = iPage;
+			HashMap<String, PhotoItem> itemsMap = new HashMap<String, PhotoItem>();
+
 			do {
 				// Build the query url, call the service and parse the XML response
-				listParams.put("page", Integer.toString(page));
+				listParams.put("page", Integer.toString(iPage));
 				String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 				Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
@@ -291,13 +293,25 @@ public class FlickrService
 
 				// Get the list of photo nodes from the response, and pick up one of them randomly
 				NodeList photosList = xmlResp.getElementsByTagName("photo");
-				int photoIndex = new Double(Math.random() * photosList.getLength()).intValue();
-				logger.debug("Selecting photo #" + photoIndex + " from page #" + page + " out of " + maxPages + " pages");
-				items.add(makePhotoItemFromXmlPhotoElement((Element) (photosList.item(photoIndex)), -1));
+				int randIdx = new Double(Math.random() * photosList.getLength()).intValue();
+				logger.info("Photo #" + itemsMap.size() + ": selecting photo #" + randIdx + " in page #" + iPage + " out of " + maxPages + " pages");
 
-				page += Math.abs((float) maxPages / nbPhotos);
-			} while (page < maxPages && items.size() < nbPhotos);
+				PhotoItem item = makePhotoItemFromXmlPhotoElement((Element) (photosList.item(randIdx)), -1);
+				if (itemsMap.containsKey(item.getPhotoId()))
+					// Is it a bug in Flickr or in this code? Anyway sometimes the same id is returned multiple times in different pages (???)
+					logger.warn("#### Photo " + item.getPhotoId() + " has already been returned by the search. Skiping it.");
+				else {
+					itemsMap.put(item.getPhotoId(), item);
+					logger.debug("Adding photo " + item.getPhotoId());
+				}
 
+				// Compute next page number as a float to keep decimals
+				fPage += (float) maxPages / nbPhotos;
+				iPage = (int) Math.abs(fPage);
+
+			} while (iPage <= maxPages && itemsMap.size() < nbPhotos);
+
+			ArrayList<PhotoItem> items = new ArrayList<PhotoItem>(itemsMap.values());
 			return new PhotoItemsSet(items, -1, -1);
 
 		} catch (ServiceException e) {
@@ -459,7 +473,7 @@ public class FlickrService
 			NodeList tags = xmlResp.getElementsByTagName("tag");
 			result.setTagsSet(new TagItemsSet(makeTagListFromTagNodesList(tags), photoId));
 
-			logger.info("Returning info: " + result.toString());
+			logger.debug("Returning info: " + result.toString());
 			return result;
 		} catch (ServiceException e) {
 			logger.error("Error while requesting Flickr service", e);
@@ -611,7 +625,7 @@ public class FlickrService
 			if (element != null)
 				user.setNumberOfContacts(Integer.valueOf(element.getAttribute("total")));
 
-			logger.info("Returning info: " + user.toString());
+			logger.debug("Returning info: " + user.toString());
 			return user;
 
 		} catch (ServiceException e) {
@@ -723,7 +737,7 @@ public class FlickrService
 			long indexInEndPage = result.get("indexInPage");
 
 			// Final count to calculate the number of photos posted during the 2 dates:
-			// number of full pages * 500, + number of remaining photos on the start page + number of remaining photos on the end page
+			// number of full pages * 500 + number of remaining photos on the start page + number of remaining photos on the end page
 			long nbPosted = (startPage - endPage - 1) * 500 + indexInStartPage + (500 - indexInEndPage);
 			logger.debug("Number of photos added to group between " + startDate + " end " + endDate + ": " + nbPosted);
 
@@ -989,15 +1003,15 @@ public class FlickrService
 
 		String url = "http://farm" + farmId + ".static.flickr.com/" + serverId + "/" + id + "_" + secret;
 		switch (type) {
-			case SQUARE:
-				return url + "_s.jpg";
-			case THUMBNAIL:
-				return url + "_t.jpg";
-			case BIG:
-				return url + "_b.jpg";
-			case MEDIUM:
-			default:
-				return url + ".jpg";
+		case SQUARE:
+			return url + "_s.jpg";
+		case THUMBNAIL:
+			return url + "_t.jpg";
+		case BIG:
+			return url + "_b.jpg";
+		case MEDIUM:
+		default:
+			return url + ".jpg";
 		}
 	}
 

@@ -80,6 +80,8 @@ public class TimeStat
 			// Trace activity every 10 photos
 			if (nbPhotosProcessed % 10 == 0)
 				logger.info("Processed " + nbPhotosProcessed + ".");
+			else
+				logger.debug("Processed " + nbPhotosProcessed + " photos.");
 
 			// Sleep between each photo... just not to be overloading
 			try {

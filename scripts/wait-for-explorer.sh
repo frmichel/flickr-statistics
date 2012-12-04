@@ -20,7 +20,7 @@ APIRESP=_api_resp.xml
 wget --tries=3 --waitretry=5 --output-document=$APIRESP "http://api.flickr.com/services/rest/?method=flickr.interestingness.getList&api_key=ae7ff43c5fbbccd09a1643adf3160cd2&date=${YESTERDAY}&format=rest" 2>null >> /tmp/fmichel/explored.log
 
 STATUS=""
-# If searched date is before yestereday, the status should be failed
+# If searched date is after yestereday, the status should be failed
 grep 'stat="fail"' $OUTPUT
 grep --silent --ignore-case 'stat="fail"' $APIRESP > /dev/null
 if test $? -eq 0; then
@@ -44,6 +44,10 @@ echo "$YESTERDAY" >> $OUTPUT
 
 # Get the explored photos data
 echo "$NOW: Explorer of $YESTERDAY has just been published, running the stats retrieval..."
-/home/fmichel/franck/run-stats-all.sh 2>&1 >> /tmp/fmichel/explored.log
+/home/fmichel/franck/run-stats-explorer-all.sh 2>&1 >> /tmp/fmichel/explored.log
+
+# Get data about any other photo not explored but posted during the same period
+echo "... And retrieving data about non explored photos..."
+/home/fmichel/franck/run-stats-anyphoto.sh 2>&1 >> /tmp/fmichel/anyphoto.log
 
 rm -f $APIRESP
