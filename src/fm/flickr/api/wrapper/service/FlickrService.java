@@ -185,7 +185,7 @@ public class FlickrService
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getInterestingnessPhotos(int per_page, int page) {
-		return getInterestingnessPhotos(null, per_page, page);
+		return getPhotoIdsFromInterestingness(null, per_page, page);
 	}
 
 	/**
@@ -196,7 +196,7 @@ public class FlickrService
 	 * @param page number of the page to get (starts at 1)
 	 * @return list of photos, null in case any error occurs
 	 */
-	public PhotoItemsSet getInterestingnessPhotos(String date, int per_page, int page) {
+	public PhotoItemsSet getPhotoIdsFromInterestingness(String date, int per_page, int page) {
 		logger.debug("begin getInterestingnessPhotos, per_page=" + per_page + ", page=" + page);
 		boolean loop = true;
 		while (loop) {
@@ -252,6 +252,10 @@ public class FlickrService
 	 * exceed the total number of photos uploaded to flickr that day. Anyway, there may be an out of memory exception before
 	 * getting the result!  
 	 * 
+	 * WARNING: this method actually does not work as expected, because the flickr.photos.search method will never return all
+	 * photos for a given date but only a small subset. From one page to the next, it returns many times the same photo ids which is
+	 * just meaningless. 
+	 * So just leaving this method here for the record, but be cautious...
 	 * 
 	 * @param date the date formatted as YYY-MM-dd. Cannot be null.
 	 * @param nbPhotos number of photos to return

@@ -90,8 +90,10 @@ public class CollectInterestingnessData
 	}
 
 	/**
-	 * <p>Retrieve the list of photos from Interestingness and run the statistics.
-	 * On the given date, a maximum of 'fm.flickr.stat.maxphotos' photos from Interestingness will be processed.</p>
+	 * <p>Retrieve a list of photos either from Interestingness or from a file, then retrieve data
+	 * about each photo, depending on properties fm.flickr.stat.action.*.</p>
+	 * <p>When ids are retrieved from Interestingness, a maximum of 'fm.flickr.stat.maxphotos' photos 
+	 * will be processed every day.</p>
 	 * <p>The results are saved into files by the classes implementing statistics.</p>
 	 * 
 	 * @param date date of photos from Interestingness, given in format "YYY-MM-DD"
@@ -99,14 +101,14 @@ public class CollectInterestingnessData
 	private static void collectDataFromInterestingness(String date) throws IOException {
 		PhotoItemsSet photos = null;
 
-		if (config.getString("fm.flickr.stat.action.group").equals("on") || config.getString("fm.flickr.stat.action.tag").equals("on") || config.getString("fm.flickr.stat.action.time").equals("on") || config.getString("fm.flickr.stat.action.user").equals("on") || config.getString("fm.flickr.stat.action.activity").equals("on")) {
+		if (config.getString("fm.flickr.stat.action.group").equals("on") || config.getString("fm.flickr.stat.action.tag").equals("on") || config.getString("fm.flickr.stat.action.time").equals("on") || config.getString("fm.flickr.stat.action.user").equals("on") || config.getString("fm.flickr.stat.action.activity").equals("on") || config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
 
 			String photoList = System.getProperty("fm.flickr.stat.photoslist");
 			if (photoList != null) {
-				photos = getInterestingnessPhotosFromFile(photoList);
+				photos = getPhotoIdsFromFile(photoList);
 			} else {
 				// Get photos from Interstingness on the given date (Flickr will report maximum 500 every day)
-				photos = service.getInterestingnessPhotos(date, config.getInt("fm.flickr.stat.maxphotos"), 1);
+				photos = service.getPhotoIdsFromInterestingness(date, config.getInt("fm.flickr.stat.maxphotos"), 1);
 			}
 
 			if (photos == null || photos.size() == 0) {
@@ -130,18 +132,23 @@ public class CollectInterestingnessData
 					File outputFile = new File(Util.getDir(config.getString("fm.flickr.stat.activity.dir")), date + ".csv");
 					ActivityStat.collecAdditionalData(outputFile, date, photos);
 				}
+
+				if (config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
+					File outputFile = new File(Util.getDir(config.getString("fm.flickr.stat.anyphoto.dir")), date + ".csv");
+					ActivityStat.collecAdditionalData(outputFile, date, photos);
+				}
 			}
 		}
 	}
 
 	/**
-	 * This specific function is a way of running the statistics acquisition process not on photos 
-	 * retrieved from Interestingness, but from a simple list of photo identifiers given in a file.
+	 * This specific function is a way of running the statistics acquisition process not on a list of
+	 * of photo ids retrieved from Interestingness, but from a simple list of photo identifiers given in a file.
 	 * 
 	 * @param fileName the file were the photos identifiers are listed in the interestingness rank order
 	 * @return the set of photos, or null if an error occurs (IO error or file not found)
 	 */
-	private static PhotoItemsSet getInterestingnessPhotosFromFile(String fileName) {
+	private static PhotoItemsSet getPhotoIdsFromFile(String fileName) {
 
 		ArrayList<PhotoItem> photosList = new ArrayList<PhotoItem>();
 		File file = null;
@@ -161,11 +168,13 @@ public class CollectInterestingnessData
 
 			String photoId = buffer.readLine();
 			while (photoId != null) {
-				// Create a simple PhotItem with only the photo id and the interestingness rank
-				PhotoItem item = new PhotoItem();
-				item.setPhotoId(photoId);
-				item.setInterestingnessRank(rank++);
-				photosList.add(item);
+				if (!photoId.isEmpty()) {
+					// Create a simple PhotItem with only the photo id and the interestingness rank
+					PhotoItem item = new PhotoItem();
+					item.setPhotoId(photoId);
+					item.setInterestingnessRank(rank++);
+					photosList.add(item);
+				}
 				photoId = buffer.readLine();
 			}
 			fis.close();
