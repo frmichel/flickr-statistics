@@ -14,7 +14,7 @@ import fm.flickr.stat.perform.DailyUploadsStat;
 import fm.util.Config;
 
 /** 
- * This specific main class simply reports what already exists in daily files, namely the total number of photos
+ * This specific main class simply reports what already exists in daily files, namely the sum of photos
  * uploaded every day, and stores the result in file daily_uploads.csv.
  * 
  * @author fmichel

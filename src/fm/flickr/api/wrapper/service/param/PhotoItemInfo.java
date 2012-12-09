@@ -15,7 +15,8 @@ public class PhotoItemInfo implements Serializable
 
 	private String photoId;
 
-	/** The 1-based rank of that photo in Interestingness if it was obtained from Interestingness, otherwise 0 */
+	/** The 1-based rank of that photo in Interestingness if it was obtained from Interestingness, otherwise 
+	    it is meaningless */
 	protected int interestingnessRank;
 
 	private String ownerNsid;
@@ -53,7 +54,7 @@ public class PhotoItemInfo implements Serializable
 	private int timeToExplore;
 
 	private int ownersContacts;
-	
+
 	private int ownersPhotos;
 
 	public PhotoItemInfo() {

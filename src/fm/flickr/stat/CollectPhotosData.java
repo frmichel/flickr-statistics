@@ -25,14 +25,16 @@ import fm.util.Config;
 import fm.util.Util;
 
 /**
- * This is the main entry point for collecting data. It gets photos from Interestingness at the 
- * specified dates. Then for each photo it optionally collects additinal stats about groups, tags,
- * users, times etc., using classes from package fm.flickr.stat.perform.
+ * <p>This is the main entry point for collecting data. It gets photo ids either from Interestingness at the 
+ * specified dates, or from an input file that was built previously.</p>
+ * <p>For each photo id, it collects additinal stats about groups, tags, users, times and activity,
+ * using classes from package fm.flickr.stat.perform.
+ * In addition, it can also collect the number of photos uploaded to Flickr hour by hour. </p>
  * @author fmichel
 */
-public class CollectInterestingnessData
+public class CollectPhotosData
 {
-	private static Logger logger = Logger.getLogger(CollectInterestingnessData.class.getName());
+	private static Logger logger = Logger.getLogger(CollectPhotosData.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
 
@@ -61,8 +63,8 @@ public class CollectInterestingnessData
 				String date = sdf.format(calStart.getTime());
 				logger.info("Starting collecting data on " + date);
 
-				// Collect data on photos from Interstingness on that date (Flickr will report max 500 every day)
-				collectDataFromInterestingness(date);
+				// Collect data on photos on that date (In case of Interstingness, max 500 photos are reported every day)
+				collect(date);
 
 				// Collect number of daily uploads to Flickr
 				if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
@@ -90,15 +92,15 @@ public class CollectInterestingnessData
 	}
 
 	/**
-	 * <p>Retrieve a list of photos either from Interestingness or from a file, then retrieve data
+	 * <p>Retrieve a list of photo ids either from Interestingness or from a file, then retrieve data
 	 * about each photo, depending on properties fm.flickr.stat.action.*.</p>
 	 * <p>When ids are retrieved from Interestingness, a maximum of 'fm.flickr.stat.maxphotos' photos 
 	 * will be processed every day.</p>
 	 * <p>The results are saved into files by the classes implementing statistics.</p>
 	 * 
-	 * @param date date of photos from Interestingness, given in format "YYY-MM-DD"
+	 * @param date date of Interestingness from which photos are taken, given in format "YYY-MM-DD"
 	 */
-	private static void collectDataFromInterestingness(String date) throws IOException {
+	private static void collect(String date) throws IOException {
 		PhotoItemsSet photos = null;
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on") || config.getString("fm.flickr.stat.action.tag").equals("on") || config.getString("fm.flickr.stat.action.time").equals("on") || config.getString("fm.flickr.stat.action.user").equals("on") || config.getString("fm.flickr.stat.action.activity").equals("on") || config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
@@ -112,9 +114,9 @@ public class CollectInterestingnessData
 			}
 
 			if (photos == null || photos.size() == 0) {
-				logger.warn("######## " + date + ": 0 photo from Interestingness to be processed.");
+				logger.warn("######## " + date + ": 0 photo to be processed.");
 			} else {
-				logger.info("######## " + date + ": " + photos.size() + " photos from Interestingness to be processed...");
+				logger.info("######## " + date + ": " + photos.size() + " photos to be processed...");
 
 				if (config.getString("fm.flickr.stat.action.group").equals("on"))
 					GroupStat.collecAdditionalData(date, photos);

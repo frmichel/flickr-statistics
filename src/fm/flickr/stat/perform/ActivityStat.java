@@ -29,8 +29,8 @@ import fm.util.Config;
  * Manage the information about the activity on photos: number of views, comments, notes, favorites,
  * groups, tags, post date and time, ownver's number of photos and contacts.
  * 
- * This class provides methods to collect data from photos either random photos or photos from Interestingness, 
- * and save data to csv files. Additional methods reload csv files and process the statistic data:
+ * This class provides methods to collect data about photos, and save data to csv files.
+ * Additional methods reload csv files and process the data:
  * compute the distribution of photos by nb of views, comments, tags etc.
  *
  * @author fmichel
@@ -49,8 +49,8 @@ public class ActivityStat
 	private static String FIELD_SEPARATOR = ";";
 
 	/**
-	 * <p>Retrieve detailed information for each photo passed in parameter photos, as well
-	 * as information about the photos'onwers. The results are saved to outputFile.</p>
+	 * <p>Retrieve detailed information for each photo passed in parameter, as well
+	 * as information about the photos'onwers. The results are saved to the file denoted by outputFile.</p>
 	 * 
 	 * @param outputFile file where to write the data collected
 	 * @param date date of photos read, given in format "YYY-MM-DD"
@@ -63,7 +63,7 @@ public class ActivityStat
 		HashMap<String, UserInfo> collectedUser = new HashMap<String, UserInfo>();
 		int nbPhotosProcessed = 0; // Number of photos collected during the whole process
 
-		// Loop on all photos retrieved at once from Interstingness
+		// Loop on all photos
 		for (PhotoItem photo : photos.getPhotosList()) {
 
 			// Read photo infos inluding nb of comments and notes
@@ -71,6 +71,8 @@ public class ActivityStat
 			PhotoItemInfo photoInfo = service.getPhotoInfo(photo.getPhotoId());
 			if (photoInfo != null) {
 				if (collectedPhoto.containsKey(photo.getPhotoId()))
+					// This case is unexpected when the photos are taken from Interestingess, but it may occur
+					// when their ids are read from a file.
 					logger.warn("######## Photo " + photo.getPhotoId() + " has already been treated. Skipping it.");
 				else {
 					nbPhotosProcessed++;
@@ -104,19 +106,18 @@ public class ActivityStat
 		}
 
 		logger.info("### Processed " + collectedPhoto.size() + " photos");
-		savePhotosActivity(outputFile, date, collectedPhoto, collectedUser);
+		savePhotosActivity(outputFile, collectedPhoto, collectedUser);
 	}
 
 	/**
-	 * Save the information collected for a given date into the file denoted by outputFile
+	 * Save the information collected for a given date into the CSV file denoted by outputFile
 	 * 
 	 * @param outputFile file where to write the data collected
-	 * @param date date of photos read, given in format "YYY-MM-DD"
 	 * @param photos map of photos information. The key is the photo id.
 	 * @param users maps of information about photo owners. The key is the photo id.
 	 * @throws IOException
 	 */
-	private static void savePhotosActivity(File outputFile, String date, HashMap<String, PhotoItemInfo> photos, HashMap<String, UserInfo> users) throws IOException {
+	private static void savePhotosActivity(File outputFile, HashMap<String, PhotoItemInfo> photos, HashMap<String, UserInfo> users) throws IOException {
 
 		FileOutputStream fos = new FileOutputStream(outputFile);
 		PrintWriter writer = new PrintWriter(fos);
@@ -298,6 +299,7 @@ public class ActivityStat
 
 	/**
 	 * Print the distribution of number of photos by number of comments
+	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
@@ -318,7 +320,8 @@ public class ActivityStat
 
 	/**
 	 * Print the distribution of number of photos by number of favs
-	 * @param ps where to print the output
+	 * 
+	 * @param ps the stream where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
 	public static void computeMonthlyDistribFavs(PrintStream ps, String month) {
