@@ -30,9 +30,14 @@ public class ProcessDailyStats
 
 	private static Configuration config = Config.getConfiguration();
 
+	private ActivityStat activityExplored = new ActivityStat();
+
+	private ActivityStat activityAnyPhoto = new ActivityStat();
+
 	public static void main(String[] args) {
 
 		SimpleDateFormat dateFrmt = new SimpleDateFormat("yyyy-MM-dd");
+		ProcessDailyStats processor = new ProcessDailyStats();
 		logger.debug("begin");
 
 		try {
@@ -51,7 +56,7 @@ public class ProcessDailyStats
 				// Format date to process as yyyy-mm-dd
 				String date = dateFrmt.format(calStart.getTime());
 				try {
-					loadFileByDay(date);
+					processor.loadFileByDay(date);
 				} catch (ServiceException e) {
 					logger.warn(e.toString());
 				}
@@ -60,7 +65,7 @@ public class ProcessDailyStats
 			}
 
 			//--- Comupute and write the results to the output
-			computeDailyStatistics(System.out);
+			processor.computeDailyStatistics(System.out);
 
 			logger.debug("end");
 
@@ -76,7 +81,7 @@ public class ProcessDailyStats
 	 * @param date 
 	 * @throws IOException
 	 */
-	private static void loadFileByDay(String date) throws ServiceException {
+	private void loadFileByDay(String date) throws ServiceException {
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
 			GroupStat.loadFileByDay(date);
 
@@ -93,14 +98,17 @@ public class ProcessDailyStats
 			DailyUploadsStat.loadFileByDay(date);
 
 		if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-			ActivityStat.loadFileByDay(date);
+			activityExplored.loadFileByDay(date, config.getString("fm.flickr.stat.activity.dir"));
+
+		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on"))
+			activityAnyPhoto.loadFileByDay(date, config.getString("fm.flickr.stat.anyphoto.dir"));
 	}
 
 	/**
 	 * Run the specific statistics processings 
 	 * @param ps the output where to print results
 	 */
-	private static void computeDailyStatistics(PrintStream ps) {
+	private void computeDailyStatistics(PrintStream ps) {
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
 			GroupStat.computeStatistics(ps);
 
@@ -117,6 +125,9 @@ public class ProcessDailyStats
 			DailyUploadsStat.computeStatistics(ps);
 
 		if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-			ActivityStat.computeStatistics(ps);
+			activityExplored.computeStatistics(ps);
+
+		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on"))
+			activityAnyPhoto.computeStatistics(ps);
 	}
 }

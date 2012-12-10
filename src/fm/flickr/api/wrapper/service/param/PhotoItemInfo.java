@@ -51,8 +51,6 @@ public class PhotoItemInfo implements Serializable
 
 	private int nbTags;
 
-	private int timeToExplore;
-
 	private int ownersContacts;
 
 	private int ownersPhotos;
@@ -209,14 +207,6 @@ public class PhotoItemInfo implements Serializable
 
 	public void setNbTags(int nbTags) {
 		this.nbTags = nbTags;
-	}
-
-	public int getTimeToExplore() {
-		return timeToExplore;
-	}
-
-	public void setTimeToExplore(int timeToExplore) {
-		this.timeToExplore = timeToExplore;
 	}
 
 	public int getOwnersContacts() {

@@ -44,9 +44,10 @@ public class ActivityStat
 
 	private static FlickrService service = new FlickrService();
 
-	private static Vector<PhotoItemInfo> statistics = new Vector<PhotoItemInfo>();
-
 	private static String FIELD_SEPARATOR = ";";
+
+	/** Vector in which all data files are loaded back for processing */
+	private Vector<PhotoItemInfo> statistics = new Vector<PhotoItemInfo>();
 
 	/**
 	 * <p>Retrieve detailed information for each photo passed in parameter, as well
@@ -146,10 +147,11 @@ public class ActivityStat
 	/**
 	 * Load the content of the file for the given date, into the map of statistics
 	 * 
+	 * @param folder where the data files are located
 	 * @param date date of data collected from Interestingness, given in format "YYY-MM-DD"
 	 */
-	public static void loadFileByDay(String date) throws ServiceException {
-		String fileName = config.getString("fm.flickr.stat.activity.dir") + date + ".csv";
+	public void loadFileByDay(String date, String folder) throws ServiceException {
+		String fileName = folder + File.separator + date + ".csv";
 		loadFile(new File(fileName));
 		logger.info("### " + statistics.size() + " photos activity loaded.");
 	}
@@ -157,15 +159,16 @@ public class ActivityStat
 	/**
 	 * Load the content of the all files for the given month, into the map of statistics
 	 * 
+	 * @param folder where the data files are located
 	 * @param yearMonth year and month formatted as yyyy-mm
 	 */
-	public static void loadFilesByMonth(String yearMonth) throws ServiceException {
-		// Empty the current data if any
+	public void loadFilesByMonth(String yearMonth, String folder) throws ServiceException {
+		// Clear the current data if any
 		statistics.clear();
 
-		File dir = new File(config.getString("fm.flickr.stat.activity.dir"));
+		File dir = new File(folder);
 		if (!dir.exists() || !dir.isDirectory()) {
-			String errMsg = "Error: data directory " + config.getString("fm.flickr.stat.activity.dir") + " does not exists.";
+			String errMsg = "Error: data directory " + folder + " does not exists.";
 			logger.warn(errMsg);
 			throw new ServiceException(errMsg);
 		}
@@ -181,7 +184,7 @@ public class ActivityStat
 	* Parse the content of the given file and store its content into the static map statistics
 	* @param file  
 	*/
-	private static void loadFile(File file) throws ServiceException {
+	private void loadFile(File file) throws ServiceException {
 		try {
 			if (!file.exists()) {
 				logger.warn("No file: " + file.getAbsolutePath());
@@ -209,7 +212,9 @@ public class ActivityStat
 						inf.setNbNotes(tokens[5]);
 						inf.setNbGroups(tokens[6]);
 						inf.setNbTags(Integer.valueOf(tokens[7]));
-						inf.setTimeToExplore(Integer.valueOf(tokens[8]));
+
+						// tokens[8] stored initially a number of hours, after 2012-12-02 it stores the post date and time...
+
 						// Owner's nb of photos and contacts were not introduced at first, so some files
 						// may no contain those fields.
 						if (tokens.length > 9) {
@@ -238,7 +243,7 @@ public class ActivityStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void initComputeMonthlyDistrib(PrintStream ps, int sliceSize, int nbSlices) throws FileNotFoundException {
+	public void initComputeMonthlyDistrib(PrintStream ps, int sliceSize, int nbSlices) throws FileNotFoundException {
 		ps.print("#month; ");
 		for (int i = 0; i < nbSlices - 1; i++)
 			ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
@@ -250,7 +255,7 @@ public class ActivityStat
 	 * Compute the distributions of photos by views, favs, groups, number of contacts and photos of their owners
 	 * @param ps where to print the output
 	 */
-	public static void computeStatistics(PrintStream ps) {
+	public void computeStatistics(PrintStream ps) {
 		computeMonthlyDistribGroup(ps, null);
 		computeMonthlyDistribViews(ps, null);
 		computeMonthlyDistribComments(ps, null);
@@ -262,7 +267,7 @@ public class ActivityStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void computeMonthlyDistribGroup(PrintStream ps, String month) {
+	public void computeMonthlyDistribGroup(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of views");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.group.slice");
@@ -282,7 +287,7 @@ public class ActivityStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void computeMonthlyDistribViews(PrintStream ps, String month) {
+	public void computeMonthlyDistribViews(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of views");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.view.slice");
@@ -303,7 +308,7 @@ public class ActivityStat
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void computeMonthlyDistribComments(PrintStream ps, String month) {
+	public void computeMonthlyDistribComments(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of comments");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.comment.slice");
@@ -324,7 +329,7 @@ public class ActivityStat
 	 * @param ps the stream where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void computeMonthlyDistribFavs(PrintStream ps, String month) {
+	public void computeMonthlyDistribFavs(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of favs");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.fav.slice");
@@ -340,6 +345,27 @@ public class ActivityStat
 	}
 
 	/**
+	 * Print the distribution of number of photos by number of tags
+	 * 
+	 * @param ps the stream where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public void computeMonthlyDistribTags(PrintStream ps, String month) {
+		logger.info("Computing distribution of photos by number of favs");
+		int nbPhotos = statistics.size();
+		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.tag.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.activity.distrib.tag.nbslices");
+		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbPhotos: " + nbPhotos);
+
+		if (nbPhotos > 0) {
+			Vector<Float> dataToDistribute = new Vector<Float>();
+			for (PhotoItemInfo inf : statistics)
+				dataToDistribute.add(Float.valueOf(inf.getNbTags()));
+			computeDistrib(ps, month, sliceSize, nbSlices, dataToDistribute);
+		}
+	}
+
+	/**
 	 * Print the distribution of number of photos according to the data provided in the vector. The vector may typically contain
 	 * the number of groups a photo belongs to, or the number of views, comments and favs.
 	 * @param ps where to print the output
@@ -348,7 +374,7 @@ public class ActivityStat
 	 * @param nbSlices number of slices in the distribution of photos
 	 * @param dataToDistribute the data to sort in each slice
 	 */
-	private static void computeDistrib(PrintStream ps, String month, int sliceSize, int nbSlices, Vector<Float> dataToDistribute) {
+	private void computeDistrib(PrintStream ps, String month, int sliceSize, int nbSlices, Vector<Float> dataToDistribute) {
 
 		int nbPhotos = dataToDistribute.size();
 		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbPhotos: " + nbPhotos);
