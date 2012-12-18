@@ -111,12 +111,14 @@ public class DailyUploadsStat
 					}
 				}
 
-				distribution.set(i, nb);
-				total += nb; // calculate the daily total
-			}
+				if (nb != -1) {		// Ignore in case an error occured in service.getTotalUploads()
+					distribution.set(i, nb);
+					total += nb; // calculate the daily total					
 
-			// Add the daily total
-			distribution.set(ELTS_PER_LINE - 1, total);
+					// Add the daily total
+					distribution.set(ELTS_PER_LINE - 1, total);
+				}
+			}
 
 			logger.info("### Processed daily uploads for date " + date);
 			saveDailyData(date, distribution);

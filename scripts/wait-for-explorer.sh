@@ -47,7 +47,8 @@ echo "$NOW: Explorer of $YESTERDAY has just been published, running the stats re
 /home/fmichel/franck/run-stats-explorer-all.sh 2>&1 >> /tmp/fmichel/explored.log
 
 # Get data about any other photo not explored but posted during the same period
-echo "... And retrieving data about non explored photos..."
+NOW=`date "+%Y-%m-%d %H:%M:%S"`
+echo "$NOW: Retrieving data about non explored photos..."
 /home/fmichel/franck/run-stats-anyphoto.sh 2>&1 >> /tmp/fmichel/anyphoto.log
 
 rm -f $APIRESP

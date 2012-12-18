@@ -18,6 +18,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.service.FlickrService;
+import fm.flickr.api.wrapper.service.param.GroupItemsSet;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemInfo;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
@@ -78,8 +79,17 @@ public class ActivityStat
 				else {
 					nbPhotosProcessed++;
 					photoInfo.setInterestingnessRank(photo.getInterestingnessRank());
-					photoInfo.setNbFavs(service.getNbFavs(photo.getPhotoId())); // Read the number of favs
-					photoInfo.setNbGroups(String.valueOf(service.getPhotoPools(photo.getPhotoId()).size())); // Read the number of groups
+					String nbFavs = service.getNbFavs(photo.getPhotoId()); // Read the number of favs
+					if (nbFavs != null)
+						photoInfo.setNbFavs(nbFavs);
+					else
+						photoInfo.setNbFavs("0");
+					
+					GroupItemsSet grpSet = service.getPhotoPools(photo.getPhotoId()); // Read the number of groups
+					if (grpSet != null)
+						photoInfo.setNbGroups(String.valueOf(grpSet.size()));
+					else
+						photoInfo.setNbGroups("0");
 
 					// Read info about the owner of the photo
 					logger.trace("Getting info for user " + photoInfo.getOwnerNsid());

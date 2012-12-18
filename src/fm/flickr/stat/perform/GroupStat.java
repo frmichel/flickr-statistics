@@ -392,7 +392,7 @@ public class GroupStat
 					Long nbPosted = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
 
 					if (nbPosted != null) {
-						float proba = entry.getNbOccurences() * 100 / nbPosted;
+						float proba = (float)entry.getNbOccurences() * 100 / nbPosted;
 						ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName().replace(";", ",") + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
 						ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
 						ps.printf("%2.4f; ", proba);
