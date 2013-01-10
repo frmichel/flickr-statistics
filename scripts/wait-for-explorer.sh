@@ -51,4 +51,9 @@ NOW=`date "+%Y-%m-%d %H:%M:%S"`
 echo "$NOW: Retrieving data about non explored photos..."
 /home/fmichel/franck/run-stats-anyphoto.sh 2>&1 >> /tmp/fmichel/anyphoto.log
 
+# Get data about any other photo not explored, posted one month ago
+NOW=`date --date="30 days ago" "+%Y-%m-%d %H:%M:%S"`
+echo "$NOW: Retrieving data about non explored photos..."
+/home/fmichel/franck/run-stats-anyphoto-1monthago.sh 2>&1 >> /tmp/fmichel/anyphoto.log
+
 rm -f $APIRESP

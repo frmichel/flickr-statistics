@@ -1,10 +1,12 @@
 #!/bin/bash
-# This script runs the retrieval of activity data about not explored photos, using a list of photo ids collected
-# by script collect-recently-posted.sh and stored in /home/fmichel/franck/FlickrStatistics/stats/anyphoto/ids.
+# This script runs the retrieval of activity data about not explored photos, posted ONE MONTH AGO (30 days ago more precisely),
+# using a list of photo ids collected by script collect-recently-posted.sh and stored in
+# /home/fmichel/franck/FlickrStatistics/stats/anyphoto/ids.
 
-TODAY=`date "+%Y-%m-%d"`
-YESTERDAY=`date --date=yesterday "+%Y-%m-%d"`
-echo "Current date: $TODAY"
+TODAY=`date --date="29 days ago" "+%Y-%m-%d"`
+YESTERDAY=`date --date="30 days ago" "+%Y-%m-%d"`
+echo "Start date: $TODAY"
+echo "End date: $YESTERDAY"
 
 PHOTOIDS=/home/fmichel/franck/FlickrStatistics/stats/anyphoto/ids/${YESTERDAY}.txt
 if [ ! -f $PHOTOIDS ]
@@ -29,4 +31,5 @@ cd /home/fmichel/franck/FlickrStatistics
 -Dfm.flickr.stat.action.uploads=off \
 -Dfm.flickr.stat.action.anyphoto=on \
 -Dfm.flickr.stat.photoslist=$PHOTOIDS \
+-Dfm.flickr.stat.anyphoto.dir="stats/anyphoto-1monthago/" \
 fm.flickr.stat.CollectPhotosData
