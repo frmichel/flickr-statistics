@@ -65,6 +65,7 @@ public class ProcessDailyStats
 			}
 
 			//--- Comupute and write the results to the output
+			System.out.println("# Period from " + startDate + " to " + stopDate + "");
 			processor.computeDailyStatistics(System.out);
 
 			logger.debug("end");

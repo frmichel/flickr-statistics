@@ -200,8 +200,8 @@ public class UserStat
 	 */
 	public static void computeStatistics(PrintStream ps) {
 		computeMonthlyAvg(ps, null);
-		computeMonthlyDistribPhoto(ps, null);
-		computeMonthlyDistribContact(ps, null);
+		/* computeMonthlyDistribPhoto(ps, null);
+		computeMonthlyDistribContact(ps, null); */
 	}
 
 	/**

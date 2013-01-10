@@ -13,11 +13,13 @@ Read data between fm.flickr.stat.startdate and fm.flickr.stat.enddate, and compu
       "nb of explored photos in a group / total nb of photos uploaded to that group" during the same time slot.
       This takes a long time (lots of requests), to be activated cautiously...
 - upload: distribution of number of photos posted to Flickr in function of the hour of day
-- activity:
+- activity and anyphoto:
 	- distribution of number of explored photos in function of the number of groups they are posted to
 	- distribution of number of explored photos in function of the number of times they were viewed
 	- distribution of number of explored photos in function of the number of comments they have
 	- distribution of number of explored photos in function of the number of favs they have
+	- distribution of number of explored photos in function of the owner's number of photos
+	- distribution of number of explored photos in function of the owner's number of contacts
 
 ProcessMonthlyStats:
 ====================
@@ -25,21 +27,20 @@ ProcessMonthlyStats:
 Read all available data from the month of fm.flickr.stat.startdate to the month of fm.flickr.stat.enddate, and computes results consilated 
 by month, for categories group, tag, user, time, user, activity and upload:
 - tag: file tags/montly_results.csv: average and max number of tags per explored photo for each month
-- user: for all users which have explored photos during each month,
-	- file users/monthly_user_average.csv shows the average and max number of contacts and photos that they have
-	- file users/monthly_user_distrib_photo.csv shows the distribution of those users per number of photos that they have
-	- file users/monthly_user_distrib_contact.csv shows the distribution of those users per number of contacts that they have
+- user: for all users which have explored photos during each month, file users/monthly_user_average.csv shows the average and max number of contacts and photos that they have
 - time: file times/monthly_times_distrib.csv: distribution of explored photos in function of the hour of day when they were uploaded
 - group: file groups/montly_results.csv: compute the average and max number of groups that explored photos belong to
 - upload: file uploads/montly_results.csv: distribution of number of photos posted to Flickr in function of the hour of day, broken down by month
   Tab "yearly" of the Excel sheet uploads/montly_results.xls provides a view of only the last column 'total'.
   The results from uploads/montly_results.csv should also be copied into file times/monthly_times_distrib.xls, in tab 'uploaded' 
   that allows to compute the ratio of number of explored photos / number of photos uploaded by hour of day, broken down by month.
-- activity:
-	- file users/monthly_distrib_group.csv: distribution of number of explored photos in function of the number of groups they are posted to
-	- file users/monthly_distrib_view.csv: distribution of number of explored photos in function of the number of times they were viewed
-	- file users/monthly_distrib_comment.csv: distribution of number of explored photos in function of the number of comments they have
-	- file users/monthly_distrib_fav.csv: distribution of number of explored photos in function of the number of favs they have
+- activity and anyphoto:
+	- file monthly_distrib_group.csv: distribution of number of explored photos in function of the number of groups they are posted to
+	- file monthly_distrib_view.csv: distribution of number of explored photos in function of the number of times they were viewed
+	- file monthly_distrib_comment.csv: distribution of number of explored photos in function of the number of comments they have
+	- file monthly_distrib_fav.csv: distribution of number of explored photos in function of the number of favs they have
+	- file monthly_distrib_owners_photo.csv shows the distribution of those users per number of photos that they have
+	- file monthly_distrib_owners_contact.csv shows the distribution of those users per number of contacts that they have
 
   
 ProcessProbabilityPerWeekDayAndHour:

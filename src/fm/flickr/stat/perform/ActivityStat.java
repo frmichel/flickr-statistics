@@ -84,7 +84,7 @@ public class ActivityStat
 						photoInfo.setNbFavs(nbFavs);
 					else
 						photoInfo.setNbFavs("0");
-					
+
 					GroupItemsSet grpSet = service.getPhotoPools(photo.getPhotoId()); // Read the number of groups
 					if (grpSet != null)
 						photoInfo.setNbGroups(String.valueOf(grpSet.size()));
@@ -270,6 +270,8 @@ public class ActivityStat
 		computeMonthlyDistribViews(ps, null);
 		computeMonthlyDistribComments(ps, null);
 		computeMonthlyDistribFavs(ps, null);
+		computeMonthlyDistribOwnersPhotos(ps, null);
+		computeMonthlyDistribOwnersContacts(ps, null);
 	}
 
 	/**
@@ -278,7 +280,7 @@ public class ActivityStat
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
 	public void computeMonthlyDistribGroup(PrintStream ps, String month) {
-		logger.info("Computing distribution of photos by number of views");
+		logger.info("Computing distribution of photos by number of groups");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.group.slice");
 		int nbSlices = config.getInt("fm.flickr.stat.activity.distrib.group.nbslices");
@@ -376,6 +378,50 @@ public class ActivityStat
 	}
 
 	/**
+	 * Print the distribution of number of photos by total number of photos of the owner
+	 * 
+	 * @param ps the stream where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public void computeMonthlyDistribOwnersPhotos(PrintStream ps, String month) {
+		logger.info("Computing distribution of photos by number of photos of its owner");
+		int nbPhotos = statistics.size();
+		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.photo.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbPhotos: " + nbPhotos);
+
+		if (nbPhotos > 0) {
+			Vector<Float> dataToDistribute = new Vector<Float>();
+			for (PhotoItemInfo inf : statistics)
+				if (inf.getOwnersPhotos() != -1)
+					dataToDistribute.add(Float.valueOf(inf.getOwnersPhotos()));
+			computeDistrib(ps, month, sliceSize, nbSlices, dataToDistribute);
+		}
+	}
+
+	/**
+	 * Print the distribution of number of photos by total number of contacts of the owner
+	 * 
+	 * @param ps the stream where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 */
+	public void computeMonthlyDistribOwnersContacts(PrintStream ps, String month) {
+		logger.info("Computing distribution of photos by number of contacts of its owner");
+		int nbPhotos = statistics.size();
+		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.contact.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbPhotos: " + nbPhotos);
+
+		if (nbPhotos > 0) {
+			Vector<Float> dataToDistribute = new Vector<Float>();
+			for (PhotoItemInfo inf : statistics)
+				if (inf.getOwnersPhotos() != -1)
+					dataToDistribute.add(Float.valueOf(inf.getOwnersContacts()));
+			computeDistrib(ps, month, sliceSize, nbSlices, dataToDistribute);
+		}
+	}
+
+	/**
 	 * Print the distribution of number of photos according to the data provided in the vector. The vector may typically contain
 	 * the number of groups a photo belongs to, or the number of views, comments and favs.
 	 * @param ps where to print the output
@@ -397,7 +443,7 @@ public class ActivityStat
 
 			for (Float data : dataToDistribute) {
 				// Calculate the slice which this data should be counted in
-				int sliceIndex = new Double(Math.floor(data) / sliceSize).intValue();
+				int sliceIndex = new Double(data / sliceSize).intValue();
 
 				// Limit the max number of slices: any data over nbSlices*sliceSize will be in the last catch-all slice
 				if (sliceIndex > (nbSlices - 1))
@@ -406,10 +452,12 @@ public class ActivityStat
 			}
 
 			if (month == null) {
+				ps.print("#; ");
 				for (int i = 0; i < nbSlices - 1; i++)
 					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
 				ps.print(sliceSize * (nbSlices - 1) + "+ ; ");
 				ps.println();
+				ps.print("; ");
 			} else
 				ps.print(month + "; ");
 

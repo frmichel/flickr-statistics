@@ -72,6 +72,12 @@ public class ProcessMonthlyStats
 
 		/** File where to write the distribution of photos by nb of tags */
 		static PrintStream distribTags;
+
+		/** File where to write the distribution of photos by total nb of photos of the owner */
+		static PrintStream distribOwnersPhotos;
+
+		/** File where to write the distribution of photos by total nb of contacts of the owner */
+		static PrintStream distribOwnersContacts;
 	}
 
 	/** Streams where to write result of activiy about any photos, may they be explored or not */
@@ -91,10 +97,18 @@ public class ProcessMonthlyStats
 
 		/** File where to write the distribution of photos by nb of tags */
 		static PrintStream distribTags;
+
+		/** File where to write the distribution of photos by total nb of photos of the owner */
+		static PrintStream distribOwnersPhotos;
+
+		/** File where to write the distribution of photos by total nb of contacts of the owner */
+		static PrintStream distribOwnersContacts;
 	}
 
+	/** Activity about all (non-explored) photos */
 	private ActivityStat activAll = new ActivityStat();
 
+	/** Activity about explored photos */
 	private ActivityStat activExpld = new ActivityStat();
 
 	public static void main(String[] args) {
@@ -161,12 +175,12 @@ public class ProcessMonthlyStats
 		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
 			psUserAvg = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_average.csv");
 			UserStat.initComputeMonthlyAvg(psUserAvg);
-
-			psUserDistribPhoto = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_photo.csv");
+			/* psUserDistribPhoto = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_photo.csv");
 			UserStat.initComputeMonthlyDistrib(psUserDistribPhoto, config.getInt("fm.flickr.stat.user.distrib.photo.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
 
 			psUserDistribContact = new PrintStream(config.getString("fm.flickr.stat.user.dir") + "/monthly_user_distrib_contact.csv");
 			UserStat.initComputeMonthlyDistrib(psUserDistribContact, config.getInt("fm.flickr.stat.user.distrib.contact.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
+			*/
 		}
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on")) {
@@ -199,6 +213,12 @@ public class ProcessMonthlyStats
 
 			PsActivExplrd.distribTags = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_tag.csv");
 			activExpld.initComputeMonthlyDistrib(PsActivExplrd.distribTags, config.getInt("fm.flickr.stat.activity.distrib.tag.slice"), config.getInt("fm.flickr.stat.activity.distrib.tag.nbslices"));
+
+			PsActivExplrd.distribOwnersPhotos = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_owners_photo.csv");
+			activExpld.initComputeMonthlyDistrib(PsActivExplrd.distribOwnersPhotos, config.getInt("fm.flickr.stat.user.distrib.photo.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
+
+			PsActivExplrd.distribOwnersContacts = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_owners_contact.csv");
+			activExpld.initComputeMonthlyDistrib(PsActivExplrd.distribOwnersContacts, config.getInt("fm.flickr.stat.user.distrib.contact.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
 		}
 
 		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
@@ -216,6 +236,12 @@ public class ProcessMonthlyStats
 
 			PsActivAll.distribTags = new PrintStream(config.getString("fm.flickr.stat.anyphoto.dir") + "/monthly_distrib_tag.csv");
 			activAll.initComputeMonthlyDistrib(PsActivAll.distribTags, config.getInt("fm.flickr.stat.activity.distrib.tag.slice"), config.getInt("fm.flickr.stat.activity.distrib.tag.nbslices"));
+
+			PsActivAll.distribOwnersPhotos = new PrintStream(config.getString("fm.flickr.stat.anyphoto.dir") + "/monthly_distrib_owners_photo.csv");
+			activAll.initComputeMonthlyDistrib(PsActivAll.distribOwnersPhotos, config.getInt("fm.flickr.stat.user.distrib.photo.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
+
+			PsActivAll.distribOwnersContacts = new PrintStream(config.getString("fm.flickr.stat.anyphoto.dir") + "/monthly_distrib_owners_contact.csv");
+			activAll.initComputeMonthlyDistrib(PsActivAll.distribOwnersContacts, config.getInt("fm.flickr.stat.user.distrib.contact.slice"), config.getInt("fm.flickr.stat.user.distrib.nbslices"));
 		}
 	}
 
@@ -280,6 +306,8 @@ public class ProcessMonthlyStats
 			activExpld.computeMonthlyDistribComments(PsActivExplrd.distribComments, month);
 			activExpld.computeMonthlyDistribFavs(PsActivExplrd.distribFavs, month);
 			activExpld.computeMonthlyDistribTags(PsActivExplrd.distribTags, month);
+			activExpld.computeMonthlyDistribOwnersPhotos(PsActivExplrd.distribOwnersPhotos, month);
+			activExpld.computeMonthlyDistribOwnersContacts(PsActivExplrd.distribOwnersContacts, month);
 		}
 
 		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
@@ -288,6 +316,8 @@ public class ProcessMonthlyStats
 			activAll.computeMonthlyDistribComments(PsActivAll.distribComments, month);
 			activAll.computeMonthlyDistribFavs(PsActivAll.distribFavs, month);
 			activAll.computeMonthlyDistribTags(PsActivAll.distribTags, month);
+			activAll.computeMonthlyDistribOwnersPhotos(PsActivAll.distribOwnersPhotos, month);
+			activAll.computeMonthlyDistribOwnersContacts(PsActivAll.distribOwnersContacts, month);
 		}
 	}
 }
