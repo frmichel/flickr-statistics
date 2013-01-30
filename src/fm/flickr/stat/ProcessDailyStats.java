@@ -1,5 +1,6 @@
 package fm.flickr.stat;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
@@ -30,17 +31,52 @@ public class ProcessDailyStats
 
 	private static Configuration config = Config.getConfiguration();
 
-	private ActivityStat activityExplored = new ActivityStat();
+	/** Activity about explored photos */
+	private ActivityStat activExpld = new ActivityStat();
 
-	private ActivityStat activityAnyPhoto = new ActivityStat();
+	/** Activity about all (non-explored) photos */
+	private ActivityStat activAll = new ActivityStat();
+
+	/** Activity about all (non-explored) photos one month after post */
+	private ActivityStat activAll1Month = new ActivityStat();
+
+	/** Streams where to write result of activiy about explored and unexplored photos */
+	static class PsActivity
+	{
+		/** File where to write the distribution of photos by nb of groups */
+		PrintStream distribGroup;
+
+		/** File where to write the distribution of photos by nb of views */
+		PrintStream distribViews;
+
+		/** File where to write the distribution of photos by nb of comments */
+		PrintStream distribComments;
+
+		/** File where to write the distribution of photos by nb of favs */
+		PrintStream distribFavs;
+
+		/** File where to write the distribution of photos by nb of tags */
+		PrintStream distribTags;
+
+		/** File where to write the distribution of photos by total nb of photos of the owner */
+		PrintStream distribOwnersPhotos;
+
+		/** File where to write the distribution of photos by total nb of contacts of the owner */
+		PrintStream distribOwnersContacts;
+	}
+
+	/** Streams where to write result of activiy about explored and unexplored photos */
+	private PsActivity psActivity = new PsActivity();
 
 	public static void main(String[] args) {
-
-		SimpleDateFormat dateFrmt = new SimpleDateFormat("yyyy-MM-dd");
-		ProcessDailyStats processor = new ProcessDailyStats();
-		logger.debug("begin");
-
 		try {
+			SimpleDateFormat dateFrmt = new SimpleDateFormat("yyyy-MM-dd");
+			ProcessDailyStats processor = new ProcessDailyStats();
+			if (config.getString("fm.flickr.stat.action.activity").equals("on") || config.getString("fm.flickr.stat.action.anyphoto").equals("on"))
+				processor.initComputeActivity();
+
+			logger.debug("begin");
+
 			// Turn start and stop dates into GregorianCalendars 
 			String startDate = config.getString("fm.flickr.stat.startdate");
 			String[] tokensStart = startDate.split("-");
@@ -76,6 +112,30 @@ public class ProcessDailyStats
 		}
 	}
 
+	private void initComputeActivity() throws FileNotFoundException {
+
+		psActivity.distribGroup = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_group.csv");
+		activExpld.initComputeDistrib(psActivity.distribGroup, config.getInt("fm.flickr.stat.activity.distrib.group.slice"), config.getInt("fm.flickr.stat.activity.distrib.group.nbslices"));
+
+		psActivity.distribViews = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_view.csv");
+		activExpld.initComputeDistrib(psActivity.distribViews, config.getInt("fm.flickr.stat.activity.distrib.view.slice"), config.getInt("fm.flickr.stat.activity.distrib.view.nbslices"));
+
+		psActivity.distribComments = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_comment.csv");
+		activExpld.initComputeDistrib(psActivity.distribComments, config.getInt("fm.flickr.stat.activity.distrib.comment.slice"), config.getInt("fm.flickr.stat.activity.distrib.comment.nbslices"));
+
+		psActivity.distribFavs = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_fav.csv");
+		activExpld.initComputeDistrib(psActivity.distribFavs, config.getInt("fm.flickr.stat.activity.distrib.fav.slice"), config.getInt("fm.flickr.stat.activity.distrib.fav.nbslices"));
+
+		psActivity.distribTags = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_tag.csv");
+		activExpld.initComputeDistrib(psActivity.distribTags, config.getInt("fm.flickr.stat.activity.distrib.tag.slice"), config.getInt("fm.flickr.stat.activity.distrib.tag.nbslices"));
+
+		psActivity.distribOwnersPhotos = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_owners_photo.csv");
+		activExpld.initComputeDistrib(psActivity.distribOwnersPhotos, config.getInt("fm.flickr.stat.activity.distrib.user_photo.slice"), config.getInt("fm.flickr.stat.activity.distrib.user.nbslices"));
+
+		psActivity.distribOwnersContacts = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/distrib_owners_contact.csv");
+		activExpld.initComputeDistrib(psActivity.distribOwnersContacts, config.getInt("fm.flickr.stat.activity.distrib.user_contact.slice"), config.getInt("fm.flickr.stat.activity.distrib.user.nbslices"));
+	}
+
 	/**
 	 * Runs the loading of data files on the given date by the dedicated statistics classes
 	 * 
@@ -99,10 +159,12 @@ public class ProcessDailyStats
 			DailyUploadsStat.loadFileByDay(date);
 
 		if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-			activityExplored.loadFileByDay(date, config.getString("fm.flickr.stat.activity.dir"));
+			activExpld.loadFileByDay(date, config.getString("fm.flickr.stat.activity.dir"));
 
-		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on"))
-			activityAnyPhoto.loadFileByDay(date, config.getString("fm.flickr.stat.anyphoto.dir"));
+		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
+			activAll.loadFileByDay(date, config.getString("fm.flickr.stat.anyphoto.dir"));
+			activAll1Month.loadFileByDay(date, config.getString("fm.flickr.stat.anyphoto_1monthago.dir"));
+		}
 	}
 
 	/**
@@ -125,10 +187,37 @@ public class ProcessDailyStats
 		if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
 			DailyUploadsStat.computeStatistics(ps);
 
-		if (config.getString("fm.flickr.stat.action.activity").equals("on"))
-			activityExplored.computeStatistics(ps);
+		if (config.getString("fm.flickr.stat.action.activity").equals("on")) {
+			activExpld.computeDistribGroup(psActivity.distribGroup, "explored");
+			activExpld.computeDistribViews(psActivity.distribViews, "explored");
+			activExpld.computeDistribComments(psActivity.distribComments, "explored");
+			activExpld.computeDistribFavs(psActivity.distribFavs, "explored");
+			activExpld.computeMonthlyDistribTags(psActivity.distribTags, "explored");
+			activExpld.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, "explored");
+			activExpld.computeDistribOwnersContacts(psActivity.distribOwnersContacts, "explored");
+		}
 
-		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on"))
-			activityAnyPhoto.computeStatistics(ps);
+		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
+			activAll.computeDistribGroup(psActivity.distribGroup, "all 1 day old");
+			activAll1Month.computeDistribGroup(psActivity.distribGroup, "all 1 month old");
+
+			activAll.computeDistribViews(psActivity.distribViews, "all 1 day old");
+			activAll1Month.computeDistribViews(psActivity.distribViews, "all 1 month old");
+
+			activAll.computeDistribComments(psActivity.distribComments, "all 1 day old");
+			activAll1Month.computeDistribComments(psActivity.distribComments, "all 1 month old");
+
+			activAll.computeDistribFavs(psActivity.distribFavs, "all 1 day old");
+			activAll1Month.computeDistribFavs(psActivity.distribFavs, "all 1 month old");
+
+			activAll.computeMonthlyDistribTags(psActivity.distribTags, "all 1 day old");
+			activAll1Month.computeMonthlyDistribTags(psActivity.distribTags, "all 1 month old");
+
+			activAll.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, "all 1 day old");
+			activAll1Month.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, "all 1 month old");
+
+			activAll.computeDistribOwnersContacts(psActivity.distribOwnersContacts, "all 1 day old");
+			activAll1Month.computeDistribOwnersContacts(psActivity.distribOwnersContacts, "all 1 month old");
+		}
 	}
 }

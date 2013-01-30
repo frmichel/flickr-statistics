@@ -251,35 +251,24 @@ public class ActivityStat
 	/**
 	 * Init the header line for the distribution of photos by slice of something (groups, views favs, etc.)
 	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param sliceSize size of one slice in the distribution, for instance 10 will give slices "0 to 9", "10 to 19", etc.  
+	 * @param nbSlices number of slices, for instance 2 will give 2 slices: "0 to 9", "10 to 19", and a last one ">= 20"
 	 */
-	public void initComputeMonthlyDistrib(PrintStream ps, int sliceSize, int nbSlices) throws FileNotFoundException {
-		ps.print("#month; ");
+	public void initComputeDistrib(PrintStream ps, int sliceSize, int nbSlices) throws FileNotFoundException {
+		ps.print("# ; ");
 		for (int i = 0; i < nbSlices - 1; i++)
 			ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
 		ps.print(sliceSize * (nbSlices - 1) + "+ ; ");
 		ps.println();
 	}
-
 	/**
-	 * Compute the distributions of photos by views, favs, groups, number of contacts and photos of their owners
-	 * @param ps where to print the output
-	 */
-	public void computeStatistics(PrintStream ps) {
-		computeMonthlyDistribGroup(ps, null);
-		computeMonthlyDistribViews(ps, null);
-		computeMonthlyDistribComments(ps, null);
-		computeMonthlyDistribFavs(ps, null);
-		computeMonthlyDistribOwnersPhotos(ps, null);
-		computeMonthlyDistribOwnersContacts(ps, null);
-	}
 
-	/**
 	 * Print the distribution of number of photos by number of groups they belong to
 	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribGroup(PrintStream ps, String month) {
+	public void computeDistribGroup(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of groups");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.group.slice");
@@ -297,9 +286,10 @@ public class ActivityStat
 	/**
 	 * Print the distribution of number of photos by number of times they have been viewed
 	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribViews(PrintStream ps, String month) {
+	public void computeDistribViews(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of views");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.view.slice");
@@ -318,9 +308,10 @@ public class ActivityStat
 	 * Print the distribution of number of photos by number of comments
 	 * 
 	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribComments(PrintStream ps, String month) {
+	public void computeDistribComments(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of comments");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.comment.slice");
@@ -339,9 +330,10 @@ public class ActivityStat
 	 * Print the distribution of number of photos by number of favs
 	 * 
 	 * @param ps the stream where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribFavs(PrintStream ps, String month) {
+	public void computeDistribFavs(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of favs");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.fav.slice");
@@ -360,7 +352,8 @@ public class ActivityStat
 	 * Print the distribution of number of photos by number of tags
 	 * 
 	 * @param ps the stream where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
 	public void computeMonthlyDistribTags(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of favs");
@@ -381,13 +374,14 @@ public class ActivityStat
 	 * Print the distribution of number of photos by total number of photos of the owner
 	 * 
 	 * @param ps the stream where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribOwnersPhotos(PrintStream ps, String month) {
+	public void computeDistribOwnersPhotos(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of photos of its owner");
 		int nbPhotos = statistics.size();
-		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.photo.slice");
-		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.user_photo.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.activity.distrib.user.nbslices");
 		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbPhotos: " + nbPhotos);
 
 		if (nbPhotos > 0) {
@@ -403,13 +397,14 @@ public class ActivityStat
 	 * Print the distribution of number of photos by total number of contacts of the owner
 	 * 
 	 * @param ps the stream where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribOwnersContacts(PrintStream ps, String month) {
+	public void computeDistribOwnersContacts(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of contacts of its owner");
 		int nbPhotos = statistics.size();
-		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.contact.slice");
-		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
+		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.user_contact.slice");
+		int nbSlices = config.getInt("fm.flickr.stat.activity.distrib.user.nbslices");
 		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbPhotos: " + nbPhotos);
 
 		if (nbPhotos > 0) {
@@ -425,7 +420,8 @@ public class ActivityStat
 	 * Print the distribution of number of photos according to the data provided in the vector. The vector may typically contain
 	 * the number of groups a photo belongs to, or the number of views, comments and favs.
 	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 * @param sliceSize size of the slice in the distribution of photos
 	 * @param nbSlices number of slices in the distribution of photos
 	 * @param dataToDistribute the data to sort in each slice
@@ -451,16 +447,7 @@ public class ActivityStat
 				distribution.set(sliceIndex, distribution.get(sliceIndex) + 1);
 			}
 
-			if (month == null) {
-				ps.print("#; ");
-				for (int i = 0; i < nbSlices - 1; i++)
-					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
-				ps.print(sliceSize * (nbSlices - 1) + "+ ; ");
-				ps.println();
-				ps.print("; ");
-			} else
-				ps.print(month + "; ");
-
+			ps.print(month + "; ");
 			Iterator<Integer> iter = distribution.iterator();
 			while (iter.hasNext())
 				ps.printf("%2.4f; ", (float) (iter.next()) / nbPhotos);
