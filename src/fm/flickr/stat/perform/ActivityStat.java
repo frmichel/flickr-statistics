@@ -261,8 +261,8 @@ public class ActivityStat
 		ps.print(sliceSize * (nbSlices - 1) + "+ ; ");
 		ps.println();
 	}
-	/**
 
+	/**
 	 * Print the distribution of number of photos by number of groups they belong to
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
@@ -342,8 +342,15 @@ public class ActivityStat
 
 		if (nbPhotos > 0) {
 			Vector<Float> dataToDistribute = new Vector<Float>();
-			for (PhotoItemInfo inf : statistics)
+			for (PhotoItemInfo inf : statistics) {
+				if (inf.getNbFavs().equals("null")) {
+					// workaround for an unexplained bug
+					logger.warn("null string in: " + inf.toString());
+					inf.setNbFavs("0");
+				}
 				dataToDistribute.add(Float.valueOf(inf.getNbFavs()));
+			}
+
 			computeDistrib(ps, month, sliceSize, nbSlices, dataToDistribute);
 		}
 	}
@@ -355,7 +362,7 @@ public class ActivityStat
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
 	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 */
-	public void computeMonthlyDistribTags(PrintStream ps, String month) {
+	public void computeDistribTags(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of favs");
 		int nbPhotos = statistics.size();
 		int sliceSize = config.getInt("fm.flickr.stat.activity.distrib.tag.slice");

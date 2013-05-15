@@ -188,16 +188,18 @@ public class ProcessDailyStats
 			DailyUploadsStat.computeStatistics(ps);
 
 		if (config.getString("fm.flickr.stat.action.activity").equals("on")) {
+			logger.info("Computing statistincs of about activity on explored photos");
 			activExpld.computeDistribGroup(psActivity.distribGroup, "explored");
 			activExpld.computeDistribViews(psActivity.distribViews, "explored");
 			activExpld.computeDistribComments(psActivity.distribComments, "explored");
 			activExpld.computeDistribFavs(psActivity.distribFavs, "explored");
-			activExpld.computeMonthlyDistribTags(psActivity.distribTags, "explored");
+			activExpld.computeDistribTags(psActivity.distribTags, "explored");
 			activExpld.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, "explored");
 			activExpld.computeDistribOwnersContacts(psActivity.distribOwnersContacts, "explored");
 		}
 
 		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
+			logger.info("Computing statistincs of about activity on non-explored photos");
 			activAll.computeDistribGroup(psActivity.distribGroup, "all 1 day old");
 			activAll1Month.computeDistribGroup(psActivity.distribGroup, "all 1 month old");
 
@@ -210,8 +212,8 @@ public class ProcessDailyStats
 			activAll.computeDistribFavs(psActivity.distribFavs, "all 1 day old");
 			activAll1Month.computeDistribFavs(psActivity.distribFavs, "all 1 month old");
 
-			activAll.computeMonthlyDistribTags(psActivity.distribTags, "all 1 day old");
-			activAll1Month.computeMonthlyDistribTags(psActivity.distribTags, "all 1 month old");
+			activAll.computeDistribTags(psActivity.distribTags, "all 1 day old");
+			activAll1Month.computeDistribTags(psActivity.distribTags, "all 1 month old");
 
 			activAll.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, "all 1 day old");
 			activAll1Month.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, "all 1 month old");

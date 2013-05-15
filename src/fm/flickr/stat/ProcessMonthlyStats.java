@@ -40,12 +40,6 @@ public class ProcessMonthlyStats
 	/** File where to write the users average number of photos and contacts */
 	private static PrintStream psUserAvg;
 
-	/** File where to write the distribution of uses by number of photos */
-	private static PrintStream psUserDistribPhoto;
-
-	/** File where to write the distribution of uses by number of contacts */
-	private static PrintStream psUserDistribContact;
-
 	/** File where to write the groups results */
 	private static PrintStream psGroup;
 
@@ -234,11 +228,8 @@ public class ProcessMonthlyStats
 		if (config.getString("fm.flickr.stat.action.time").equals("on"))
 			TimeStat.computeMonthlyPostTimeDistrib(psTimeDistrib, month);
 
-		if (config.getString("fm.flickr.stat.action.user").equals("on")) {
+		if (config.getString("fm.flickr.stat.action.user").equals("on"))
 			UserStat.computeMonthlyAvg(psUserAvg, month);
-			UserStat.computeMonthlyDistribPhoto(psUserDistribPhoto, month);
-			UserStat.computeMonthlyDistribContact(psUserDistribContact, month);
-		}
 
 		if (config.getString("fm.flickr.stat.action.group").equals("on"))
 			GroupStat.computeMonthlyStatistics(psGroup, month);
@@ -254,7 +245,7 @@ public class ProcessMonthlyStats
 			activExpld.computeDistribViews(psActivity.distribViews, month);
 			activExpld.computeDistribComments(psActivity.distribComments, month);
 			activExpld.computeDistribFavs(psActivity.distribFavs, month);
-			activExpld.computeMonthlyDistribTags(psActivity.distribTags, month);
+			activExpld.computeDistribTags(psActivity.distribTags, month);
 			activExpld.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, month);
 			activExpld.computeDistribOwnersContacts(psActivity.distribOwnersContacts, month);
 		}

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
@@ -200,8 +199,6 @@ public class UserStat
 	 */
 	public static void computeStatistics(PrintStream ps) {
 		computeMonthlyAvg(ps, null);
-		/* computeMonthlyDistribPhoto(ps, null);
-		computeMonthlyDistribContact(ps, null); */
 	}
 
 	/**
@@ -283,96 +280,4 @@ public class UserStat
 		}
 	}
 
-	/**
-	 * Display the distribution of users by number of photos
-	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
-	 */
-	public static void computeMonthlyDistribPhoto(PrintStream ps, String month) {
-		logger.info("Computing distribution of users per total number of photos");
-
-		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.photo.slice");
-		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
-		int nbUsers = statistics.size();
-		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbUsers: " + nbUsers);
-
-		if (nbUsers > 0) {
-			// Create the initial distribution array with values 0
-			Vector<Integer> distribution = new Vector<Integer>();
-			for (int i = 0; i < nbSlices; i++)
-				distribution.add(0);
-
-			Collection<UserInfo> usrCollection = statistics.values();
-			ArrayList<UserInfo> usrList = new ArrayList<UserInfo>(usrCollection);
-			for (UserInfo inf : usrList) {
-				// Calculate the slice which this user should be counted in
-				int sliceIndex = new Double(Math.floor(Float.valueOf(inf.getPhotosCount()) / sliceSize)).intValue();
-
-				// Limit the max number of slices: any user with more than nbSlices*slice photos will be in the last slice
-				if (sliceIndex > (nbSlices - 1))
-					sliceIndex = nbSlices - 1;
-				distribution.set(sliceIndex, distribution.get(sliceIndex) + 1);
-			}
-
-			if (month == null) {
-				ps.println("### Distribution of users per number of photos");
-				for (int i = 0; i < nbSlices - 1; i++)
-					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
-				ps.print(sliceSize * (nbSlices - 1) + "+ ; ");
-				ps.println();
-			} else
-				ps.print(month + "; ");
-
-			Iterator<Integer> iter = distribution.iterator();
-			while (iter.hasNext())
-				ps.printf("%2.4f; ", (float) (iter.next()) / nbUsers);
-			ps.println();
-		}
-	}
-
-	/**
-	 * Display the distribution of users by number of contacts
-	 * @param ps where to print the output
-	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
-	 */
-	public static void computeMonthlyDistribContact(PrintStream ps, String month) {
-		logger.info("Computing distribution of users per total number of contacts");
-
-		int sliceSize = config.getInt("fm.flickr.stat.user.distrib.contact.slice");
-		int nbSlices = config.getInt("fm.flickr.stat.user.distrib.nbslices");
-		int nbUsers = statistics.size();
-		logger.debug("sliceSize: " + sliceSize + ", nbSlices: " + nbSlices + ", nbUsers: " + nbUsers);
-
-		if (nbUsers > 0) {
-			// Create the initial distribution array with values 0
-			Vector<Integer> distribution = new Vector<Integer>();
-			for (int i = 0; i < nbSlices; i++)
-				distribution.add(0);
-
-			Collection<UserInfo> usrCollection = statistics.values();
-			ArrayList<UserInfo> usrList = new ArrayList<UserInfo>(usrCollection);
-			for (UserInfo inf : usrList) {
-				// Calculate the slice which this user should be counted in
-				int sliceIndex = new Double(Math.floor((float) (inf.getNumberOfContacts()) / sliceSize)).intValue();
-
-				// Limit the max number of slices: any user with more than nbSlices*slice photos will be in the last slice
-				if (sliceIndex > (nbSlices - 1))
-					sliceIndex = nbSlices - 1;
-				distribution.set(sliceIndex, distribution.get(sliceIndex) + 1);
-			}
-
-			if (month == null) {
-				ps.println("### Distribution of users per number of contacts");
-				for (int i = 0; i < nbSlices; i++)
-					ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
-				ps.println();
-			} else
-				ps.print(month + "; ");
-
-			Iterator<Integer> iter = distribution.iterator();
-			while (iter.hasNext())
-				ps.printf("%2.4f; ", (float) (iter.next()) / nbUsers);
-			ps.println();
-		}
-	}
 }
