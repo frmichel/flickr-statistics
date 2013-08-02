@@ -12,11 +12,11 @@ Daily reports:
 --------------
 - activity about explored and non-explored photos:
   - distribution of number of photos in function of the number of groups they are posted to
-	- distribution of number of photos in function of the number of times they were viewed
-	- distribution of number of photos in function of the number of comments they have
-	- distribution of number of photos in function of the number of favs they have
-	- distribution of number of photos in function of the owner's number of photos
-	- distribution of number of photos in function of the owner's number of contacts
+    - distribution of number of photos in function of the number of times they were viewed
+    - distribution of number of photos in function of the number of comments they have
+    - distribution of number of photos in function of the number of favs they have
+    - distribution of number of photos in function of the owner's number of photos
+    - distribution of number of photos in function of the owner's number of contacts
 - tag: list the tags of explored photos, sorted by number of hits
 - time: distribution of explored photos in function of the hour of day when they were uploaded
 - group: 
