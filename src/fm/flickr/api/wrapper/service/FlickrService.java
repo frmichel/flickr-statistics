@@ -802,46 +802,49 @@ public class FlickrService
 			// Get the first (morst recent) and last (oldest) photos of the page
 			NodeList photosList = xmlResp.getElementsByTagName("photo");
 			int nbPhotos = photosList.getLength();
-			Element firstphoto = (Element) photosList.item(0);
-			Element lastphoto = (Element) photosList.item(nbPhotos - 1);
+			if (nbPhotos > 0) {
 
-			// If the searched date is before the last (oldest) photo, ie.
-			// if date < date(last photo), then we must look further in the past
-			if (searchedDate < Long.valueOf(lastphoto.getAttribute("dateadded"))) {
-				if (page + increment < maxPages)
-					page += increment;
-				logger.trace("searchedDate < " + lastphoto.getAttribute("dateadded") + ": going further in the past");
-			}
+				Element firstphoto = (Element) photosList.item(0);
+				Element lastphoto = (Element) photosList.item(nbPhotos - 1);
 
-			// If the searched date is between the first (most recent) and the last (oldest) photos of the page, ie.
-			// older than the first photo and more recent than the last photo, ie.
-			// if date(last photo) <= searchedDate <= date(first photo), then we have found the right page!
-			else if (Long.valueOf(lastphoto.getAttribute("dateadded")) <= searchedDate && searchedDate <= Long.valueOf(firstphoto.getAttribute("dateadded"))) {
-				indexInPage = 0;
-				while (indexInPage < photosList.getLength()) {
-					Element photo = (Element) photosList.item((int) indexInPage);
-					if (searchedDate > Long.valueOf(photo.getAttribute("dateadded")))
-						break;
-					indexInPage++;
-					// When this inner loop is over, we have found the first photo, in the page, that is more recent than startDate
+				// If the searched date is before the last (oldest) photo, ie.
+				// if date < date(last photo), then we must look further in the past
+				if (searchedDate < Long.valueOf(lastphoto.getAttribute("dateadded"))) {
+					if (page + increment < maxPages)
+						page += increment;
+					logger.trace("searchedDate < " + lastphoto.getAttribute("dateadded") + ": going further in the past");
 				}
-				foundPage = true;
-				break;
-			}
 
-			// If the searched date is more recent than (after) the first (most recent) photo, ie.
-			// if searchedDate > date(first photo), then we have to get back a bit to more recent photos
-			else if (searchedDate > Long.valueOf(firstphoto.getAttribute("dateadded"))) {
-				if (page == 1) {
-					// If page == 1, then the searched date is later than last post on the group, so we actually found the date
-					logger.debug("There was no post later than the searched date");
-					foundPage = true;
+				// If the searched date is between the first (most recent) and the last (oldest) photos of the page, ie.
+				// older than the first photo and more recent than the last photo, ie.
+				// if date(last photo) <= searchedDate <= date(first photo), then we have found the right page!
+				else if (Long.valueOf(lastphoto.getAttribute("dateadded")) <= searchedDate && searchedDate <= Long.valueOf(firstphoto.getAttribute("dateadded"))) {
 					indexInPage = 0;
+					while (indexInPage < photosList.getLength()) {
+						Element photo = (Element) photosList.item((int) indexInPage);
+						if (searchedDate > Long.valueOf(photo.getAttribute("dateadded")))
+							break;
+						indexInPage++;
+						// When this inner loop is over, we have found the first photo, in the page, that is more recent than startDate
+					}
+					foundPage = true;
 					break;
 				}
-				if (page - increment > 0)
-					page -= increment;
-				logger.debug("searchedDate > " + firstphoto.getAttribute("dateadded") + ": going futur");
+
+				// If the searched date is more recent than (after) the first (most recent) photo, ie.
+				// if searchedDate > date(first photo), then we have to get back a bit to more recent photos
+				else if (searchedDate > Long.valueOf(firstphoto.getAttribute("dateadded"))) {
+					if (page == 1) {
+						// If page == 1, then the searched date is later than last post on the group, so we actually found the date
+						logger.debug("There was no post later than the searched date");
+						foundPage = true;
+						indexInPage = 0;
+						break;
+					}
+					if (page - increment > 0)
+						page -= increment;
+					logger.debug("searchedDate > " + firstphoto.getAttribute("dateadded") + ": going futur");
+				}
 			}
 
 			// Next turn in the dicotomy
@@ -1007,15 +1010,15 @@ public class FlickrService
 
 		String url = "http://farm" + farmId + ".static.flickr.com/" + serverId + "/" + id + "_" + secret;
 		switch (type) {
-		case SQUARE:
-			return url + "_s.jpg";
-		case THUMBNAIL:
-			return url + "_t.jpg";
-		case BIG:
-			return url + "_b.jpg";
-		case MEDIUM:
-		default:
-			return url + ".jpg";
+			case SQUARE:
+				return url + "_s.jpg";
+			case THUMBNAIL:
+				return url + "_t.jpg";
+			case BIG:
+				return url + "_b.jpg";
+			case MEDIUM:
+			default:
+				return url + ".jpg";
 		}
 	}
 

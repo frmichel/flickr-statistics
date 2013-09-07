@@ -108,6 +108,9 @@ public class ProcessProbabilityPerWeekDayAndHour
 	}
 
 	/**
+	 * 
+	 * Distribute the data loaded about upload time and number of uploads into 2 tables 
+	 * of the same data sumed by date and time slot
 	 * @param ps the output where to print results
 	 * @param dayOfWeek 1=Sunday to 7=Saturday 
 	 */
@@ -116,8 +119,6 @@ public class ProcessProbabilityPerWeekDayAndHour
 		Vector<Integer> postTimeDistrib = TimeStat.getPostTimeDistrib();
 		Vector<Long> uploadDistrib = DailyUploadsStat.getUploadDistribution();
 
-		// Print the results cut down by hour of day, from 0h to 23h
-		// Output format is: YYY-MM-DD HH:MM; nb of explored photos; nb of uploads; % of explored/posted  
 		for (int hour = 0; hour < 24; hour++) {
 
 			int curVal = exploredTable.get(dayOfWeek).get(hour);

@@ -13,13 +13,21 @@ Read data between fm.flickr.stat.startdate and fm.flickr.stat.enddate, and compu
       "nb of explored photos in a group / total nb of photos uploaded to that group" during the same time slot.
       This takes a long time (lots of requests), to be activated cautiously...
 - upload: distribution of number of photos posted to Flickr in function of the hour of day
-- activity and anyphoto:
+- activity about explored photos:
 	- distribution of number of explored photos in function of the number of groups they are posted to
 	- distribution of number of explored photos in function of the number of times they were viewed
 	- distribution of number of explored photos in function of the number of comments they have
 	- distribution of number of explored photos in function of the number of favs they have
-	- distribution of number of explored photos in function of the owner's number of photos (starting 15/11/2012)
-	- distribution of number of explored photos in function of the owner's number of contacts (starting 15/11/2012)
+	- distribution of number of explored photos in function of the owner's number of photos (data collected starting 15 Nov 2012)
+	- distribution of number of explored photos in function of the owner's number of contacts (data collected starting 15 Nov 2012)
+- activity about any unexplored photos: data collected starting 8 Jan. 2013 => for photos starting at 8 Dec. 2012:
+	- distribution of number of explored photos in function of the number of groups they are posted to
+	- distribution of number of explored photos in function of the number of times they were viewed
+	- distribution of number of explored photos in function of the number of comments they have
+	- distribution of number of explored photos in function of the number of favs they have
+	- distribution of number of explored photos in function of the owner's number of photos
+	- distribution of number of explored photos in function of the owner's number of contacts
+
 
 ProcessMonthlyStats:
 ====================
@@ -39,8 +47,8 @@ by month, for categories group, tag, user, time, user, activity and upload:
 	- file monthly_distrib_view.csv: distribution of number of explored photos in function of the number of times they were viewed
 	- file monthly_distrib_comment.csv: distribution of number of explored photos in function of the number of comments they have
 	- file monthly_distrib_fav.csv: distribution of number of explored photos in function of the number of favs they have
-	- file monthly_distrib_owners_photo.csv shows the distribution of those users per number of photos that they have (starting 15/11/2012)
-	- file monthly_distrib_owners_contact.csv shows the distribution of those users per number of contacts that they have (starting 15/11/2012)
+	- file monthly_distrib_owners_photo.csv shows the distribution of users per number of photos that they have (starting 15/11/2012)
+	- file monthly_distrib_owners_contact.csv shows the distribution of users per number of contacts that they have (starting 15/11/2012)
 
   
 ProcessProbabilityPerWeekDayAndHour:
