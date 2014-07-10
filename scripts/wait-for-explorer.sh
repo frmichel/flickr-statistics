@@ -17,7 +17,7 @@ fi
 
 #--- 2. Otherwise, look for the explored photos using the Flickr API
 APIRESP=_api_resp.xml
-wget --tries=3 --waitretry=5 --output-document=$APIRESP "http://api.flickr.com/services/rest/?method=flickr.interestingness.getList&api_key=ae7ff43c5fbbccd09a1643adf3160cd2&date=${YESTERDAY}&format=rest" 2>null >> /tmp/fmichel/explored.log
+wget --no-check-certificate --tries=3 --waitretry=5 --output-document=$APIRESP "https://api.flickr.com/services/rest/?method=flickr.interestingness.getList&api_key=ae7ff43c5fbbccd09a1643adf3160cd2&date=${YESTERDAY}&format=rest" 2>null >> /tmp/fmichel/explored.log
 
 STATUS=""
 # If searched date is before yestereday, the status should be failed

@@ -13,9 +13,9 @@ DATE=`date --date="9 hours ago" "+%Y-%m-%d"`
 
 OUTPUTXML=_flickr_recently_posted.xml
 OUTPUTFILE=$DATE.txt
-REQUEST='http://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=your_api_key&per_page=150&page=1&format=rest'
+REQUEST='https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=your_api_key&per_page=150&page=1&format=rest'
 
-wget --tries=3 --waitretry=5 --output-document=$OUTPUTXML "$REQUEST" 2>&1
+wget --no-check-certificate --tries=3 --waitretry=5 --output-document=$OUTPUTXML "$REQUEST" 2>&1
 
 # Test if status is ailed
 grep --silent --ignore-case 'stat="fail"' $OUTPUTXML > /dev/null

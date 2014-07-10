@@ -169,7 +169,7 @@ public class ProcessProbabilityPerWeekDayAndHour
 		case 2:
 			return "wednesday";
 		case 3:
-			return "thurday";
+			return "thursday";
 		case 4:
 			return "friday";
 		case 5:

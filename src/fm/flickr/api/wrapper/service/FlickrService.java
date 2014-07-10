@@ -43,8 +43,8 @@ public class FlickrService
 		SQUARE, THUMBNAIL, MEDIUM, BIG
 	};
 
-	private final static String FLICKR_AUTH_URL = "http://flickr.com/services/auth/?";
-	private final static String FLICKR_SERVICES_URL = "http://api.flickr.com/services/rest/?";
+	private final static String FLICKR_AUTH_URL = "https://flickr.com/services/auth/?";
+	private final static String FLICKR_SERVICES_URL = "https://api.flickr.com/services/rest/?";
 	private final static int MAX_PHOTOS_PER_PAGE = 500;
 
 	public FlickrService() {
