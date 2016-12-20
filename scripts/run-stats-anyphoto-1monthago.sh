@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script runs the retrieval of activity data about not explored photos, posted ONE MONTH AGO (30 days ago more precisely),
+# This script runs the retrieval of activity data about non explored photos, posted ONE MONTH AGO (30 days ago more precisely),
 # using a list of photo ids collected by script collect-recently-posted.sh and stored in
 # /home/fmichel/franck/FlickrStatistics/stats/anyphoto/ids.
 

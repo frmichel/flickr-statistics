@@ -17,7 +17,7 @@ REQUEST='https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&ap
 
 wget --no-check-certificate --tries=3 --waitretry=5 --output-document=$OUTPUTXML "$REQUEST" 2>&1
 
-# Test if status is ailed
+# Test if status is failed
 grep --silent --ignore-case 'stat="fail"' $OUTPUTXML > /dev/null
 if test $? -eq 0; then
     echo "Error status failed:"
