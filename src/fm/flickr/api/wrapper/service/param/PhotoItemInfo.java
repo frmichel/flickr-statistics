@@ -47,7 +47,9 @@ public class PhotoItemInfo implements Serializable
 
 	private TagItemsSet tagsSet;
 
-	// Fields reserved for ActicityStat when reloadnig files acquired previously
+	private Location location;
+
+	// Fields reserved for ActicityStat when reloading files acquired previously
 
 	private int nbTags;
 
@@ -70,7 +72,8 @@ public class PhotoItemInfo implements Serializable
 		this.nbComments = "";
 		this.nbFavs = "";
 		this.nbGroups = "";
-		tagsSet = null;
+		this.tagsSet = null;
+		this.location = null;
 	}
 
 	public String getOwnerNsid() {
@@ -209,6 +212,14 @@ public class PhotoItemInfo implements Serializable
 		this.nbTags = nbTags;
 	}
 
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
 	public int getOwnersContacts() {
 		return ownersContacts;
 	}
@@ -227,7 +238,17 @@ public class PhotoItemInfo implements Serializable
 
 	@Override
 	public String toString() {
-		return "PhotoItemInfo [photoId=" + photoId + ", interestingnessRank=" + interestingnessRank + ", ownerNsid=" + ownerNsid + ", ownerUserName=" + ownerUserName + ", ownerRealName=" + ownerRealName + ", title=" + title + ", description=" + description + ", datePost=" + datePost + ", dateTake=" + dateTake + ", pageUrl=" + pageUrl + ", nbViews=" + nbViews + ", nbNotes=" + nbNotes + ", nbComments=" + nbComments + ", nbFavs=" + nbFavs + ", nbGroups=" + nbGroups + ", tagsSet=" + tagsSet + "]";
+		
+		String locStr = "";
+ 		if (location != null)
+			locStr = ", longitude=" + location.getLongitude() + ", latitude=" + location.getLatitude() + ", country=" + location.getCountry();
+			
+		return "PhotoItemInfo [photoId=" + photoId + ", interestingnessRank=" + interestingnessRank + 
+				", ownerNsid=" + ownerNsid + ", ownerUserName=" + ownerUserName + ", ownerRealName=" + ownerRealName +
+				", title=" + title + ", description=" + description + ", datePost=" + datePost + ", dateTake=" + dateTake + 
+				", pageUrl=" + pageUrl + ", nbViews=" + nbViews + ", nbNotes=" + nbNotes + 
+				", nbComments=" + nbComments + ", nbFavs=" + nbFavs + ", nbGroups=" + nbGroups + ", tagsSet=" + tagsSet +
+				locStr + "]";
 	}
 
 }

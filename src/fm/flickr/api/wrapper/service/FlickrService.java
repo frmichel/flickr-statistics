@@ -20,6 +20,7 @@ import org.w3c.dom.NodeList;
 import fm.flickr.api.wrapper.service.param.FlickrCredentials;
 import fm.flickr.api.wrapper.service.param.GroupItem;
 import fm.flickr.api.wrapper.service.param.GroupItemsSet;
+import fm.flickr.api.wrapper.service.param.Location;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemInfo;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
@@ -476,6 +477,18 @@ public class FlickrService
 			// Get the list of tags
 			NodeList tags = xmlResp.getElementsByTagName("tag");
 			result.setTagsSet(new TagItemsSet(makeTagListFromTagNodesList(tags), photoId));
+
+			// Get the location
+			result.setLocation(new Location()); // init empty location
+			NodeList location = xmlResp.getElementsByTagName("location");
+			if (location != null) {
+				Element loc = (Element) location.item(0);
+				if (loc != null) {
+					NodeList country = xmlResp.getElementsByTagName("country");
+					Element countryEl = (Element) country.item(0);
+					result.setLocation(new Location(loc.getAttribute("longitude"), loc.getAttribute("latitude"), countryEl.getTextContent()));
+				}
+			}
 
 			logger.debug("Returning info: " + result.toString());
 			return result;
@@ -1010,15 +1023,15 @@ public class FlickrService
 
 		String url = "http://farm" + farmId + ".static.flickr.com/" + serverId + "/" + id + "_" + secret;
 		switch (type) {
-			case SQUARE:
-				return url + "_s.jpg";
-			case THUMBNAIL:
-				return url + "_t.jpg";
-			case BIG:
-				return url + "_b.jpg";
-			case MEDIUM:
-			default:
-				return url + ".jpg";
+		case SQUARE:
+			return url + "_s.jpg";
+		case THUMBNAIL:
+			return url + "_t.jpg";
+		case BIG:
+			return url + "_b.jpg";
+		case MEDIUM:
+		default:
+			return url + ".jpg";
 		}
 	}
 

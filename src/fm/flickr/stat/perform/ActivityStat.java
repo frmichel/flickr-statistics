@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.service.FlickrService;
 import fm.flickr.api.wrapper.service.param.GroupItemsSet;
+import fm.flickr.api.wrapper.service.param.Location;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemInfo;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
@@ -135,18 +136,33 @@ public class ActivityStat
 		logger.info("Saving activity info about " + photos.size() + " photos into file " + outputFile.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + photos.size());
-		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts");
+		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts; owner's userid; longitude; latitude; country");
 
 		Collection<PhotoItemInfo> photoItemInfo = photos.values();
 		Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
 		while (iter.hasNext()) {
 			PhotoItemInfo entry = iter.next();
+			// Photo ID; Rank; Views;
 			writer.print(entry.getPhotoId() + FIELD_SEPARATOR + entry.getInterestingnessRank() + FIELD_SEPARATOR + entry.getNbViews());
+			// Comments; Favs; Notes;
 			writer.print(FIELD_SEPARATOR + entry.getNbComments() + FIELD_SEPARATOR + entry.getNbFavs() + FIELD_SEPARATOR + entry.getNbNotes());
+			// Groups; Tags;
 			writer.print(FIELD_SEPARATOR + entry.getNbGroups() + FIELD_SEPARATOR + entry.getTagsSet().size());
+			// Uploaded date/time
 			writer.print(FIELD_SEPARATOR + entry.getDatePost());
+
+			// Owner's nb of photos
 			writer.print(FIELD_SEPARATOR + users.get(entry.getPhotoId()).getPhotosCount());
+			// Owner's nb of contacts
 			writer.print(FIELD_SEPARATOR + users.get(entry.getPhotoId()).getNumberOfContacts());
+			// Owner's user id
+			writer.print(FIELD_SEPARATOR + users.get(entry.getPhotoId()).getUserId());
+
+			// Location
+			writer.print(FIELD_SEPARATOR + entry.getLocation().getLongitude());
+			writer.print(FIELD_SEPARATOR + entry.getLocation().getLatitude());
+			writer.print(FIELD_SEPARATOR + entry.getLocation().getCountry());
+
 			writer.println();
 		}
 
@@ -234,6 +250,18 @@ public class ActivityStat
 							inf.setOwnersPhotos(-1);
 							inf.setOwnersContacts(-1);
 						}
+
+						// Owner's user id
+						if (tokens.length > 11)
+							inf.setOwnerNsid(tokens[11]);
+
+						// Location data introduced in December 2016
+						if (tokens.length > 12) {
+							Location loc = new Location(tokens[12], tokens[13], tokens[14]);
+							inf.setLocation(loc);
+						} else
+							inf.setLocation(new Location("", "", ""));
+
 						statistics.add(inf);
 					}
 				}
@@ -445,7 +473,7 @@ public class ActivityStat
 				distribution.add(0);
 
 			for (Float data : dataToDistribute) {
-				// Calculate the slice which this data should be counted in
+				// Calculate the slice in which this data should be counted
 				int sliceIndex = new Double(data / sliceSize).intValue();
 
 				// Limit the max number of slices: any data over nbSlices*sliceSize will be in the last catch-all slice
