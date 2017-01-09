@@ -486,7 +486,10 @@ public class FlickrService
 				if (loc != null) {
 					NodeList country = xmlResp.getElementsByTagName("country");
 					Element countryEl = (Element) country.item(0);
-					result.setLocation(new Location(loc.getAttribute("longitude"), loc.getAttribute("latitude"), countryEl.getTextContent()));
+					String countryStr = "";
+					if (countryEl != null)
+						countryStr = countryEl.getTextContent();
+					result.setLocation(new Location(loc.getAttribute("longitude"), loc.getAttribute("latitude"), countryStr));
 				}
 			}
 
