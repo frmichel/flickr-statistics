@@ -57,7 +57,7 @@ Then:
     and the statistical reports computation fm.flickr.stat.Process*.java):  
     fm.flickr.stat.startdate = 2013-04-01  
     fm.flickr.stat.enddate = 2013-07-31
-- set features on or off, again this applies to both the data collection or later on during reports computation:  
+  - set features on or off, again this applies to both the data collection or later on during reports computation:  
     fm.flickr.stat.action.group = off  
     fm.flickr.stat.action.tag = off  
     fm.flickr.stat.action.time = off  
