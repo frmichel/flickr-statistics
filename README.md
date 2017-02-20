@@ -1,11 +1,14 @@
 # Flickr-statistics
 
-This project provides java tools targeted to collect data from Flickr in order to explore 2 subjects: (i) the number and rate of uploads to Flickr (see http://www.flickr.com/photos/franckmichel/6855169886/), and (ii) produce statistical reports about explored photos and compare them with other unexplored photos in order to figure out what makes explored photos so special (see http://www.flickr.com/photos/franckmichel/8825511026/ for my conclusions). This 2nd point deals with number of views, comments, favorites, tags, groups, as well as photo owners and the time they were posted.
+This project provides java tools targeted to collect data from Flickr in order to explore 2 subjects:
+- (i) the number and rate of uploads to Flickr (see http://www.flickr.com/photos/franckmichel/6855169886/), and
+- (ii) produce statistical reports about explored photos and compare them with other unexplored photos in order to figure out what makes explored photos special (see http://www.flickr.com/photos/franckmichel/8825511026/ for some tentative conclusions).
 
-Tools allow to report statistics either daily or monthly.
+This 2nd point deals with number of views, comments, favorites, tags, groups, as well as photo owners and the time photos were posted.
+
+Tools allow to report statistics either globally over a period of time, or monthly.
 
 ## REPORTS:
-
 
 ### Daily reports
 
@@ -36,9 +39,11 @@ Tools allow to report statistics either daily or monthly.
 - uploads: total number of photos uploaded every month
 
 
-### Probability of a photo to be explored as a function of the week day and hour
+### "Probability" of a photo to be explored as a function of the week day and hour
 
-Ratio of the number of explored photos / number of photos uploaded, as function of the post time (0 to 23h) AND the week day. 
+Ratio of the number of explored photos / number of photos uploaded, as function of the post time (0 to 23h) AND the week day.
+
+Crosses data from the uploads the activity (post date and time).
 
 
 ## HOW TO USE

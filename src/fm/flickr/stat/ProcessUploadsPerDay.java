@@ -14,8 +14,8 @@ import fm.flickr.stat.perform.DailyUploadsStat;
 import fm.util.Config;
 
 /** 
- * This specific main class simply reports what already exists in daily files, namely the sum of photos
- * uploaded every day, and stores the result in file daily_uploads.csv.
+ * This main class simply reports what already exists in daily files, namely the sum of photos
+ * uploaded every day during a considered period of time, and stores the result in file daily_uploads.csv.
  * 
  * @author fmichel
 */
@@ -42,7 +42,7 @@ public class ProcessUploadsPerDay
 			GregorianCalendar calEnd = new GregorianCalendar(Integer.valueOf(tokensEnd[0]), Integer.valueOf(tokensEnd[1]) - 1, Integer.valueOf(tokensEnd[2]));
 
 			//--- Load all daily data files created between start date and end date
-			
+
 			PrintStream ps = new PrintStream(config.getString("fm.flickr.stat.uploads.dir") + "/daily_uploads.csv");
 
 			calStart = new GregorianCalendar(Integer.valueOf(tokensStart[0]), Integer.valueOf(tokensStart[1]) - 1, Integer.valueOf(tokensStart[2]));

@@ -10,8 +10,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.util.ServiceException;
+import fm.flickr.stat.perform.ActivityStat;
 import fm.flickr.stat.perform.DailyUploadsStat;
-import fm.flickr.stat.perform.TimeStat;
 import fm.util.Config;
 
 /** 
@@ -32,7 +32,11 @@ public class ProcessProbabilityPerWeekDayAndHour
 
 	private static Vector<Vector<Integer>> exploredTable = new Vector<Vector<Integer>>();
 
+	/** Number of uploaded photos by day and hour: Matrix of 7 days x 24 hours: */
 	private static Vector<Vector<Long>> uploadTable = new Vector<Vector<Long>>();
+
+	/** Activity about explored photos */
+	private static ActivityStat activity = null;
 
 	/**
 	 * Initialize the table of "probability per day of way and per hour"
@@ -100,23 +104,26 @@ public class ProcessProbabilityPerWeekDayAndHour
 	 * @throws IOException
 	 */
 	private static void loadFileByDay(String date) throws ServiceException {
-		TimeStat.reset();
-		DailyUploadsStat.reset();
 
-		TimeStat.loadFileByDay(date);
+		// Load the Activity files
+		activity = new ActivityStat();
+		activity.loadFileByDay(date, config.getString("fm.flickr.stat.activity.dir"));
+
+		// Load the upload file
+		DailyUploadsStat.reset();
 		DailyUploadsStat.loadFileByDay(date);
 	}
 
 	/**
 	 * 
 	 * Distribute the data loaded about upload time and number of uploads into 2 tables 
-	 * of the same data sumed by date and time slot
+	 * of the same data summed by date and time slot
 	 * @param ps the output where to print results
 	 * @param dayOfWeek 1=Sunday to 7=Saturday 
 	 */
-	private static void computeStatistics(int dayOfWeek, PrintStream ps) {
+	private static void computeStatistics(int dayOfWeek, PrintStream ps) throws ServiceException {
 
-		Vector<Integer> postTimeDistrib = TimeStat.getPostTimeDistrib();
+		Vector<Integer> postTimeDistrib = activity.getPostTimeDistrib();
 		Vector<Long> uploadDistrib = DailyUploadsStat.getUploadDistribution();
 
 		for (int hour = 0; hour < 24; hour++) {
@@ -134,9 +141,12 @@ public class ProcessProbabilityPerWeekDayAndHour
 	 */
 	private static void computeProba(PrintStream ps) {
 		ps.println("; 00h; 01h; 02h; 03h; 04h; 05h; 06h; 07h; 08h; 09h; 10h; 11h; 12h; 13h; 14h; 15h; 16h; 17h; 18h; 19h; 20h; 21h; 22h; 23h");
+
 		for (int day = 0; day < 7; day++) {
 			ps.print(getDayName(day) + "; ");
+
 			for (int hour = 0; hour < 24; hour++) {
+				
 				if (uploadTable.get(day).get(hour) != 0) { // avoid division by 0
 					float f = exploredTable.get(day).get(hour) * 100;
 					f = f / uploadTable.get(day).get(hour);

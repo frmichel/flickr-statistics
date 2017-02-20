@@ -36,7 +36,7 @@ import fm.util.Util;
  * 
  * Daily stats load result files over a period of time and sort groups by number of occurences, ie. the number of
  * explored photos that belong to each group.
- * A feature of daily stats also calculate the ratio number of explored photos / number of uploads to the group 
+ * A feature of daily stats also calculates the ratio number of "explored photos in the group / number of uploads to the group" 
  * over the period considered, to figure out some kind of "probability of being explored of a group".
  * 
  * Monthly stats will compute the average and max number of groups a photo belongs to.
@@ -377,7 +377,7 @@ public class GroupStat
 
 		ps.println("group ID; group name; total nb photos; nb members; nb photos posted; nb explored photos; explore proba; is moderated");
 
-		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
+		for (int i = 575; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
 
 			// Filter out some groups based on their names

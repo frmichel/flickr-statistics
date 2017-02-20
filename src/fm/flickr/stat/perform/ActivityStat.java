@@ -9,7 +9,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -50,6 +55,8 @@ public class ActivityStat
 
 	/** Vector in which all data files are loaded back for processing */
 	private Vector<PhotoItemInfo> statistics = new Vector<PhotoItemInfo>();
+
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	/**
 	 * <p>Retrieve detailed information for each photo passed in parameter, as well
@@ -207,7 +214,7 @@ public class ActivityStat
 	}
 
 	/** 
-	* Parse the content of the given file and store its content into the static map statistics
+	* Parse the content of the given file and store its content into the map statistics
 	* @param file  
 	*/
 	private void loadFile(File file) throws ServiceException {
@@ -240,6 +247,7 @@ public class ActivityStat
 						inf.setNbTags(Integer.valueOf(tokens[7]));
 
 						// tokens[8] stored initially a number of hours, after 2012-12-02 it stores the post date and time...
+						inf.setDatePost(tokens[8]);
 
 						// Owner's nb of photos and contacts were not introduced at first, so some files
 						// may no contain those fields.
@@ -524,6 +532,35 @@ public class ActivityStat
 			while (iter.hasNext())
 				ps.printf("%2.4f; ", (float) (iter.next()) / nbPhotos);
 			ps.println();
+		}
+	}
+
+	/**
+	 * Calculate the distribution of post times over 24h.
+	 * Sort post date/times by daily hour and count number of hits per hour and return the distribution
+	 */
+	public Vector<Integer> getPostTimeDistrib() throws ServiceException {
+
+		GregorianCalendar cal = new GregorianCalendar();
+		Vector<Integer> distribution = new Vector<Integer>();
+
+		// Init the distribution
+		for (int i = 0; i < 24; i++)
+			distribution.add(0);
+
+		try {
+			for (PhotoItemInfo item : statistics) {
+				Date date = sdf.parse(item.getDatePost());
+				cal.setTime(date);
+				int hour = cal.get(Calendar.HOUR_OF_DAY);
+				distribution.set(hour, distribution.get(hour) + 1);
+			}
+			return distribution;
+
+		} catch (ParseException e) {
+			String errMsg = "Invalid date format. Exception: " + e.toString();
+			logger.warn(errMsg);
+			throw new ServiceException(errMsg);
 		}
 	}
 }

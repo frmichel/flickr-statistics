@@ -50,7 +50,7 @@ public class TimeStat
 
 	private static FlickrService service = new FlickrService();
 
-	/** Date and time of post dates, to calculate the distribution of post times */
+	/** Date and time of post dates */
 	private static List<Date> statPostTimeDate = new ArrayList<Date>();
 
 	/**
@@ -240,8 +240,11 @@ public class TimeStat
 		// Calculate the distribution of post times on 24h
 		GregorianCalendar cal = new GregorianCalendar();
 		Vector<Integer> distribution = new Vector<Integer>();
+		
+		// Init the distribution
 		for (int i = 0; i < 24; i++)
 			distribution.add(0);
+		
 		for (Date date : statPostTimeDate) {
 			cal.setTime(date);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
@@ -259,24 +262,7 @@ public class TimeStat
 		ps.println();
 	}
 
-	/**
-	 * Sort post date/times by daily hour and count number of hits per hour and return the distribution
-	 */
-	public static Vector<Integer> getPostTimeDistrib() {
-		// Calculate the distribution of post times on 24h
-		GregorianCalendar cal = new GregorianCalendar();
-		Vector<Integer> distribution = new Vector<Integer>();
-		for (int i = 0; i < 24; i++)
-			distribution.add(0);
-		for (Date date : statPostTimeDate) {
-			cal.setTime(date);
-			int hour = cal.get(Calendar.HOUR_OF_DAY);
-			distribution.set(hour, distribution.get(hour) + 1);
-		}
-		return distribution;
-	}
-
-	public static void computePostTimeDistrib(PrintStream ps) {
+	private static void computePostTimeDistrib(PrintStream ps) {
 		computeMonthlyPostTimeDistrib(ps, null);
 	}
 }
