@@ -49,4 +49,8 @@ public class Location implements Serializable
 	public void setCountry(String country) {
 		this.country = country;
 	}
+	
+	public Boolean isSet() {
+		return !latitude.equals("") && !longitude.equals("");
+	}
 }

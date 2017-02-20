@@ -72,10 +72,10 @@ public class ProcessMonthlyStats
 
 		/** File where to write the distribution of photos by total nb of contacts of the owner */
 		PrintStream distribOwnersContacts;
-	}
 
-	/** Activity about all (non-explored) photos */
-	private ActivityStat activAll = new ActivityStat();
+		/** File where to write the distribution of photos by wether they have location or not */
+		PrintStream distribLocation;
+	}
 
 	/** Activity about explored photos */
 	private ActivityStat activExpld = new ActivityStat();
@@ -185,6 +185,9 @@ public class ProcessMonthlyStats
 
 			psActivity.distribOwnersContacts = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_owners_contact.csv");
 			activExpld.initComputeDistrib(psActivity.distribOwnersContacts, config.getInt("fm.flickr.stat.activity.distrib.user_contact.slice"), config.getInt("fm.flickr.stat.activity.distrib.user.nbslices"));
+
+			psActivity.distribLocation = new PrintStream(config.getString("fm.flickr.stat.activity.dir") + "/monthly_distrib_location.csv");
+			psActivity.distribLocation.println("# ; yes; no");
 		}
 	}
 
@@ -213,9 +216,6 @@ public class ProcessMonthlyStats
 
 		if (config.getString("fm.flickr.stat.action.activity").equals("on"))
 			activExpld.loadFilesByMonth(yearMonth, config.getString("fm.flickr.stat.activity.dir"));
-
-		if (config.getString("fm.flickr.stat.action.anyphoto").equals("on"))
-			activAll.loadFilesByMonth(yearMonth, config.getString("fm.flickr.stat.anyphoto.dir"));
 	}
 
 	/**
@@ -248,6 +248,7 @@ public class ProcessMonthlyStats
 			activExpld.computeDistribTags(psActivity.distribTags, month);
 			activExpld.computeDistribOwnersPhotos(psActivity.distribOwnersPhotos, month);
 			activExpld.computeDistribOwnersContacts(psActivity.distribOwnersContacts, month);
+			activExpld.computeDistribLocation(psActivity.distribLocation, month);
 		}
 	}
 }

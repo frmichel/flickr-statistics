@@ -257,7 +257,12 @@ public class ActivityStat
 
 						// Location data introduced in December 2016
 						if (tokens.length > 12) {
-							Location loc = new Location(tokens[12], tokens[13], tokens[14]);
+							String longitude = tokens[12];
+							String latitude = tokens[13];
+							String country = "";
+							if (tokens.length >= 15)
+								country = tokens[14];
+							Location loc = new Location(longitude, latitude, country);
 							inf.setLocation(loc);
 						} else
 							inf.setLocation(new Location("", "", ""));
@@ -452,14 +457,46 @@ public class ActivityStat
 	}
 
 	/**
+	 * Print the distribution of photos by wether they have location or not: yes or no.
+	 * 
+	 * @param ps the stream where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
+	 */
+	public void computeDistribLocation(PrintStream ps, String month) {
+		logger.info("Computing distribution of photos by number of favs");
+		int nbPhotos = statistics.size();
+
+		if (nbPhotos > 0) {
+			int nbYes = 0;
+			int nbNo = 0;
+
+			for (PhotoItemInfo inf : statistics)
+				if (inf.getLocation() != null)
+					if (inf.getLocation().isSet())
+						nbYes++;
+					else
+						nbNo++;
+				else
+					nbNo++;
+
+			ps.print(month + "; ");
+			ps.printf("%2.4f; ", (float) nbYes / nbPhotos);
+			ps.printf("%2.4f; ", (float) nbNo / nbPhotos);
+			ps.println();
+		}
+	}
+
+	/**
 	 * Print the distribution of number of photos according to the data provided in the vector. The vector may typically contain
 	 * the number of groups a photo belongs to, or the number of views, comments and favs.
+	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
 	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
 	 * @param sliceSize size of the slice in the distribution of photos
 	 * @param nbSlices number of slices in the distribution of photos
-	 * @param dataToDistribute the data to sort in each slice
+	 * @param dataToDistribute the data to sort in each slice. This is a vector, each entry corresponds to one photo
 	 */
 	private void computeDistrib(PrintStream ps, String month, int sliceSize, int nbSlices, Vector<Float> dataToDistribute) {
 
