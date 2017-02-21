@@ -377,7 +377,7 @@ public class GroupStat
 
 		ps.println("group ID; group name; total nb photos; nb members; nb photos posted; nb explored photos; explore proba; is moderated");
 
-		for (int i = 575; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
+		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
 
 			// Filter out some groups based on their names
