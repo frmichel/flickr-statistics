@@ -301,7 +301,7 @@ public class TagStat
 	 * Filter only tags with at least a minimum number of occurences (score) and sort by score
 	 * @param ps where to print the output
 	 */
-	public static void computeStatistics(PrintStream ps) {
+	public static void displayTagsByPopularity(PrintStream ps) {
 		logger.info("Computing statistincs of tags");
 		Collection<TagItemStat> tagset = statistics.values();
 		ArrayList<TagItemStat> tagList = new ArrayList<TagItemStat>(tagset);

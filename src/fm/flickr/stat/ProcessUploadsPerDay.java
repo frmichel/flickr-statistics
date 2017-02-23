@@ -10,7 +10,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.util.ServiceException;
-import fm.flickr.stat.perform.DailyUploadsStat;
+import fm.flickr.stat.perform.UploadsStat;
 import fm.util.Config;
 
 /** 
@@ -75,15 +75,15 @@ public class ProcessUploadsPerDay
 	 * @throws IOException
 	 */
 	private static void loadFileByDay(String date) throws ServiceException {
-		DailyUploadsStat.reset();
-		DailyUploadsStat.loadFileByDay(date);
+		UploadsStat.reset();
+		UploadsStat.loadFileByDay(date);
 	}
 
 	/**
 	 * @param ps the output where to print results
 	 */
 	private static void computeStatistics(String date, PrintStream ps) {
-		Vector<Long> uploadDistrib = DailyUploadsStat.getUploadDistribution();
+		Vector<Long> uploadDistrib = UploadsStat.getUploadDistribution();
 		ps.println(date + ";" + uploadDistrib.get(24));
 	}
 }

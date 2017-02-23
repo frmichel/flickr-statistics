@@ -11,12 +11,14 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.configuration.Configuration;
@@ -37,7 +39,7 @@ import fm.util.Config;
  * groups, tags, post date and time, ownver's number of photos and contacts.
  * 
  * This class provides methods to collect data about photos, and save data to csv files.
- * Additional methods reload csv files and process the data:
+ * Additional methods reload csv files and compute statistics:
  * compute the distribution of photos by nb of views, comments, tags etc.
  *
  * @author fmichel
@@ -53,7 +55,7 @@ public class ActivityStat
 
 	private static String FIELD_SEPARATOR = ";";
 
-	/** Vector in which all data files are loaded back for processing */
+	/** Vector in which all data files are loaded for processing */
 	private Vector<PhotoItemInfo> statistics = new Vector<PhotoItemInfo>();
 
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -290,7 +292,7 @@ public class ActivityStat
 	}
 
 	/**
-	 * Init the header line for the distribution of photos by slice of something (groups, views favs, etc.)
+	 * Init the header line for the distribution of photos by slice of something (groups, views, favs, etc.)
 	 * @param ps where to print the output
 	 * @param sliceSize size of one slice in the distribution, for instance 10 will give slices "0 to 9", "10 to 19", etc.  
 	 * @param nbSlices number of slices, for instance 2 will give 2 slices: "0 to 9", "10 to 19", and a last one ">= 20"
@@ -465,6 +467,14 @@ public class ActivityStat
 	}
 
 	/**
+	 * Init the header line for the distribution of number of photos by whether they are geo-taggued or not 
+	 * @param ps where to print the output
+	 */
+	public void initComputeDistribLocation(PrintStream ps) throws FileNotFoundException {
+		ps.println("#; yes; no");
+	}
+
+	/**
 	 * Print the distribution of photos by wether they have location or not: yes or no.
 	 * 
 	 * @param ps the stream where to print the output
@@ -473,8 +483,8 @@ public class ActivityStat
 	 */
 	public void computeDistribLocation(PrintStream ps, String month) {
 		logger.info("Computing distribution of photos by number of favs");
-		int nbPhotos = statistics.size();
 
+		int nbPhotos = statistics.size();
 		if (nbPhotos > 0) {
 			int nbYes = 0;
 			int nbNo = 0;
@@ -496,12 +506,141 @@ public class ActivityStat
 	}
 
 	/**
-	 * Print the distribution of number of photos according to the data provided in the vector. The vector may typically contain
-	 * the number of groups a photo belongs to, or the number of views, comments and favs.
-	 * 
+	 * Init the header line for the distribution of number of photos by upload time 
 	 * @param ps where to print the output
+	 */
+	public void initComputeDistribPostTime(PrintStream ps) throws FileNotFoundException {
+		ps.println("### Number of photos grouped by upload time (0h to 23h)");
+		ps.println("#; 00; 01; 02; 03; 04; 05; 06; 07; 08; 09; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23");
+	}
+
+	/**
+	 * Compute the number of photos by upload hour (0 to 23)
+	 * 
+	 * @param ps the stream where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
 	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
+	 */
+	public void computeDistribPostTime(PrintStream ps, String month) {
+		logger.info("Computing statistincs of post time distribution by hour of day");
+
+		// Build the list of post dates 
+		List<Date> statPostTimeDate = new ArrayList<Date>();
+		for (PhotoItemInfo inf : statistics) {
+			try {
+				Date postDate = sdf.parse(inf.getDatePost());
+				statPostTimeDate.add(postDate);
+			} catch (ParseException e) {
+				logger.warn("Invalid date format. Exception: " + e.toString());
+			}
+		}
+
+		// Calculate the distribution of post times on 24h
+		GregorianCalendar cal = new GregorianCalendar();
+		Vector<Integer> distribution = new Vector<Integer>();
+
+		// Init the distribution
+		for (int i = 0; i < 24; i++)
+			distribution.add(0);
+
+		for (Date date : statPostTimeDate) {
+			cal.setTime(date);
+			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			distribution.set(hour, distribution.get(hour) + 1);
+		}
+
+		// Print the results cut down by hour of day, from 0h to 23h
+		ps.print(month + "; ");
+		for (int i = 0; i < 24; i++) {
+			ps.print(distribution.get(i));
+			if (i < 24)
+				ps.print("; ");
+		}
+		ps.println();
+	}
+
+	/**
+	 * Init the header line for the distribution of number of photos by upload time 
+	 * @param ps where to print the output
+	 */
+	public void initComputeUserStat(PrintStream ps) throws FileNotFoundException {
+		ps.println("### Number of contacts and photos per user");
+		ps.println("#; avg contacts/user; std dev contacts/user; max contacts/user; avg photos/user; std dev photos/user; max photos/user");
+	}
+
+	/**
+	 * Display users'average number of photos and contacts
+	 * 
+	 * @param ps the stream where to print the output
+	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm.
+	 * It may also be used to denote another category like "explored photos, "any other photos". Cannot be null.
+	 */
+	public void computeUserStat(PrintStream ps, String month) {
+		logger.info("Computing users' average number of photos and contacts");
+
+		int nbEntries = statistics.size();
+		if (nbEntries > 0) {
+			int sumPhotos = 0; // Sum of the number of photos of users
+			int maxPhotos = 0; // Maximum number of photos of users
+			int sumContacts = 0; // sum of the number of contacts of users
+			int maxContacts = 0; // max number of contacts of users
+
+			// Build the list of users (the map is used to eliminate duplicates)
+			// Note: until 11/2016, the ownder ID was not collected. Therefore duplicates were
+			// counted as different users. This creates quite a difference starting at 12/2016.
+			HashMap<String, UserInfo> usrMap = new HashMap<String, UserInfo>();
+			for (PhotoItemInfo inf : statistics) {
+				UserInfo usrInfo = new UserInfo();
+				usrInfo.setUserId(inf.getOwnerNsid());
+				usrInfo.setPhotosCount(inf.getOwnersPhotos());
+				usrInfo.setNumberOfContacts(inf.getOwnersContacts());
+				usrMap.put(inf.getOwnerNsid(), usrInfo);
+			}
+
+			Collection<UserInfo> usrList = usrMap.values();
+			for (UserInfo usrInfo : usrList) {
+				int nbPhotos = Integer.valueOf(usrInfo.getPhotosCount());
+				sumPhotos += nbPhotos;
+				if (nbPhotos > maxPhotos)
+					maxPhotos = nbPhotos;
+
+				int nbContacts = Integer.valueOf(usrInfo.getNumberOfContacts());
+				sumContacts += nbContacts;
+				if (nbContacts > maxContacts)
+					maxContacts = nbContacts;
+			}
+
+			ps.print(month + "; ");
+
+			// Calculate the  mean absolute difference of number of contacts
+			int avg = sumContacts / nbEntries;
+			int sumDeviations = 0;
+			for (UserInfo inf : usrList)
+				sumDeviations += Math.abs(avg - inf.getNumberOfContacts());
+			ps.print(sumContacts / nbEntries + "; "); // average
+			ps.print(sumDeviations / nbEntries + "; "); //  mean absolute difference of number of contacts
+			ps.print(maxContacts + "; "); // Max number of contacts per user
+
+			// Calculate the  mean absolute difference of the number of photos
+			avg = sumPhotos / nbEntries;
+			sumDeviations = 0;
+			for (UserInfo inf : usrList)
+				sumDeviations += Math.abs(avg - Integer.valueOf(inf.getPhotosCount()));
+			ps.print(sumPhotos / nbEntries + "; "); // Average number of photos per user
+			ps.print(sumDeviations / nbEntries + "; "); //  mean absolute difference of number of photos
+			ps.println(maxPhotos); // Max number of photos per user
+		}
+	}
+
+	/**
+	 * Print the distribution of number of photos according to the data provided in the vector.
+	 * The vector contains a numerical data, typically the number of groups a photo belongs to,
+	 * the number of views, comments or favs, etc.
+	 * 
+	 * @param ps the stream where to print the output
+	 * @param month, in case of processing data by month. Formatted as yyyy-mm.
+	 * When processing over a period of time, not a month, this may also be denote a category like "explored photos,
+	 * "any other photos". Cannot be null.
 	 * @param sliceSize size of the slice in the distribution of photos
 	 * @param nbSlices number of slices in the distribution of photos
 	 * @param dataToDistribute the data to sort in each slice. This is a vector, each entry corresponds to one photo
@@ -536,8 +675,9 @@ public class ActivityStat
 	}
 
 	/**
-	 * Calculate the distribution of post times over 24h.
-	 * Sort post date/times by daily hour and count number of hits per hour and return the distribution
+	 * Calculate the number of photos posted hour by hour over 24h.
+	 * 
+	 * @return a vector of 24 values: one value by hour of the day
 	 */
 	public Vector<Integer> getPostTimeDistrib() throws ServiceException {
 

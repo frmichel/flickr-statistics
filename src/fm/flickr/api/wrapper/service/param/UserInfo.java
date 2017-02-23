@@ -19,7 +19,7 @@ public class UserInfo implements Serializable
 
 	private String location;
 
-	private String photosCount;
+	private int photosCount;
 
 	private int numberOfContacts;
 
@@ -28,11 +28,11 @@ public class UserInfo implements Serializable
 		this.userId = null;
 		this.userName = null;
 		this.location = null;
-		this.photosCount = null;
+		this.photosCount = 0;
 		this.numberOfContacts = 0;
 	}
 
-	public UserInfo(String userId, String userName, String location, String photosCount, int numberOfContacts) {
+	public UserInfo(String userId, String userName, String location, int photosCount, int numberOfContacts) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
@@ -65,12 +65,20 @@ public class UserInfo implements Serializable
 		this.location = location;
 	}
 
-	public String getPhotosCount() {
+	public int getPhotosCount() {
 		return photosCount;
 	}
 
-	public void setPhotosCount(String photosCount) {
+	public void setPhotosCount(int photosCount) {
 		this.photosCount = photosCount;
+	}
+
+	public String getPhotosCountAsStr() {
+		return String.valueOf(photosCount);
+	}
+
+	public void setPhotosCount(String photosCount) {
+		this.photosCount = Integer.parseInt(photosCount);
 	}
 
 	public int getNumberOfContacts() {

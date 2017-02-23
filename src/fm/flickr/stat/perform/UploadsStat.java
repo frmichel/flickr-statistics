@@ -36,9 +36,9 @@ import fm.util.Util;
  * @author fmichel
  * 
  */
-public class DailyUploadsStat
+public class UploadsStat
 {
-	private static Logger logger = Logger.getLogger(DailyUploadsStat.class.getName());
+	private static Logger logger = Logger.getLogger(UploadsStat.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
 
@@ -111,7 +111,7 @@ public class DailyUploadsStat
 					}
 				}
 
-				if (nb != -1) {		// Ignore in case an error occured in service.getTotalUploads()
+				if (nb != -1) { // Ignore in case an error occured in service.getTotalUploads()
 					distribution.set(i, nb);
 					total += nb; // calculate the daily total					
 
@@ -227,15 +227,10 @@ public class DailyUploadsStat
 	}
 
 	/**
-	 * Display numbers of contacts and photos per user
-	 * 
+	 * Init the header line for the distribution of number of uploads of hour of the day 
 	 * @param ps where to print the output
 	 */
-	public static void computeStatistics(PrintStream ps) {
-		computeMonthlyStatistics(ps, null);
-	}
-
-	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	public static void initComputeDistribUploads(PrintStream ps) throws FileNotFoundException {
 		ps.println("### number of uploads by hour of day:");
 		ps.println("month; 0h; 1h; 2h; 3h; 4h; 5h; 6h; 7h; 8h; 9h; 10h; 11h; 12h; 13h; 14h; 15h; 16h; 17h; 18h; 19h; 20h; 21h; 22h; 23h; total");
 	}
@@ -251,19 +246,27 @@ public class DailyUploadsStat
 	}
 
 	/**
+	 * Compute the number of uploads by hour of the day
+	 * 
+	 * @param ps where to print the output
+	 */
+	public static void computeDistribUploads(PrintStream ps) {
+		computeDistribUploads(ps, null);
+	}
+
+	/**
+	 * Compute the number of uploads by hour of the day
 	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.
 	 */
-	public static void computeMonthlyStatistics(PrintStream ps, String month) {
+	public static void computeDistribUploads(PrintStream ps, String month) {
 		logger.info("Computing statistincs of number of uploads");
 
-		if (month == null) {
-			ps.println("### number of uploads by hour of day:");
-			ps.println("0h; 1h; 2h; 3h; 4h; 5h; 6h; 7h; 8h; 9h; 10h; 11h; 12h; 13h; 14h; 15h; 16h; 17h; 18h; 19h; 20h; 21h; 22h; 23h; total");
-		}
 		if (month != null)
 			ps.print(month + "; ");
+		else
+			ps.print("; ");
 
 		for (int i = 0; i < ELTS_PER_LINE; i++) {
 			ps.print(distribution.get(i));

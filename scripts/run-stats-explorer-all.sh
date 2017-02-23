@@ -15,8 +15,6 @@ cd /home/fmichel/franck/FlickrStatistics
 -Dfm.flickr.stat.action.group=on \
 -Dfm.flickr.stat.group.proba=off \
 -Dfm.flickr.stat.action.tag=on \
--Dfm.flickr.stat.action.time=on \
--Dfm.flickr.stat.action.user=on \
 -Dfm.flickr.stat.action.activity=on \
 -Dfm.flickr.stat.action.uploads=on \
 -Dfm.flickr.stat.action.anyphoto=off \

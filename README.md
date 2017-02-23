@@ -1,52 +1,58 @@
 # Flickr-statistics
 
-This project provides java tools targeted to collect data from Flickr in order to explore 2 subjects:
+This project provides java tools targeted to collect data from Flickr every day, and process them in order to investigate 2 subjects:
 - (i) the number and rate of uploads to Flickr (see http://www.flickr.com/photos/franckmichel/6855169886/), and
 - (ii) produce statistical reports about explored photos and compare them with other unexplored photos in order to figure out what makes explored photos special (see http://www.flickr.com/photos/franckmichel/8825511026/ for some tentative conclusions).
 
-This 2nd point deals with number of views, comments, favorites, tags, groups, as well as photo owners and the time photos were posted.
+This 2nd point deals with number of views, comments, favorites, tags, groups, the at time which photos were posted (upload time), and some characteristics about photo owners: 
+number of photos that they have, and number of member sthey follow.
 
 Tools allow to report statistics either globally over a period of time, or monthly.
 
 ## REPORTS:
 
-### Daily reports
+Reports fall in several categories.
 
+- uploads: total number of photos uploaded every day, hour by hour
 - activity about explored and non-explored photos:
-  - distribution of number of photos in function of the number of groups they are posted to
   - distribution of number of photos in function of the number of times they were viewed
   - distribution of number of photos in function of the number of comments they have
   - distribution of number of photos in function of the number of favs they have
+  - distribution of number of photos in function of the number of groups they are posted to
   - distribution of number of photos in function of the owner's number of photos
   - distribution of number of photos in function of the owner's number of contacts
-- tag: list the tags of explored photos, sorted by number of hits
-- time: distribution of explored photos in function of the hour of day when they were uploaded
+  - distribution of number of photos in function of whether they have a geographical location not
+  - distribution of number of photos in function of the time of day when they were uploaded
+  - average number of contacts and photos per user
+
+In addition, reports about groups and tags vary whether they apply to one month or to an arbitrary time period:
+
+Reports over a given time period:
+- tag: list the tags of explored photos, sorted by number of hits.
 - group: 
     - list the groups that explored photos are in, sorted by number of hits
     - compute the ratio of "nb of explored photos in a group / total nb of photos uploaded to that group"
       during the same time slot.
-- uploads: total number of photos uploaded every day
 
-
-### Monthly reports
-
+Monthly reports:
 - tag: average and max number of tags per explored photo for each month
-- user: for all users which have explored photos during each month, show the average and max number of contacts 
-  and photos that they have, per month
-- time: distribution of explored photos in function of the hour of day when they were uploaded, per month
 - group: average and max number of groups that explored photos belong to, per month
-- activity about explored and non-explored photos: same as daily reports, broken down by month.
-- uploads: total number of photos uploaded every month
 
 
 ### "Probability" of a photo to be explored as a function of the week day and hour
 
-Ratio of the number of explored photos / number of photos uploaded, as function of the post time (0 to 23h) AND the week day.
+Class ProcessProbabilityPerWeekDayAndHour computes the ratio of the number of explored photos / number of photos uploaded, as function of the post time (0 to 23h) AND the week day.
 
-Crosses data from the uploads the activity (post date and time).
+This mashes up data from the uploads and the activity (post date and time).
 
 
 ## HOW TO USE
+
+### Data collection
+
+Folder 'scripts' provides several shell scripts that I use to run the data collection every day.
+
+### Run reports
 
 To use this set of tools you should be familiar with java development, and have a Flicr API key of your own.
 
@@ -65,10 +71,13 @@ Then:
   - set features on or off, again this applies to both the data collection or later on during reports computation:  
     fm.flickr.stat.action.group = off  
     fm.flickr.stat.action.tag = off  
-    fm.flickr.stat.action.time = off  
-    fm.flickr.stat.action.user = off  
     fm.flickr.stat.action.uploads = on  
     fm.flickr.stat.action.activity = off  
     fm.flickr.stat.action.anyphoto = off  
 
-At last, run the main classes: data collection process (fm.flickr.stat.CollectPhotosData.java), and reports computation (fm.flickr.stat.Process*.java).
+Lastly, run one of the main classes:
+- data collection process (fm.flickr.stat.CollectPhotosData),
+- monthly reports (fm.flickr.stat.ProcessMonthlyStats),
+- reports over an arbitrary time period (fm.flickr.stat.ProcessStats),
+- "Probability" of a photo to be explored as a function of the week day and hour (fm.flickr.stat.ProcessProbabilityPerWeekDayAndHour)
+

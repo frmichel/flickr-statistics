@@ -312,7 +312,7 @@ public class GroupStat
 	 * @param ps where to print the output. The ratio of explored photos / uploaded photos does not take this param into account, 
 	 * and always outputs data to a file /group_explore_proba_<start date>_<end date>.csv
 	 */
-	public static void computeStatistics(PrintStream ps) {
+	public static void displayGroupsByPopularity(PrintStream ps) {
 		logger.info("Computing statistincs of groups");
 		Collection<GroupItemStat> grpset = statistics.values();
 		ArrayList<GroupItemStat> grpList = new ArrayList<GroupItemStat>(grpset);
@@ -340,10 +340,10 @@ public class GroupStat
 	}
 
 	/**
-	 * Display the average/std deviation and maximum number of groups and photos.
+	 * Display the average and maximum number of groups and photos.
 	 * The average is calculated as the average of daily average values which is incorrect mathematically.
 	 * But in this specific case it works as the average is done on the same number of data every day, 
-	 * that is 500 explorted photos. 
+	 * that is 500 explored photos.
 	 * 
 	 * @param ps where to print the output
 	 * @param month in case of processing data by month, this string denotes the current month formatted as yyyy-mm. May be null.

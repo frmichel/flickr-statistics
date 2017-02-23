@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 
 import fm.flickr.api.wrapper.util.ServiceException;
 import fm.flickr.stat.perform.ActivityStat;
-import fm.flickr.stat.perform.DailyUploadsStat;
+import fm.flickr.stat.perform.UploadsStat;
 import fm.util.Config;
 
 /** 
@@ -110,8 +110,8 @@ public class ProcessProbabilityPerWeekDayAndHour
 		activity.loadFileByDay(date, config.getString("fm.flickr.stat.activity.dir"));
 
 		// Load the upload file
-		DailyUploadsStat.reset();
-		DailyUploadsStat.loadFileByDay(date);
+		UploadsStat.reset();
+		UploadsStat.loadFileByDay(date);
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class ProcessProbabilityPerWeekDayAndHour
 	private static void computeStatistics(int dayOfWeek, PrintStream ps) throws ServiceException {
 
 		Vector<Integer> postTimeDistrib = activity.getPostTimeDistrib();
-		Vector<Long> uploadDistrib = DailyUploadsStat.getUploadDistribution();
+		Vector<Long> uploadDistrib = UploadsStat.getUploadDistribution();
 
 		for (int hour = 0; hour < 24; hour++) {
 

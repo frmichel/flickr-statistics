@@ -16,11 +16,9 @@ import fm.flickr.api.wrapper.service.FlickrService;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.stat.perform.ActivityStat;
-import fm.flickr.stat.perform.DailyUploadsStat;
+import fm.flickr.stat.perform.UploadsStat;
 import fm.flickr.stat.perform.GroupStat;
 import fm.flickr.stat.perform.TagStat;
-import fm.flickr.stat.perform.TimeStat;
-import fm.flickr.stat.perform.UserStat;
 import fm.util.Config;
 import fm.util.Util;
 
@@ -68,7 +66,7 @@ public class CollectPhotosData
 
 				// Collect number of daily uploads to Flickr
 				if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
-					new DailyUploadsStat().collecDailyUploads(date);
+					new UploadsStat().collecDailyUploads(date);
 
 				// Increase the date by n days, and proceed with that next date
 				calStart.add(GregorianCalendar.DAY_OF_MONTH, config.getInt("fm.flickr.stat.step_between_measure"));
@@ -103,7 +101,7 @@ public class CollectPhotosData
 	private static void collect(String date) throws IOException {
 		PhotoItemsSet photos = null;
 
-		if (config.getString("fm.flickr.stat.action.group").equals("on") || config.getString("fm.flickr.stat.action.tag").equals("on") || config.getString("fm.flickr.stat.action.time").equals("on") || config.getString("fm.flickr.stat.action.user").equals("on") || config.getString("fm.flickr.stat.action.activity").equals("on") || config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
+		if (config.getString("fm.flickr.stat.action.group").equals("on") || config.getString("fm.flickr.stat.action.tag").equals("on") || config.getString("fm.flickr.stat.action.activity").equals("on") || config.getString("fm.flickr.stat.action.anyphoto").equals("on")) {
 
 			String photoList = System.getProperty("fm.flickr.stat.photoslist");
 			if (photoList != null) {
@@ -123,12 +121,6 @@ public class CollectPhotosData
 
 				if (config.getString("fm.flickr.stat.action.tag").equals("on"))
 					TagStat.collecAdditionalData(date, photos);
-
-				if (config.getString("fm.flickr.stat.action.time").equals("on"))
-					TimeStat.collecAdditionalData(date, photos);
-
-				if (config.getString("fm.flickr.stat.action.user").equals("on"))
-					UserStat.collecAdditionalData(date, photos);
 
 				if (config.getString("fm.flickr.stat.action.activity").equals("on")) {
 					File outputFile = new File(Util.getDir(config.getString("fm.flickr.stat.activity.dir")), date + ".csv");
