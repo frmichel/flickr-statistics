@@ -23,6 +23,8 @@ public class UserInfo implements Serializable
 
 	private int numberOfContacts;
 
+	private int numberOfFollowers;
+
 	public UserInfo() {
 		super();
 		this.userId = null;
@@ -30,15 +32,17 @@ public class UserInfo implements Serializable
 		this.location = null;
 		this.photosCount = 0;
 		this.numberOfContacts = 0;
+		this.numberOfFollowers = 0;
 	}
 
-	public UserInfo(String userId, String userName, String location, int photosCount, int numberOfContacts) {
+	public UserInfo(String userId, String userName, String location, int photosCount, int numberOfContacts, int numberOfFollowers) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
 		this.location = location;
 		this.photosCount = photosCount;
 		this.numberOfContacts = numberOfContacts;
+		this.numberOfFollowers = numberOfFollowers;
 	}
 
 	public String getUserId() {
@@ -87,6 +91,14 @@ public class UserInfo implements Serializable
 
 	public void setNumberOfContacts(int numberOfContacts) {
 		this.numberOfContacts = numberOfContacts;
+	}
+
+	public int getNumberOfFollowers() {
+		return numberOfFollowers;
+	}
+
+	public void setNumberOfFollowers(int numberOfFollowers) {
+		this.numberOfFollowers = numberOfFollowers;
 	}
 
 	public String toString() {

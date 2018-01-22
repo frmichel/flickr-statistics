@@ -245,6 +245,45 @@ public class FlickrService
 	}
 
 	/**
+	 * Get the photos recently posted into a group (pool)
+	 * 
+	 * @param groupdId group identifier
+	 * @param per_page number of images per page
+	 * @param page number of the page to get (starts at 1)
+	 * @return list of photos, null in case any error occurs
+	 */
+	public PhotoItemsSet getPhotosFromGroup(String groupId, int per_page, int page) {
+		logger.debug("begin getPhotosFromGroup, group_id=" + groupId + ", per_page=" + per_page + ", page=" + page);
+		try {
+			TreeMap<String, String> listParams = new TreeMap<String, String>();
+			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+			listParams.put("group_id", groupId);
+			listParams.put("per_page", Integer.toString(per_page));
+			listParams.put("page", Integer.toString(page));
+			listParams.put("method", "flickr.groups.pools.getPhotos");
+
+			// Build the query url
+			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
+
+			// Call the service and parse the XML response 
+			Document xmlResp = FlickrUtil.launchRequest(urlStr);
+
+			// Get the page number and max page
+			Element photos = (Element) xmlResp.getElementsByTagName("photos").item(0);
+			int maxPages = Integer.valueOf(photos.getAttribute("pages"));
+			int pageNumber = Integer.valueOf(photos.getAttribute("page"));
+
+			// Get the list of photo nodes from the response
+			NodeList photosList = xmlResp.getElementsByTagName("photo");
+			return new PhotoItemsSet(makePhotoListFromNodesList(photosList), pageNumber, maxPages);
+
+		} catch (ServiceException e) {
+			logger.error("Error while requesting Flickr service", e);
+			return null;
+		}
+	}
+
+	/**
 	 * <p>Randomly search photos posted at the given date.</p>
 	 * <p>The Flickr search service returns pages of 500 photos. One photo is randomly picked up in each selected page,
 	 * pages are selected uniformaly as a subset of the total number of result pages.</p>
@@ -594,10 +633,10 @@ public class FlickrService
 	}
 
 	/**
-	 * Retrieve information about a user
+	 * Retrieve information about a user including number of contacts and followers
 	 * 
 	 * @param userId
-	 * @return
+	 * @return user information
 	 */
 	public UserInfo getUserInfo(String userId) {
 		logger.debug("begin getUserInfo, userId:" + userId);
@@ -611,10 +650,8 @@ public class FlickrService
 			listParams.put("method", "flickr.people.getInfo");
 			listParams.put("user_id", userId);
 
-			// Sign the query and build the url
-			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
-
-			// Call the service and parse the XML response 
+			// Build the url, call the service and parse the XML response
+			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			Element element = (Element) xmlResp.getElementsByTagName("username").item(0);
@@ -629,21 +666,34 @@ public class FlickrService
 			if (element != null)
 				user.setPhotosCount(element.getTextContent());
 
-			//--- Retrieve the list of contacts
+			//--- Retrieve the number of contacts
 			listParams = new TreeMap<String, String>();
 			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
 			listParams.put("method", "flickr.contacts.getPublicList");
 			listParams.put("user_id", userId);
+			listParams.put("per_page", "1");
 
-			// Sign the query and build the url
-			urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
+			// Build the url, call the service and parse the XML response
+			urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
+			xmlResp = FlickrUtil.launchRequest(urlStr);
+			element = (Element) xmlResp.getElementsByTagName("contacts").item(0);
+			if (element != null)
+				user.setNumberOfContacts(Integer.valueOf(element.getAttribute("total")));
 
-			// Call the service and parse the XML response 
+			//--- Retrieve the number of followers
+			listParams = new TreeMap<String, String>();
+			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
+			listParams.put("method", "flickr.contacts.getReverseList");
+			listParams.put("user_id", userId);
+			listParams.put("per_page", "1");
+
+			// Build the url, call the service and parse the XML response
+			urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 			xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			element = (Element) xmlResp.getElementsByTagName("contacts").item(0);
 			if (element != null)
-				user.setNumberOfContacts(Integer.valueOf(element.getAttribute("total")));
+				user.setNumberOfFollowers(Integer.valueOf(element.getAttribute("total")));
 
 			logger.debug("Returning info: " + user.toString());
 			return user;
