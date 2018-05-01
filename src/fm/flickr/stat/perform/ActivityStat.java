@@ -145,7 +145,7 @@ public class ActivityStat
 		logger.info("Saving activity info about " + photos.size() + " photos into file " + outputFile.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + photos.size());
-		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts; owner's userid; longitude; latitude; country");
+		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts; owner's userid; longitude; latitude; country; take_date_time");
 
 		Collection<PhotoItemInfo> photoItemInfo = photos.values();
 		Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
@@ -171,6 +171,9 @@ public class ActivityStat
 			writer.print(FIELD_SEPARATOR + entry.getLocation().getLongitude());
 			writer.print(FIELD_SEPARATOR + entry.getLocation().getLatitude());
 			writer.print(FIELD_SEPARATOR + entry.getLocation().getCountry());
+
+			// Take date/time
+			writer.print(FIELD_SEPARATOR + entry.getDateTake());
 
 			writer.println();
 		}
@@ -265,7 +268,7 @@ public class ActivityStat
 						if (tokens.length > 11)
 							inf.setOwnerNsid(tokens[11]);
 
-						// Location data introduced in December 2016
+						// Location data - introduced in December 2016
 						if (tokens.length > 12) {
 							String longitude = tokens[12];
 							String latitude = tokens[13];
@@ -276,6 +279,10 @@ public class ActivityStat
 							inf.setLocation(loc);
 						} else
 							inf.setLocation(new Location("", "", ""));
+
+						// Date taken - introduced in April 2018
+						if (tokens.length > 16)
+							inf.setDateTake(tokens[16]);
 
 						statistics.add(inf);
 					}
