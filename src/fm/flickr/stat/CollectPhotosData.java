@@ -16,9 +16,9 @@ import fm.flickr.api.wrapper.service.FlickrService;
 import fm.flickr.api.wrapper.service.param.PhotoItem;
 import fm.flickr.api.wrapper.service.param.PhotoItemsSet;
 import fm.flickr.stat.perform.ActivityStat;
-import fm.flickr.stat.perform.UploadsStat;
 import fm.flickr.stat.perform.GroupStat;
 import fm.flickr.stat.perform.TagStat;
+import fm.flickr.stat.perform.UploadsStat;
 import fm.util.Config;
 import fm.util.Util;
 
@@ -66,7 +66,7 @@ public class CollectPhotosData
 
 				// Collect number of daily uploads to Flickr
 				if (config.getString("fm.flickr.stat.action.uploads").equals("on"))
-					new UploadsStat().collecDailyUploads(date);
+					new UploadsStat().collecUploads(date);
 
 				// Increase the date by n days, and proceed with that next date
 				calStart.add(GregorianCalendar.DAY_OF_MONTH, config.getInt("fm.flickr.stat.step_between_measure"));

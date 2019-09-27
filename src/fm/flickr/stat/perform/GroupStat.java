@@ -306,7 +306,7 @@ public class GroupStat
 	}
 
 	/**
-	 * Display groups sorted by score (number of exploreed photos in that group during the considered pediod.
+	 * Display groups sorted by score (number of explored photos in that group during the considered period.
 	 * Then, calculate the ratio of explored photos / uploaded photos.
 	 * 
 	 * @param ps where to print the output. The ratio of explored photos / uploaded photos does not take this param into account, 
@@ -317,7 +317,7 @@ public class GroupStat
 		Collection<GroupItemStat> grpset = statistics.values();
 		ArrayList<GroupItemStat> grpList = new ArrayList<GroupItemStat>(grpset);
 
-		// Sort the groups by number of occurences (hx to method GroupItemStat.compareTo() 
+		// Sort the groups by number of occurrences (thx to method GroupItemStat.compareTo() 
 		Collections.sort(grpList);
 
 		// Display the n first result groups sorted by decreasing number of explored photos they contain 

@@ -62,10 +62,10 @@ public class UploadsStat
 	 * Retrieve the number of photos uploaded hour by hour on the given date. The results are saved to a file.
 	 * </p>
 	 * 
-	 * @param date date given in format "YYY-MM-DD"
+	 * @param date date given in format "YYYY-MM-DD"
 	 * @throws IOException in case the file can't be saved
 	 */
-	public void collecDailyUploads(String date) throws IOException {
+	public void collecUploads(String date) throws IOException {
 
 		GregorianCalendar cal = new GregorianCalendar();
 		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
@@ -80,7 +80,7 @@ public class UploadsStat
 			cal.set(Calendar.SECOND, 0);
 			cal.set(Calendar.HOUR_OF_DAY, 0);
 
-			// Retreive the number of uploads hour by hour (at local time = CET for me)
+			// Retrieve the number of uploads hour by hour (at local time = CET for me)
 			long total = 0;
 			for (int i = 0; i < ELTS_PER_LINE - 1; i++) {
 				Date minDate = cal.getTime();
@@ -111,7 +111,7 @@ public class UploadsStat
 					}
 				}
 
-				if (nb != -1) { // Ignore in case an error occured in service.getTotalUploads()
+				if (nb != -1) { // Ignore in case an error occurred in service.getTotalUploads()
 					distribution.set(i, nb);
 					total += nb; // calculate the daily total					
 
@@ -131,7 +131,7 @@ public class UploadsStat
 	/**
 	 * Save the user information into a file
 	 * 
-	 * @param date given in format "YYY-MM-DD"
+	 * @param date given in format "YYYY-MM-DD"
 	 * @param distribution number of uploads by hour on that date
 	 * @throws IOException
 	 */
@@ -158,7 +158,7 @@ public class UploadsStat
 	/**
 	 * Load the content of the file for the given date into the distribution vector by adding values to values existing in the vector. Thus, this method can be called several times for several days and cumulate data.
 	 * 
-	 * @param date given in format "YYY-MM-DD"
+	 * @param date given in format "YYYY-MM-DD"
 	 */
 	public static void loadFileByDay(String date) throws ServiceException {
 		String fileName = config.getString("fm.flickr.stat.uploads.dir") + date + ".csv";

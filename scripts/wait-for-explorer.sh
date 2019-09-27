@@ -21,7 +21,6 @@ wget --no-check-certificate --tries=3 --waitretry=5 --output-document=$APIRESP "
 
 STATUS=""
 # If searched date is before yestereday, the status should be failed
-#grep 'stat="fail"' $OUTPUT
 grep --silent --ignore-case 'stat="fail"' $APIRESP > /dev/null
 if test $? -eq 0; then
     STATUS="failed"

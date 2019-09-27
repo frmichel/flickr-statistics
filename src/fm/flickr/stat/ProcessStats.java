@@ -18,7 +18,7 @@ import fm.util.Config;
 
 /** 
  * This main class runs the specific treatments to provide statistics results over a period of time.
- * All results are displyed to the std output.
+ * All results are displayed to the std output.
  * 
  * @author fmichel
 */
@@ -38,7 +38,7 @@ public class ProcessStats
 	/** Activity about all (non-explored) photos one month after post */
 	private ActivityStat activAll1Month = new ActivityStat();
 
-	/** Streams where to write result of activiy about explored and unexplored photos */
+	/** Streams where to write result of activity about explored and unexplored photos */
 	private class PrintStreams
 	{
 		/** File where to write the groups results */
@@ -81,7 +81,7 @@ public class ProcessStats
 		PrintStream userAvg;
 	}
 
-	/** Streams where to write result of activiy about explored and unexplored photos */
+	/** Streams where to write result of activity about explored and unexplored photos */
 	private PrintStreams streams = new PrintStreams();
 
 	public static void main(String[] args) {
@@ -195,7 +195,7 @@ public class ProcessStats
 	}
 
 	/**
-	 * Run the specific statistics processings 
+	 * Run the specific statistics processing
 	 * 
 	 * @param ps output stream
 	 */

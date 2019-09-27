@@ -192,7 +192,7 @@ public class FlickrService
 	/**
 	 * Get the photos of the Flickr Interestingness at some given date
 	 * 
-	 * @param date the date of interestingness formatted as YYY-MM-dd. Ignored if null.
+	 * @param date the date of interestingness formatted as YYYY-MM-dd. Ignored if null.
 	 * @param per_page number of images per page
 	 * @param page number of the page to get (starts at 1)
 	 * @return list of photos, null in case any error occurs
@@ -297,7 +297,7 @@ public class FlickrService
 	 * just meaningless. 
 	 * So just leaving this method here for the record, but be cautious...
 	 * 
-	 * @param date the date formatted as YYY-MM-dd. Cannot be null.
+	 * @param date the date formatted as YYYY-MM-dd. Cannot be null.
 	 * @param nbPhotos number of photos to return
 	 * @return list of photos, null in case any error occurs
 	 */
@@ -751,12 +751,12 @@ public class FlickrService
 
 	/**
 	 * Retrieve the number of photos that were added to a the specified group
-	 * between startDate and endDate, by using a dicotomy method to find both
+	 * between startDate and endDate, by using a dichotomy method to find both
 	 * dates in the group
 	 * 
 	 * @param groupId
-	 * @param startDateStr start date of the period, formated as yyy-mm-dd
-	 * @param endDateStr end date of the period, formated as yyy-mm-dd
+	 * @param startDateStr start date of the period, formated as yyyy-mm-dd
+	 * @param endDateStr end date of the period, formated as yyyy-mm-dd
 	 * @return a map with the number of photos posted to a the group over the given period, and 
 	 * the total number of photos of the group. Null if any error occurs.
 	 */

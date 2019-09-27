@@ -3,7 +3,7 @@ package fm.flickr.stat.param;
 import fm.flickr.api.wrapper.service.param.GroupItem;
 
 /**
- * Store infos of a group (pool of photos), in addition to a counter of occurences of that group,
+ * Store info of a group (pool of photos), in addition to a counter of occurrences of that group,
  * or said differently, the number of explored photos in that group over a given time slot
  * which is used when computing statistics on groups 
  * 
