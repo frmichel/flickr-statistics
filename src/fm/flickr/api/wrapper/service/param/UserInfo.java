@@ -3,12 +3,11 @@ package fm.flickr.api.wrapper.service.param;
 import java.io.Serializable;
 
 /**
- * Store infos about a user
+ * Store info about a user
  * 
  * @author fmichel
  */
-public class UserInfo implements Serializable
-{
+public class UserInfo implements Serializable {
 	private static final long serialVersionUID = -2493393561300158829L;
 
 	public static final String FIELD_SEPARATOR = " #_SEP_# ";
@@ -25,6 +24,9 @@ public class UserInfo implements Serializable
 
 	private int numberOfFollowers;
 
+	// Added 2019-10-07 F. Michel
+	private boolean isPro;
+
 	public UserInfo() {
 		super();
 		this.userId = null;
@@ -33,9 +35,10 @@ public class UserInfo implements Serializable
 		this.photosCount = 0;
 		this.numberOfContacts = 0;
 		this.numberOfFollowers = 0;
+		this.isPro = false;
 	}
 
-	public UserInfo(String userId, String userName, String location, int photosCount, int numberOfContacts, int numberOfFollowers) {
+	public UserInfo(String userId, String userName, String location, int photosCount, int numberOfContacts, int numberOfFollowers, boolean isPro) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
@@ -43,6 +46,7 @@ public class UserInfo implements Serializable
 		this.photosCount = photosCount;
 		this.numberOfContacts = numberOfContacts;
 		this.numberOfFollowers = numberOfFollowers;
+		this.isPro = isPro;
 	}
 
 	public String getUserId() {
@@ -99,6 +103,14 @@ public class UserInfo implements Serializable
 
 	public void setNumberOfFollowers(int numberOfFollowers) {
 		this.numberOfFollowers = numberOfFollowers;
+	}
+
+	public boolean isPro() {
+		return isPro;
+	}
+
+	public void setPro(boolean isPro) {
+		this.isPro = isPro;
 	}
 
 	public String toString() {

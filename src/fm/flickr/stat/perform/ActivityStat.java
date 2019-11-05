@@ -145,7 +145,7 @@ public class ActivityStat
 		logger.info("Saving activity info about " + photos.size() + " photos into file " + outputFile.getCanonicalPath());
 
 		writer.println("# Number of photos processed: " + photos.size());
-		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts; owner's userid; longitude; latitude; country; take_date_time");
+		writer.println("# photo id ; rank ; views ; comments ; favs ; notes; groups; tags; upload_date_time; owner's photos; onwer's contacts; owner's userid; longitude; latitude; country; take_date_time, is_pro_user");
 
 		Collection<PhotoItemInfo> photoItemInfo = photos.values();
 		Iterator<PhotoItemInfo> iter = photoItemInfo.iterator();
@@ -174,6 +174,9 @@ public class ActivityStat
 
 			// Take date/time
 			writer.print(FIELD_SEPARATOR + entry.getDateTake());
+
+			// Is user pro
+			writer.print(FIELD_SEPARATOR + users.get(entry.getPhotoId()).isPro());
 
 			writer.println();
 		}

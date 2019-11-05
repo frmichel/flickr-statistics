@@ -32,10 +32,10 @@ import fm.util.Config;
 
 /**
  * This class implements the requests to the Flickr API
+ * 
  * @author fmichel
  */
-public class FlickrService
-{
+public class FlickrService {
 	private static Logger logger = Logger.getLogger(FlickrService.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
@@ -53,8 +53,7 @@ public class FlickrService
 	}
 
 	/**
-	 * Calculate the authentication URL the client must click to connect to his account through the
-	 * Flickr page
+	 * Calculate the authentication URL the client must click to connect to his account through the Flickr page
 	 */
 	public String getConnectUrl() {
 		logger.debug("begin getConnectUrl");
@@ -70,8 +69,8 @@ public class FlickrService
 	}
 
 	/**
-	 * Complete the authentication process by asking for a token based on the frob returned by the
-	 * Flickr authentication API. The XML response to the getToken query should look like this:
+	 * Complete the authentication process by asking for a token based on the frob returned by the Flickr authentication
+	 * API. The XML response to the getToken query should look like this:
 	 * 
 	 * <pre>
 	 * &lt;auth&gt;
@@ -95,7 +94,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the token node
@@ -153,7 +152,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the user node
@@ -181,8 +180,10 @@ public class FlickrService
 	/**
 	 * Get the last photos of the Flickr Interestingness
 	 * 
-	 * @param per_page number of images per page
-	 * @param page number of the page to get (starts at 1)
+	 * @param per_page
+	 *            number of images per page
+	 * @param page
+	 *            number of the page to get (starts at 1)
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getInterestingnessPhotos(int per_page, int page) {
@@ -192,9 +193,12 @@ public class FlickrService
 	/**
 	 * Get the photos of the Flickr Interestingness at some given date
 	 * 
-	 * @param date the date of interestingness formatted as YYYY-MM-dd. Ignored if null.
-	 * @param per_page number of images per page
-	 * @param page number of the page to get (starts at 1)
+	 * @param date
+	 *            the date of interestingness formatted as YYYY-MM-dd. Ignored if null.
+	 * @param per_page
+	 *            number of images per page
+	 * @param page
+	 *            number of the page to get (starts at 1)
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getPhotoIdsFromInterestingness(String date, int per_page, int page) {
@@ -213,7 +217,7 @@ public class FlickrService
 				// Build the query url
 				String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 
-				// Call the service and parse the XML response 
+				// Call the service and parse the XML response
 				Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 				// Get the page number and max page
@@ -247,9 +251,12 @@ public class FlickrService
 	/**
 	 * Get the photos recently posted into a group (pool)
 	 * 
-	 * @param groupdId group identifier
-	 * @param per_page number of images per page
-	 * @param page number of the page to get (starts at 1)
+	 * @param groupdId
+	 *            group identifier
+	 * @param per_page
+	 *            number of images per page
+	 * @param page
+	 *            number of the page to get (starts at 1)
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getPhotosFromGroup(String groupId, int per_page, int page) {
@@ -265,7 +272,7 @@ public class FlickrService
 			// Build the query url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the page number and max page
@@ -284,30 +291,36 @@ public class FlickrService
 	}
 
 	/**
-	 * <p>Randomly search photos posted at the given date.</p>
-	 * <p>The Flickr search service returns pages of 500 photos. One photo is randomly picked up in each selected page,
-	 * pages are selected uniformaly as a subset of the total number of result pages.</p>
-	 * <u>Limitation</u>: only one photo is read from each selected page, which makes this function good if the number of pages is
-	 * greater than the number of photos required => typically one should not requite 40 M.photos for a given day, as this may
-	 * exceed the total number of photos uploaded to flickr that day. Anyway, there may be an out of memory exception before
-	 * getting the result!  
+	 * <p>
+	 * Randomly search photos posted at the given date.
+	 * </p>
+	 * <p>
+	 * The Flickr search service returns pages of 500 photos. One photo is randomly picked up in each selected page, pages
+	 * are selected uniformaly as a subset of the total number of result pages.
+	 * </p>
+	 * <u>Limitation</u>: only one photo is read from each selected page, which makes this function good if the number of
+	 * pages is greater than the number of photos required => typically one should not requite 40 M.photos for a given day,
+	 * as this may exceed the total number of photos uploaded to flickr that day. Anyway, there may be an out of memory
+	 * exception before getting the result!
 	 * 
-	 * WARNING: this method actually does not work as expected, because the flickr.photos.search method will never return all
-	 * photos for a given date but only a small subset. From one page to the next, it returns many times the same photo ids which is
-	 * just meaningless. 
-	 * So just leaving this method here for the record, but be cautious...
+	 * WARNING: this method actually does not work as expected, because the flickr.photos.search method will never return
+	 * all photos for a given date but only a small subset. From one page to the next, it returns many times the same photo
+	 * ids which is just meaningless. So just leaving this method here for the record, but be cautious...
 	 * 
-	 * @param date the date formatted as YYYY-MM-dd. Cannot be null.
-	 * @param nbPhotos number of photos to return
+	 * @param date
+	 *            the date formatted as YYYY-MM-dd. Cannot be null.
+	 * @param nbPhotos
+	 *            number of photos to return
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getRandomPhotos(String date, int nbPhotos) {
 		logger.debug("begin getRandomPhotos, date:" + date + ", nbPhotos:" + nbPhotos);
 		try {
-			// Min upload date and max upload date must have a difference of 1 at least, 
+			// Min upload date and max upload date must have a difference of 1 at least,
 			// so we need to compute the next day after 'date'
 			String[] tokens = date.split("-");
-			GregorianCalendar calNextDay = new GregorianCalendar(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]) - 1, Integer.valueOf(tokens[2]));
+			GregorianCalendar calNextDay = new GregorianCalendar(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]) - 1,
+					Integer.valueOf(tokens[2]));
 			calNextDay.add(GregorianCalendar.DAY_OF_MONTH, 1);
 			String nextDay = new SimpleDateFormat("yyyy-MM-dd").format(calNextDay.getTime());
 
@@ -342,7 +355,8 @@ public class FlickrService
 
 				PhotoItem item = makePhotoItemFromXmlPhotoElement((Element) (photosList.item(randIdx)), -1);
 				if (itemsMap.containsKey(item.getPhotoId()))
-					// Is it a bug in Flickr or in this code? Anyway sometimes the same id is returned multiple times in different pages (???)
+					// Is it a bug in Flickr or in this code? Anyway sometimes the same id is returned multiple times in different pages
+					// (???)
 					logger.warn("#### Photo " + item.getPhotoId() + " has already been returned by the search. Skiping it.");
 				else {
 					itemsMap.put(item.getPhotoId(), item);
@@ -367,8 +381,10 @@ public class FlickrService
 	/**
 	 * Get the user's favorites photos
 	 * 
-	 * @param per_page number of images per page
-	 * @param page number of the page to get (starts at 1)
+	 * @param per_page
+	 *            number of images per page
+	 * @param page
+	 *            number of the page to get (starts at 1)
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getFavoritePhotos(String token, int per_page, int page) {
@@ -384,7 +400,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the page number and max page
@@ -405,7 +421,8 @@ public class FlickrService
 	/**
 	 * Get the user's gallery photos
 	 * 
-	 * @param token the authentication token
+	 * @param token
+	 *            the authentication token
 	 * @return list of photos, null in case any error occurs
 	 */
 	public PhotoItemsSet getUserGalleryPhotos(String token, int per_page, int page) {
@@ -422,7 +439,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the page number and max page
@@ -457,7 +474,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 			PhotoItemInfo result = new PhotoItemInfo();
 
@@ -481,7 +498,7 @@ public class FlickrService
 				DateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				// With no change, the current locale is used: CET = GMT+1
 				// Uncomment the line below to change it but it will no longer be compatible with data acquired before
-				// formater.setTimeZone(TimeZone.getTimeZone("GMT"));	// Flickr post time is expressed in GMT
+				// formater.setTimeZone(TimeZone.getTimeZone("GMT")); // Flickr post time is expressed in GMT
 				String postedS = dates.getAttribute("posted");
 				long postedL;
 
@@ -541,8 +558,8 @@ public class FlickrService
 	}
 
 	/**
-	 * Retrieve the list of pools (groups) the photo belongs to, from the list of contexts. In the
-	 * Flickr API response, pools mean groups, while sets means personal albums.
+	 * Retrieve the list of pools (groups) the photo belongs to, from the list of contexts. In the Flickr API response,
+	 * pools mean groups, while sets means personal albums.
 	 * 
 	 * @param photoId
 	 * @return list of groups
@@ -558,7 +575,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the list of pool nodes only from the response
@@ -588,7 +605,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the list of pool nodes only from the response
@@ -619,7 +636,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the number of favorites only
@@ -644,7 +661,7 @@ public class FlickrService
 			UserInfo user = new UserInfo();
 			user.setUserId(userId);
 
-			//--- Retrieve the user info
+			// --- Retrieve the user info
 			TreeMap<String, String> listParams = new TreeMap<String, String>();
 			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
 			listParams.put("method", "flickr.people.getInfo");
@@ -666,7 +683,13 @@ public class FlickrService
 			if (element != null)
 				user.setPhotosCount(element.getTextContent());
 
-			//--- Retrieve the number of contacts
+			// Added 2019-10-07 F. Michel
+			element = (Element) xmlResp.getElementsByTagName("person").item(0);
+			String ispro = element.getAttribute("ispro");
+			if (ispro != null)
+				user.setPro(ispro.equals("1"));
+
+			// --- Retrieve the number of contacts
 			listParams = new TreeMap<String, String>();
 			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
 			listParams.put("method", "flickr.contacts.getPublicList");
@@ -680,7 +703,7 @@ public class FlickrService
 			if (element != null)
 				user.setNumberOfContacts(Integer.valueOf(element.getAttribute("total")));
 
-			//--- Retrieve the number of followers
+			// --- Retrieve the number of followers
 			listParams = new TreeMap<String, String>();
 			listParams.put("api_key", config.getString("fm.flickr.api.wrapper.flickr_apikey"));
 			listParams.put("method", "flickr.contacts.getReverseList");
@@ -750,15 +773,16 @@ public class FlickrService
 	}
 
 	/**
-	 * Retrieve the number of photos that were added to a the specified group
-	 * between startDate and endDate, by using a dichotomy method to find both
-	 * dates in the group
+	 * Retrieve the number of photos that were added to a the specified group between startDate and endDate, by using a
+	 * dichotomy method to find both dates in the group
 	 * 
 	 * @param groupId
-	 * @param startDateStr start date of the period, formated as yyyy-mm-dd
-	 * @param endDateStr end date of the period, formated as yyyy-mm-dd
-	 * @return a map with the number of photos posted to a the group over the given period, and 
-	 * the total number of photos of the group. Null if any error occurs.
+	 * @param startDateStr
+	 *            start date of the period, formated as yyyy-mm-dd
+	 * @param endDateStr
+	 *            end date of the period, formated as yyyy-mm-dd
+	 * @return a map with the number of photos posted to a the group over the given period, and the total number of photos
+	 *         of the group. Null if any error occurs.
 	 */
 	public Long getNbOfPhotosAddedToGroup(String groupId, String startDateStr, String endDateStr) {
 		logger.debug("begin getNbOfPhotosAddedToGroup, groupId:" + groupId);
@@ -785,7 +809,7 @@ public class FlickrService
 		try {
 			Map<String, Long> result = null;
 
-			//--- Search the position of the first photo added to the group just before the start date
+			// --- Search the position of the first photo added to the group just before the start date
 			logger.debug("Looking for start date in the group...");
 			result = findDateInGroupByDicotomy(groupId, startDate);
 			if (result == null) {
@@ -795,7 +819,7 @@ public class FlickrService
 			long startPage = result.get("page");
 			long indexInStartPage = result.get("indexInPage");
 
-			//--- Search the position of the first photo added to the group just before the end date
+			// --- Search the position of the first photo added to the group just before the end date
 
 			logger.debug("Looking for end date in the group...");
 			result = findDateInGroupByDicotomy(groupId, endDate);
@@ -807,7 +831,8 @@ public class FlickrService
 			long indexInEndPage = result.get("indexInPage");
 
 			// Final count to calculate the number of photos posted during the 2 dates:
-			// number of full pages * 500 + number of remaining photos on the start page + number of remaining photos on the end page
+			// number of full pages * 500 + number of remaining photos on the start page + number of remaining photos on the end
+			// page
 			long nbPosted = (startPage - endPage - 1) * 500 + indexInStartPage + (500 - indexInEndPage);
 			logger.debug("Number of photos added to group between " + startDate + " end " + endDate + ": " + nbPosted);
 
@@ -820,15 +845,19 @@ public class FlickrService
 	}
 
 	/**
-	 * This method implements a dicotomy method to locate a date in a group: it looks for photos in the group,
-	 * using a paging mechanism, until it finds the page where the searched date fits between the post dates
-	 * (attributes dateadded) of 2 photos.
+	 * This method implements a dicotomy method to locate a date in a group: it looks for photos in the group, using a
+	 * paging mechanism, until it finds the page where the searched date fits between the post dates (attributes dateadded)
+	 * of 2 photos.
 	 * 
-	 * @param groupId the group in which we want to locate the date
-	 * @param searchedDate the date searched
-	 * @return <p>A map with the page number and the index in this page of the first photo added just
-	 * before the searched date.</p>
-	 * Return null if no page was found for that date or if any error occurs.
+	 * @param groupId
+	 *            the group in which we want to locate the date
+	 * @param searchedDate
+	 *            the date searched
+	 * @return
+	 *         <p>
+	 * 		A map with the page number and the index in this page of the first photo added just before the searched date.
+	 *         </p>
+	 *         Return null if no page was found for that date or if any error occurs.
 	 * @throws ServiceException
 	 */
 	private Map<String, Long> findDateInGroupByDicotomy(String groupId, Long searchedDate) throws ServiceException {
@@ -848,8 +877,8 @@ public class FlickrService
 		int dico = 2; // at each step of the dicotomy, this factor is pultiplied by 2
 		long increment = 1;
 
-		// Loop until we find the page or the increment is 0, in this last case we have finished 
-		// the dicotomy without finding the page 
+		// Loop until we find the page or the increment is 0, in this last case we have finished
+		// the dicotomy without finding the page
 		while (!foundPage && increment > 0) {
 			// At each turn, reset the page paramter: remove it then put it again
 			if (listParams.containsKey("page"))
@@ -884,7 +913,8 @@ public class FlickrService
 				// If the searched date is between the first (most recent) and the last (oldest) photos of the page, ie.
 				// older than the first photo and more recent than the last photo, ie.
 				// if date(last photo) <= searchedDate <= date(first photo), then we have found the right page!
-				else if (Long.valueOf(lastphoto.getAttribute("dateadded")) <= searchedDate && searchedDate <= Long.valueOf(firstphoto.getAttribute("dateadded"))) {
+				else if (Long.valueOf(lastphoto.getAttribute("dateadded")) <= searchedDate
+						&& searchedDate <= Long.valueOf(firstphoto.getAttribute("dateadded"))) {
 					indexInPage = 0;
 					while (indexInPage < photosList.getLength()) {
 						Element photo = (Element) photosList.item((int) indexInPage);
@@ -931,7 +961,8 @@ public class FlickrService
 	/**
 	 * Retrieve the list of groups user has subscrbied with (for an authenticated user only)
 	 * 
-	 * @param token the authentication token
+	 * @param token
+	 *            the authentication token
 	 * @return list of groups
 	 */
 	public GroupItemsSet getGroupSubscriptions(String token) {
@@ -946,7 +977,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
 			// Get the list of group nodes from the response
@@ -962,7 +993,8 @@ public class FlickrService
 	/**
 	 * Add a photo to a pool (groups)
 	 * 
-	 * @param token the authentication token
+	 * @param token
+	 *            the authentication token
 	 * @param photoId
 	 * @param groupItem
 	 * @return null if ok, or cause message in case any error occured
@@ -980,7 +1012,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			FlickrUtil.launchRequest(urlStr);
 			return null;
 
@@ -993,7 +1025,8 @@ public class FlickrService
 	/**
 	 * Remove a photo from a pool (groups)
 	 * 
-	 * @param token the authentication token
+	 * @param token
+	 *            the authentication token
 	 * @param photoId
 	 * @param groupItem
 	 * @return null if ok, or cause message in case any error occured
@@ -1011,7 +1044,7 @@ public class FlickrService
 			// Sign the query and build the url
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.signApi(config.getString("fm.flickr.api.wrapper.flickr_secret"), listParams);
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			FlickrUtil.launchRequest(urlStr);
 			return null;
 
@@ -1024,8 +1057,10 @@ public class FlickrService
 	/**
 	 * Retrieve the number of photos uploaded to Flickr during a time interval
 	 * 
-	 * @param minDate count uploads after min date formatted as yyyy-mm-dd hh:mm:ss
-	 * @param maxDate count uploads before max date formatted as yyyy-mm-dd hh:mm:ss
+	 * @param minDate
+	 *            count uploads after min date formatted as yyyy-mm-dd hh:mm:ss
+	 * @param maxDate
+	 *            count uploads before max date formatted as yyyy-mm-dd hh:mm:ss
 	 * @return number of uploads during the given period, or -1 in case an error occurs
 	 */
 	public long getTotalUploads(String minDate, String maxDate) {
@@ -1042,7 +1077,7 @@ public class FlickrService
 			listParams.put("per_page", "1");
 			listParams.put("page", "1");
 
-			// Call the service and parse the XML response 
+			// Call the service and parse the XML response
 			String urlStr = FLICKR_SERVICES_URL + FlickrUtil.formatUrlParams(listParams);
 			Document xmlResp = FlickrUtil.launchRequest(urlStr);
 
@@ -1060,13 +1095,14 @@ public class FlickrService
 	}
 
 	/**
-	 * Build the URL of an image, based on the photo XML element retrieved from the Flickr API (e.g.
-	 * interestingness)
+	 * Build the URL of an image, based on the photo XML element retrieved from the Flickr API (e.g. interestingness)
 	 * 
-	 * @param photoElement the photo node from the xml response
-	 * @param type the type of the image to return a url for: squ@are (75x75), thumbnail, or medium
+	 * @param photoElement
+	 *            the photo node from the xml response
+	 * @param type
+	 *            the type of the image to return a url for: squ@are (75x75), thumbnail, or medium
 	 * @return formatted url according to the scheme:
-	 * <code>http://farm{farm-id}.static.flickr.com/{server-id}/id_{secret}....jpg</code>
+	 *         <code>http://farm{farm-id}.static.flickr.com/{server-id}/id_{secret}....jpg</code>
 	 */
 	private String getPhotoUrl(Element photoElement, ImageType type) {
 		String farmId = photoElement.getAttribute("farm");
@@ -1089,10 +1125,10 @@ public class FlickrService
 	}
 
 	/**
-	 * Based on an xml list of nodes of type &lt;photo&gt;, build an array list of equivalent
-	 * PhotoItem instances.
+	 * Based on an xml list of nodes of type &lt;photo&gt;, build an array list of equivalent PhotoItem instances.
 	 * 
-	 * @param photosList list of xml nodes
+	 * @param photosList
+	 *            list of xml nodes
 	 * @return array list of photos, possibly empty.
 	 */
 	private ArrayList<PhotoItem> makePhotoListFromNodesList(NodeList photosList) {
@@ -1109,8 +1145,11 @@ public class FlickrService
 	/**
 	 * Based on an xml element of type &lt;photo&gt;, build an equivalent PhotoItem instance.
 	 * 
-	 * @param photoElement the xml element to parse
-	 * @param rank the photo rank in interestingness. If this photo was not retrieved from Interestingness just put any integer value 
+	 * @param photoElement
+	 *            the xml element to parse
+	 * @param rank
+	 *            the photo rank in interestingness. If this photo was not retrieved from Interestingness just put any
+	 *            integer value
 	 * @return a photo item equivalent to the xml element
 	 */
 	private PhotoItem makePhotoItemFromXmlPhotoElement(Element photoElement, int rank) {
@@ -1127,10 +1166,11 @@ public class FlickrService
 	}
 
 	/**
-	 * Based on an xml list of contexts (pools and sets a photo belongs to), build an array list of
-	 * equivalent GroupItem instances.
+	 * Based on an xml list of contexts (pools and sets a photo belongs to), build an array list of equivalent GroupItem
+	 * instances.
 	 * 
-	 * @param groupsList list of xml nodes
+	 * @param groupsList
+	 *            list of xml nodes
 	 * @return array list of groups, possibly empty.
 	 */
 	private ArrayList<GroupItem> makeGroupListFromContextNodesList(NodeList groupsList) {
@@ -1150,10 +1190,11 @@ public class FlickrService
 	}
 
 	/**
-	 * Based on an xml list of groups (from flickr.groups.pools.getGroups service), build an array
-	 * list of equivalent GroupItem instances.
+	 * Based on an xml list of groups (from flickr.groups.pools.getGroups service), build an array list of equivalent
+	 * GroupItem instances.
 	 * 
-	 * @param groupsList list of xml nodes
+	 * @param groupsList
+	 *            list of xml nodes
 	 * @return array list of groups, possibly empty.
 	 */
 	private ArrayList<GroupItem> makeGroupListFromGroupNodesList(NodeList groupsList) {
@@ -1173,10 +1214,11 @@ public class FlickrService
 	}
 
 	/**
-	 * Based on an xml list of tags (from flickr.tags.getListPhoto service), build an array
-	 * list of equivalent TagItem instances.
+	 * Based on an xml list of tags (from flickr.tags.getListPhoto service), build an array list of equivalent TagItem
+	 * instances.
 	 * 
-	 * @param tagList list of xml nodes
+	 * @param tagList
+	 *            list of xml nodes
 	 * @return array list of tags, possibly empty.
 	 */
 	private ArrayList<TagItem> makeTagListFromTagNodesList(NodeList tagsList) {
