@@ -57,6 +57,8 @@ public class PhotoItemInfo implements Serializable
 
 	private int ownersPhotos;
 
+	private boolean ownerPro;
+
 	public PhotoItemInfo() {
 		this.ownerNsid = "";
 		this.interestingnessRank = 0;
@@ -236,19 +238,22 @@ public class PhotoItemInfo implements Serializable
 		this.ownersPhotos = ownersPhotos;
 	}
 
+	public boolean isOwnerPro() {
+		return ownerPro;
+	}
+
+	public void setOwnerPro(boolean ownerPro) {
+		this.ownerPro = ownerPro;
+	}
+
 	@Override
 	public String toString() {
-		
+
 		String locStr = "";
- 		if (location != null)
+		if (location != null)
 			locStr = ", longitude=" + location.getLongitude() + ", latitude=" + location.getLatitude() + ", country=" + location.getCountry();
-			
-		return "PhotoItemInfo [photoId=" + photoId + ", interestingnessRank=" + interestingnessRank + 
-				", ownerNsid=" + ownerNsid + ", ownerUserName=" + ownerUserName + ", ownerRealName=" + ownerRealName +
-				", title=" + title + ", description=" + description + ", datePost=" + datePost + ", dateTake=" + dateTake + 
-				", pageUrl=" + pageUrl + ", nbViews=" + nbViews + ", nbNotes=" + nbNotes + 
-				", nbComments=" + nbComments + ", nbFavs=" + nbFavs + ", nbGroups=" + nbGroups + ", tagsSet=" + tagsSet +
-				locStr + "]";
+
+		return "PhotoItemInfo [photoId=" + photoId + ", interestingnessRank=" + interestingnessRank + ", ownerNsid=" + ownerNsid + ", ownerUserName=" + ownerUserName + ", ownerRealName=" + ownerRealName + ", title=" + title + ", description=" + description + ", datePost=" + datePost + ", dateTake=" + dateTake + ", pageUrl=" + pageUrl + ", nbViews=" + nbViews + ", nbNotes=" + nbNotes + ", nbComments=" + nbComments + ", nbFavs=" + nbFavs + ", nbGroups=" + nbGroups + ", tagsSet=" + tagsSet + locStr + "]";
 	}
 
 }

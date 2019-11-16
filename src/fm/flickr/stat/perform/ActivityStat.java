@@ -287,6 +287,10 @@ public class ActivityStat
 						if (tokens.length > 16)
 							inf.setDateTake(tokens[16]);
 
+						// Pro user: added 2019-10-07
+						if (tokens.length > 17)
+							inf.setOwnerPro("true".equals(tokens[17]));
+
 						statistics.add(inf);
 					}
 				}
