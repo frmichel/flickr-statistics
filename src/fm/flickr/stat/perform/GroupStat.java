@@ -58,7 +58,7 @@ public class GroupStat
 	private static List<GroupsPerPhoto> statisticsGpP = new ArrayList<GroupsPerPhoto>();
 
 	/**
-	 * Retrieve the list of groups that photos from Interestingness belong to, and counts the number
+	 * Retrieve the list of groups that photos from Interestingness belong to, and count the number
 	 * of times the same group is entcountered.
 	 * 
 	 * A maximum of 'fm.flickr.stat.group.maxgroups' groups will be stored. 
@@ -77,7 +77,7 @@ public class GroupStat
 		int maxGroups = 0; // max number of groups a photo belongs to
 		Vector<Integer> listNumGroups = new Vector<Integer>(); // list of number of groups that photos belong to
 
-		// Loop on all photos retrieved at once from Interstingness
+		// Loop on all photos retrieved at once from Interestingness
 		for (PhotoItem photo : photos.getPhotosList()) {
 			nbPhotosProcessed++;
 
@@ -132,7 +132,7 @@ public class GroupStat
 		float sumDeviations = 0;
 		for (Integer nbgrp : listNumGroups)
 			sumDeviations += Math.abs((new Float(nbgrp)) - avg);
-		
+
 		float stdDev = 0;
 		if (!listNumGroups.isEmpty()) {
 			logger.info("### Standard deviation of number of groups a photo belongs to: " + sumDeviations / listNumGroups.size());
@@ -306,8 +306,8 @@ public class GroupStat
 	}
 
 	/**
-	 * Display groups sorted by score (number of explored photos in that group during the considered period.
-	 * Then, calculate the ratio of explored photos / uploaded photos.
+	 * Display groups sorted by score (number of explored photos in that group during the considered period).
+	 * Then, optionally calculate the ratio of explored photos / uploaded photos.
 	 * 
 	 * @param ps where to print the output. The ratio of explored photos / uploaded photos does not take this param into account, 
 	 * and always outputs data to a file /group_explore_proba_<start date>_<end date>.csv
@@ -380,10 +380,11 @@ public class GroupStat
 		for (int i = 0; i < grpList.size() && i < config.getInt("fm.flickr.stat.group.maxresults"); i++) {
 			GroupItemStat entry = grpList.get(i);
 
-			// Filter out some groups based on their names
-			if (entry.getGroupName().matches(config.getString("fm.flickr.stat.group.proba.skip.regex"))) {
+			// Filter out some groups
+			boolean skip = entry.getGroupName().matches(config.getString("fm.flickr.stat.group.proba.skip.regex")) || config.getBoolean("fm.flickr.stat.group.proba.skip.moderated");
+			if (skip)
 				logger.info("Skipping group " + entry.getGroupName());
-			} else {
+			else {
 				logger.info("Processing group " + entry.toStringShort());
 
 				// Get the general information about the group (number of members, of photos, is moderated)
@@ -392,7 +393,7 @@ public class GroupStat
 					Long nbPosted = service.getNbOfPhotosAddedToGroup(grpItem.getGroupId(), config.getString("fm.flickr.stat.startdate"), config.getString("fm.flickr.stat.enddate"));
 
 					if (nbPosted != null) {
-						float proba = (float)entry.getNbOccurences() * 100 / nbPosted;
+						float proba = (float) entry.getNbOccurences() * 100 / nbPosted;
 						ps.print(grpItem.getGroupId() + "; " + grpItem.getGroupName().replace(";", ",") + "; " + grpItem.getNbPhotos() + "; " + grpItem.getNbMembers() + "; ");
 						ps.print(nbPosted + "; " + entry.getNbOccurences() + "; ");
 						ps.printf("%2.4f; ", proba);
