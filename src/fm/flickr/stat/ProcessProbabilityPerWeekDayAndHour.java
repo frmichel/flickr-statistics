@@ -162,7 +162,7 @@ public class ProcessProbabilityPerWeekDayAndHour
 
 	/** 
 	* Convert a US day of week (1=Sunday to 7=Saturday) to a French day of week starting at 0
-	* (0=Mondy to 6=Sunday)
+	* (0=Monday to 6=Sunday)
 	* @param usDoW US day of Week from 1 to 7
 	* @return converted day of week (0 to 6)
 	*/
