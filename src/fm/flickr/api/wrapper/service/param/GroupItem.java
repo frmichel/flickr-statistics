@@ -66,7 +66,7 @@ public class GroupItem implements Serializable
 		this.nbMembers = nbMembers;
 	}
 
-	public Boolean getIsModerated() {
+	public Boolean isModerated() {
 		return isModerated;
 	}
 
