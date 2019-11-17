@@ -4,14 +4,14 @@ This project provides java tools targeted to collect data from Flickr every day,
 - (i) the number and rate of uploads to Flickr (see http://www.flickr.com/photos/franckmichel/6855169886/), and
 - (ii) produce statistical reports about explored photos and compare them with other unexplored photos in order to figure out what makes explored photos special (see http://www.flickr.com/photos/franckmichel/8825511026/ for some tentative conclusions).
 
-This 2nd point deals with number of views, comments, favorites, tags, groups, the at time which photos were posted (upload time), and some characteristics about photo owners: 
-number of photos that they have, and number of member sthey follow.
+This 2nd point deals with number of views, comments, favorites, tags, groups, the time at which photos were posted (upload time), and some characteristics about photos' owners: 
+number of photos they have, and number of members they follow.
 
-Tools allow to report statistics either globally over a period of time, or monthly.
+Tools allow to report statistics either monthly or over a given period of time.
 
 ## REPORTS:
 
-Reports fall in several categories.
+Reports fall into several categories.
 
 - uploads: total number of photos uploaded every day, hour by hour
 - activity about explored and non-explored photos:
@@ -22,7 +22,7 @@ Reports fall in several categories.
   - distribution of number of photos in function of the owner's number of photos
   - distribution of number of photos in function of the owner's number of contacts
   - distribution of number of photos in function of whether they have a geographical location not
-  - distribution of number of photos in function of the time of day when they were uploaded
+  - distribution of number of photos in function of the time of day they were uploaded
   - average number of contacts and photos per user
 
 In addition, reports about groups and tags vary whether they apply to one month or to an arbitrary time period:
@@ -31,12 +31,12 @@ Reports over a given time period:
 - tag: list the tags of explored photos, sorted by number of hits.
 - group: 
     - list the groups that explored photos are in, sorted by number of hits
-    - compute the ratio of "nb of explored photos in a group / total nb of photos uploaded to that group"
+    - compute the ratio: nb of explored photos in a group / total nb of photos uploaded to that group
       during the same time slot.
 
 Monthly reports:
-- tag: average and max number of tags per explored photo for each month
-- group: average and max number of groups that explored photos belong to, per month
+- tag: average and max number of tags of explored photo
+- group: average and max number of groups that explored photos belong to
 
 
 ### "Probability" of a photo to be explored as a function of the week day and hour
