@@ -29,6 +29,7 @@ Reports fall into several categories.
   - distribution of number of photos in function of the owner's number of contacts
   - distribution of number of photos in function of whether they have a geographical location
   - distribution of number of photos in function of the time of day they were uploaded
+  - average number of contacts that explored photos' owners have (starting 15/11/2012)
 
 ### "Probability" of a photo to be explored as a function of the week day and hour
 

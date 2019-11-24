@@ -22,7 +22,8 @@ Both tools compute statistics for categories group, tag, activity and upload, st
     - file `distrib_location.csv`: distribution of explored photos in function of whether they have a geographical location
     - file `distrib_owners_photo.csv` shows the distribution of users per number of photos that they have (starting 15/11/2012)
     - file `distrib_owners_contact.csv` shows the distribution of users per number of contacts that they have (starting 15/11/2012)
-
+    - file `user_average.csv`: average number of contacts that explored photos' owners have (starting 15/11/2012)
+    
   
 ProcessProbabilityPerWeekDayAndHour:
 ====================================
@@ -37,16 +38,3 @@ ProcessUploadsPerDay:
 This specific main class simply reports what already exists in daily files, namely the total number of photos
 uploaded every day (the last column of daily data files), and stores the result into file uploads/daily_uploads.csv.
 It is useful to show the weekly cycles.
-
-
-
-
-
-
-
-
-
-
-
-  The results from `uploads/distrib_results.csv` should also be copied into file `times/monthly_times_distrib.xls`, in tab 'uploaded' 
-  that allows to compute the ratio of number of explored photos / number of photos uploaded by hour of day.
