@@ -298,9 +298,8 @@ public class GroupStat
 	/**
 	 * Print the header line following the csv format
 	 * @param ps
-	 * @throws FileNotFoundException
 	 */
-	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	public static void initComputeMonthly(PrintStream ps) {
 		ps.print("#month; ");
 		ps.println("avg groups/photo; std dev groups/user; max groups/user");
 	}

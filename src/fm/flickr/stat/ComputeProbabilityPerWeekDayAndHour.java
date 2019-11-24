@@ -24,9 +24,9 @@ import fm.util.Config;
  * @author fmichel
 */
 
-public class ProcessProbabilityPerWeekDayAndHour
+public class ComputeProbabilityPerWeekDayAndHour
 {
-	private static Logger logger = Logger.getLogger(ProcessProbabilityPerWeekDayAndHour.class.getName());
+	private static Logger logger = Logger.getLogger(ComputeProbabilityPerWeekDayAndHour.class.getName());
 
 	private static Configuration config = Config.getConfiguration();
 

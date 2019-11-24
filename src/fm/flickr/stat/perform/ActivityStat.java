@@ -3,7 +3,6 @@ package fm.flickr.stat.perform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -311,7 +310,7 @@ public class ActivityStat
 	 * @param sliceSize size of one slice in the distribution, for instance 10 will give slices "0 to 9", "10 to 19", etc.  
 	 * @param nbSlices number of slices, for instance 2 will give 2 slices: "0 to 9", "10 to 19", and a last one ">= 20"
 	 */
-	public void initComputeDistrib(PrintStream ps, int sliceSize, int nbSlices) throws FileNotFoundException {
+	public void initComputeDistrib(PrintStream ps, int sliceSize, int nbSlices) {
 		ps.print("# ; ");
 		for (int i = 0; i < nbSlices - 1; i++)
 			ps.print(sliceSize * i + " to " + (sliceSize * (i + 1) - 1) + "; ");
@@ -484,7 +483,7 @@ public class ActivityStat
 	 * Init the header line for the distribution of number of photos by whether they are geo-taggued or not 
 	 * @param ps where to print the output
 	 */
-	public void initComputeDistribLocation(PrintStream ps) throws FileNotFoundException {
+	public void initComputeDistribLocation(PrintStream ps) {
 		ps.println("#; yes; no");
 	}
 
@@ -523,7 +522,7 @@ public class ActivityStat
 	 * Init the header line for the distribution of number of photos by upload time 
 	 * @param ps where to print the output
 	 */
-	public void initComputeDistribPostTime(PrintStream ps) throws FileNotFoundException {
+	public void initComputeDistribPostTime(PrintStream ps) {
 		ps.println("### Number of photos grouped by upload time (0h to 23h)");
 		ps.println("#; 00; 01; 02; 03; 04; 05; 06; 07; 08; 09; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23");
 	}
@@ -577,7 +576,7 @@ public class ActivityStat
 	 * Init the header line for the distribution of number of photos by upload time 
 	 * @param ps where to print the output
 	 */
-	public void initComputeUserStat(PrintStream ps) throws FileNotFoundException {
+	public void initComputeUserStat(PrintStream ps) {
 		ps.println("### Number of contacts and photos per user");
 		ps.println("#; avg contacts/user; std dev contacts/user; max contacts/user; avg photos/user; std dev photos/user; max photos/user");
 	}

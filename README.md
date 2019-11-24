@@ -13,6 +13,12 @@ Tools allow to report statistics either monthly or over a given period of time.
 
 Reports fall into several categories.
 
+- tag:
+    - list the tags of explored photos, sorted by number of hits
+    - average and max number of tags per explored photo for each month
+- group: 
+    - list the groups of explored photos, sorted by number of hits
+    - average and max number of groups that explored photos belong to
 - uploads: total number of photos uploaded every day, hour by hour
 - activity about explored and non-explored photos:
   - distribution of number of photos in function of the number of times they were viewed
@@ -21,23 +27,8 @@ Reports fall into several categories.
   - distribution of number of photos in function of the number of groups they are posted to
   - distribution of number of photos in function of the owner's number of photos
   - distribution of number of photos in function of the owner's number of contacts
-  - distribution of number of photos in function of whether they have a geographical location not
+  - distribution of number of photos in function of whether they have a geographical location
   - distribution of number of photos in function of the time of day they were uploaded
-  - average number of contacts and photos per user
-
-In addition, reports about groups and tags vary whether they apply to one month or to an arbitrary time period:
-
-Reports over a given time period:
-- tag: list the tags of explored photos, sorted by number of hits.
-- group: 
-    - list the groups that explored photos are in, sorted by number of hits
-    - compute the ratio: nb of explored photos in a group / total nb of photos uploaded to that group
-      during the same time slot.
-
-Monthly reports:
-- tag: average and max number of tags of explored photo
-- group: average and max number of groups that explored photos belong to
-
 
 ### "Probability" of a photo to be explored as a function of the week day and hour
 
@@ -50,34 +41,38 @@ This mashes up data from the uploads and the activity (post date and time).
 
 ### Data collection
 
-Folder 'scripts' provides several shell scripts that I use to run the data collection every day.
+Folder 'scripts' provides several shell scripts to run the data collection every day.
 
 ### Run reports
 
 To use this set of tools you should be familiar with java development, and have a Flicr API key of your own.
 
-Sorry I didn't have time to work on a GUI. But for a developer the code is rather self-explanatory, and I've tried to write quite a lot of comments.
-
 You have to import this project into your favorite IDE (Eclipse or NetBeans for instance).
 Then:
-- edit file resource/faw.properties, and set the parameters with your own values:  
+- edit file resource/faw.properties, and set the parameters with your own values:
+```  
   fm.flickr.api.wrapper.flickr_apikey = your_api_key  
   fm.flickr.api.wrapper.flickr_secret = your_key_secret
+```  
 - edit file resource/config.properties and set properties:
   - start and end dates are used by both the data collection process (fm.flickr.stat.CollectPhotosData.java) 
     and the statistical reports computation fm.flickr.stat.Process*.java):  
+```  
     fm.flickr.stat.startdate = 2013-04-01  
     fm.flickr.stat.enddate = 2013-07-31
-  - set features on or off, again this applies to both the data collection or later on during reports computation:  
-    fm.flickr.stat.action.group = off  
-    fm.flickr.stat.action.tag = off  
-    fm.flickr.stat.action.uploads = on  
-    fm.flickr.stat.action.activity = off  
-    fm.flickr.stat.action.anyphoto = off  
+```  
+  - set features on or off, this applies to both the data collection and the computation of reports later on:  
+```  
+    fm.flickr.stat.action.group = on  
+    fm.flickr.stat.action.tag = on 
+    fm.flickr.stat.action.uploads = on
+    fm.flickr.stat.action.activity = on  
+    fm.flickr.stat.action.anyphoto = on
+```  
 
 Lastly, run one of the main classes:
 - data collection process (fm.flickr.stat.CollectPhotosData),
-- monthly reports (fm.flickr.stat.ProcessMonthlyStats),
-- reports over an arbitrary time period (fm.flickr.stat.ProcessStats),
-- "Probability" of a photo to be explored as a function of the week day and hour (fm.flickr.stat.ProcessProbabilityPerWeekDayAndHour)
+- monthly reports (fm.flickr.stat.ComputeStatsMonthly),
+- reports over an arbitrary time period (fm.flickr.stat.ComputeStatsTimeframe),
+- "Probability" of a photo to be explored as a function of the week day and hour (fm.flickr.stat.ComputeProbabilityPerWeekDayAndHour)
 

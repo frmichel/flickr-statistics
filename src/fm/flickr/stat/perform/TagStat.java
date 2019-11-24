@@ -3,7 +3,6 @@ package fm.flickr.stat.perform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -290,9 +289,8 @@ public class TagStat
 	/**
 	 * Print the header line following the csv format
 	 * @param ps
-	 * @throws FileNotFoundException
 	 */
-	public static void initComputeMonthly(PrintStream ps) throws FileNotFoundException {
+	public static void initComputeMonthly(PrintStream ps) {
 		ps.print("#month; ");
 		ps.println("avg tags/photo; std dev tags/user; max tags/user");
 	}

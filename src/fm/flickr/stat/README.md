@@ -1,55 +1,27 @@
-ProcessStats:
-==================
+# ComputeStatsTimeframe and ComputeStatsMonthly
 
-Read data between `fm.flickr.stat.startdate` and `fm.flickr.stat.enddate`, and computes statistics for categories group, tag, user, time, activity and upload. The results are displayed on the standard output:
-- tag: list the tags of explored photos, sorted by number of hits
-- user: for all users who have explored photos, compute the number of contacts and photos that they have:
-  average, std deviation, and max values.
-- time: distribution of explored photos as a function of the hour of day they were uploaded (number of photos explored that were 
-  uploaded at midnight, 1am, 2am, etc.)
+ComputeStatsTimeframe processes data between `fm.flickr.stat.startdate` and `fm.flickr.stat.enddate`.
+ComputeStatsMonthly reads all available data from the month of `fm.flickr.stat.startdate` to the month of `fm.flickr.stat.enddate`, and computes results broken down by month.
+
+Both tools compute statistics for categories group, tag, activity and upload, stored in the following files:
+
+- tag:
+    - file `tags/result_sorted_listed.txt`: list the tags of explored photos, sorted by number of hits
+    - file `tags/result_avg.csv`: average and max number of tags per explored photo for each month
 - group: 
-    - list the groups that explored photos are in, sorted by number of hits
-    - Optionally (if `fm.flickr.stat.group.proba` is on), file `groups/group_explore_proba_<startdate>_<enddate>.csv`: compute the ratio of 
-      "nb of explored photos in a group / total nb of photos uploaded to that group" during the same time slot.
-      This ratio intends to figure out if some groups would have enoug visibility to help a photo to be explored. Yet this just computes a correlation... be careful of wrong interpretations.
-      This takes a long time (lots of requests), to be activated cautiously...
-- upload: distribution of number of photos posted to Flickr as a function of the hour of day
-- activity about explored photos:
-	- distribution of number of explored photos as a function of the number of groups they are posted to
-	- distribution of number of explored photos as a function of the number of times they were viewed
-	- distribution of number of explored photos as a function of the number of comments they have
-	- distribution of number of explored photos as a function of the number of favs they have
-	- distribution of number of explored photos as a function of the owner's number of photos (data collected starting 15 Nov 2012)
-	- distribution of number of explored photos as a function of the owner's number of contacts (data collected starting 15 Nov 2012)
-- activity about any unexplored photos: data collected starting 8 Jan. 2013 => for photos starting at 8 Dec. 2012:
-	- distribution of number of explored photos as a function of the number of groups they are posted to
-	- distribution of number of explored photos as a function of the number of times they were viewed
-	- distribution of number of explored photos as a function of the number of comments they have
-	- distribution of number of explored photos as a function of the number of favs they have
-	- distribution of number of explored photos as a function of the owner's number of photos
-	- distribution of number of explored photos as a function of the owner's number of contacts
-
-
-ProcessMonthlyStats:
-====================
-
-Read all available data from the month of `fm.flickr.stat.startdate` to the month of `fm.flickr.stat.enddate`, and computes results consolidated 
-by month, for categories group, tag, user, time, activity and upload:
-- tag: file `tags/montly_results.csv`: average and max number of tags per explored photo for each month
-- user: for all users who have explored photos during each month, file `users/monthly_user_average.csv` shows the average and max number of contacts and photos that they have
-- time: file `times/monthly_times_distrib.csv`: distribution of explored photos as a function of the hour of day they were uploaded
-- group: file `groups/montly_results.csv`: average and max number of groups that explored photos belong to
-- upload: file `uploads/montly_results.csv`: distribution of number of photos posted to Flickr as a function of the hour of day
-  Tab "yearly" of the Excel sheet `uploads/montly_results.xls` provides a view of only the last column 'total'.
-  The results from `uploads/montly_results.csv` should also be copied into file `times/monthly_times_distrib.xls`, in tab 'uploaded' 
-  that allows to compute the ratio of number of explored photos / number of photos uploaded by hour of day.
+    - file `groups/result_sorted_listed.txt`: list the groups of explored photos, sorted by number of hits
+    - file `groups/result_avg.csv`: average and max number of groups that explored photos belong to
+- upload: file `uploads/distrib_results.csv`: distribution of number of explored photos posted to Flickr as a function of the hour of day
 - activity and anyphoto:
-	- file `monthly_distrib_group.csv`: distribution of number of explored photos as a function of the number of groups they are posted to
-	- file `monthly_distrib_view.csv`: distribution of number of explored photos as a function of the number of times they were viewed
-	- file `monthly_distrib_comment.csv`: distribution of number of explored photos as a function of the number of comments they have
-	- file `monthly_distrib_fav.csv`: distribution of number of explored photos as a function of the number of favs they have
-	- file `monthly_distrib_owners_photo.csv` shows the distribution of users per number of photos that they have (starting 15/11/2012)
-	- file `monthly_distrib_owners_contact.csv` shows the distribution of users per number of contacts that they have (starting 15/11/2012)
+    - file `distrib_view.csv`: distribution of number of explored photos as a function of the number of times they were viewed
+    - file `distrib_fav.csv`: distribution of number of explored photos as a function of the number of favs they have
+    - file `distrib_comment.csv`: distribution of number of explored photos as a function of the number of comments they have
+    - file `distrib_group.csv`: distribution of number of explored photos as a function of the number of groups they are posted to
+    - file `distrib_tag.csv`: distribution of number of explored photos as a function of the number of tags that they have
+    - file `distrib_time.csv`: distribution of explored photos as a function of the hour of day they were uploaded
+    - file `distrib_location.csv`: distribution of explored photos in function of whether they have a geographical location
+    - file `distrib_owners_photo.csv` shows the distribution of users per number of photos that they have (starting 15/11/2012)
+    - file `distrib_owners_contact.csv` shows the distribution of users per number of contacts that they have (starting 15/11/2012)
 
   
 ProcessProbabilityPerWeekDayAndHour:
@@ -65,3 +37,16 @@ ProcessUploadsPerDay:
 This specific main class simply reports what already exists in daily files, namely the total number of photos
 uploaded every day (the last column of daily data files), and stores the result into file uploads/daily_uploads.csv.
 It is useful to show the weekly cycles.
+
+
+
+
+
+
+
+
+
+
+
+  The results from `uploads/distrib_results.csv` should also be copied into file `times/monthly_times_distrib.xls`, in tab 'uploaded' 
+  that allows to compute the ratio of number of explored photos / number of photos uploaded by hour of day.
