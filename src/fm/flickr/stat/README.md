@@ -24,16 +24,14 @@ Both tools compute statistics for categories group, tag, activity and upload, st
     - file `distrib_owners_contact.csv` shows the distribution of users per number of contacts that they have (starting 15/11/2012)
     - file `user_average.csv`: average number of contacts that explored photos' owners have (starting 15/11/2012)
     
-  
-ProcessProbabilityPerWeekDayAndHour:
-====================================
+# ProcessProbabilityPerWeekDayAndHour
 
 Read data between `fm.flickr.stat.startdate` and `fm.flickr.stat.enddate`, and compute the ratio of the number of 
-explored photos / number of photos posted, as function of the post time (0 to 23h) AND the week day. 
-Results are displayed on the std output, and can be manually inserted into a csv file.
+explored photos / number of photos posted, broken down by post time (0 to 23h) AND week day.
 
-ProcessUploadsPerDay:
-=====================
+Results are stored in file csv file `proba_explo.csv`.
+
+# ProcessUploadsPerDay
 
 This specific main class simply reports what already exists in daily files, namely the total number of photos
 uploaded every day (the last column of daily data files), and stores the result into file uploads/daily_uploads.csv.

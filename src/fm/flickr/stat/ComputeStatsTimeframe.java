@@ -23,10 +23,6 @@ public class ComputeStatsTimeframe extends ComputeStats
 
 	private static ComputeStatsTimeframe processor;
 
-	public ComputeStatsTimeframe() {
-		super();
-	}
-
 	public static void main(String[] args) {
 		try {
 			logger.debug("begin");

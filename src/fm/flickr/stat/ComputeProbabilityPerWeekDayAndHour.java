@@ -15,11 +15,9 @@ import fm.flickr.stat.perform.UploadsStat;
 import fm.util.Config;
 
 /** 
- * This specific class crosses data of two sources: post time of explored photos, and total number of uploads,
- * in order to compute the ratio of the number of explored photos / number of photos posted, as function of the 
- * post time (0 to 23h) AND the week day.
- * 
- * Results are simply displayed on the std output (no file).
+ * This class crosses data of two sources: post time of explored photos, and total number of uploads,
+ * in order to compute the ratio of the number of explored photos / number of photos posted,
+ * broken down by post time (0 to 23h) AND week day.
  *  
  * @author fmichel
 */
@@ -69,9 +67,11 @@ public class ComputeProbabilityPerWeekDayAndHour
 			String[] tokensEnd = stopDate.split("-");
 			GregorianCalendar calEnd = new GregorianCalendar(Integer.valueOf(tokensEnd[0]), Integer.valueOf(tokensEnd[1]) - 1, Integer.valueOf(tokensEnd[2]));
 
+			PrintStream output = new PrintStream("/proba_explo.csv");
+
 			//--- Load all daily data files created between start date and end date
 			calStart = new GregorianCalendar(Integer.valueOf(tokensStart[0]), Integer.valueOf(tokensStart[1]) - 1, Integer.valueOf(tokensStart[2]));
-			System.out.println("# YYY-MM-DD HH:MM; nb of explored photos; nb of uploads; % of explored/posted");
+			output.println("# YYY-MM-DD HH:MM; nb of explored photos; nb of uploads; % of explored/posted");
 			while (calStart.before(calEnd)) {
 				// Format date to process as yyyy-mm-dd
 				String date = dateFrmt.format(calStart.getTime());
@@ -79,7 +79,7 @@ public class ComputeProbabilityPerWeekDayAndHour
 
 				try {
 					loadFileByDay(date);
-					computeStatistics(dayOfWeek, System.out);
+					computeStatistics(dayOfWeek);
 				} catch (ServiceException e) {
 					logger.warn(e.toString());
 				}
@@ -88,7 +88,7 @@ public class ComputeProbabilityPerWeekDayAndHour
 			}
 
 			// Display final table of probabilities
-			computeProba(System.out);
+			computeProba(output);
 			logger.debug("end");
 
 		} catch (Exception e) {
@@ -118,10 +118,9 @@ public class ComputeProbabilityPerWeekDayAndHour
 	 * 
 	 * Distribute the data loaded about upload time and number of uploads into 2 tables 
 	 * of the same data summed by date and time slot
-	 * @param ps the output where to print results
 	 * @param dayOfWeek 1=Sunday to 7=Saturday 
 	 */
-	private static void computeStatistics(int dayOfWeek, PrintStream ps) throws ServiceException {
+	private static void computeStatistics(int dayOfWeek) throws ServiceException {
 
 		Vector<Integer> postTimeDistrib = activity.getPostTimeDistrib();
 		Vector<Long> uploadDistrib = UploadsStat.getUploadDistribution();
