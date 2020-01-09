@@ -67,7 +67,7 @@ public class ComputeProbabilityPerWeekDayAndHour
 			String[] tokensEnd = stopDate.split("-");
 			GregorianCalendar calEnd = new GregorianCalendar(Integer.valueOf(tokensEnd[0]), Integer.valueOf(tokensEnd[1]) - 1, Integer.valueOf(tokensEnd[2]));
 
-			PrintStream output = new PrintStream("/proba_explo.csv");
+			PrintStream output = new PrintStream("stats/proba_explo.csv");
 
 			//--- Load all daily data files created between start date and end date
 			calStart = new GregorianCalendar(Integer.valueOf(tokensStart[0]), Integer.valueOf(tokensStart[1]) - 1, Integer.valueOf(tokensStart[2]));
